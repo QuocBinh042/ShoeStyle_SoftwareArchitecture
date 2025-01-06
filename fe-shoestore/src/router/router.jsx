@@ -29,7 +29,14 @@ export const routes = [
       {
         path: "cart",
         element: <Cart />,
-        breadcrumb: "Cart",         
+        breadcrumb: "Cart",  
+        children: [
+          {            
+            path: "checkout",
+            element: (<Checkout />),
+            breadcrumb: "Checkout",
+          },
+        ],       
       },
       {
         path: "payment",
@@ -39,11 +46,11 @@ export const routes = [
       {
         element: <PrivateRoutes />,
         children: [
-          {
-            path: "checkout",
-            element: <Checkout />,
-            breadcrumb: "Checkout",
-          },
+          // {
+          //   path: "cart/checkout",
+          //   element: <Checkout />,
+          //   breadcrumb: "Checkout",
+          // },
           {
             path: "account",
             element: <Account />,

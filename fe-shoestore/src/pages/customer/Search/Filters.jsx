@@ -29,10 +29,11 @@ const Filters = () => {
 
   const sizes = [38, 37, 36, 39, 40, 41, 42, 43, 44];
 
-  return (
-
-    <Collapse defaultActiveKey={['1', '2', '3', '4', '5',]} className="custom-collapse" bordered={false} expandIconPosition='end' expandIcon={<DownOutlined />} >
-      <Panel className="filters__panel" header="Categories" key="1">
+  const items = [
+    {
+      key: '1',
+      label: 'Categories',
+      children: (
         <Checkbox.Group className="filters__categories">
           {categories.map((item) => (
             <div className="filters__categories-item" key={item.label}>
@@ -43,9 +44,12 @@ const Filters = () => {
             </div>
           ))}
         </Checkbox.Group>
-      </Panel>
-
-      <Panel className="filters__panel" header="Price" key="2">
+      ),
+    },
+    {
+      key: '2',
+      label: 'Price',
+      children: (
         <Radio.Group className="filters__prices">
           {priceRanges.map((item) => (
             <Radio value={item.value} key={item.value}>
@@ -53,9 +57,12 @@ const Filters = () => {
             </Radio>
           ))}
         </Radio.Group>
-      </Panel>
-
-      <Panel className="filters__panel" header="Brand" key="3">
+      ),
+    },
+    {
+      key: '3',
+      label: 'Brand',
+      children: (
         <Checkbox.Group className="filters__brands">
           {brands.map((brand) => (
             <Checkbox value={brand} key={brand}>
@@ -63,17 +70,27 @@ const Filters = () => {
             </Checkbox>
           ))}
         </Checkbox.Group>
-      </Panel>
-
-      <Panel className="filters__panel" header="Color" key="4">
+      ),
+    },
+    {
+      key: '4',
+      label: 'Color',
+      children: (
         <Row gutter={[8, 8]}>
           {colors.map((color) => (
-            <Button key={color} className="filters__colors-item" style={{ backgroundColor: color }} />
+            <Button
+              key={color}
+              className="filters__colors-item"
+              style={{ backgroundColor: color }}
+            />
           ))}
         </Row>
-      </Panel>
-
-      <Panel className="filters__panel" header="Size" key="5">
+      ),
+    },
+    {
+      key: '5',
+      label: 'Size',
+      children: (
         <Row gutter={[8, 8]}>
           {sizes.map((size, index) => (
             <Button
@@ -85,10 +102,18 @@ const Filters = () => {
             </Button>
           ))}
         </Row>
-      </Panel>
-
-    </Collapse>
-
+      ),
+    },
+  ];
+  return (
+    <Collapse
+      defaultActiveKey={['1', '2', '3', '4', '5']}
+      className="custom-collapse"
+      bordered={false}
+      expandIconPosition="end"
+      expandIcon={<DownOutlined />}
+      items={items}
+    />
   );
 };
 

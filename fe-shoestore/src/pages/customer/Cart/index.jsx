@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { Table, InputNumber, Button, Card, Checkbox, Row, Col, Select, Input, Modal } from "antd";
 import './Cart.scss'
 import { ArrowLeftOutlined, DeleteOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 const Cart = () => {
   const navigate = useNavigate();
-
+  const location = useLocation();
+  const isCheckout = location.pathname.includes("/cart/checkout");
   const [cartItems, setCartItems] = useState([
     {
       key: "1",
@@ -125,8 +126,10 @@ const Cart = () => {
       ),
     },
   ];
-
+  
   return (
+    <>
+    {!isCheckout && (    
     <Row gutter={[16, 16]} className="cart">
       {/* Bảng giỏ hàng */}
       <Col xs={24} lg={16}>
@@ -160,7 +163,7 @@ const Cart = () => {
             <Col>Total</Col>
             <Col>${subtotal.toFixed(2)}</Col>
           </Row>
-          <Button type="primary" block onClick={()=>navigate("/checkout")}>
+          <Button type="primary" block onClick={()=>navigate("/cart/checkout")}>
             Checkout now
           </Button>
           <Button className='cart-summary__continue' block onClick={() => navigate("/search")}>
@@ -169,7 +172,8 @@ const Cart = () => {
         </Card>
       </Col>
       
-    </Row>
+    </Row>)}<Outlet />
+    </>
   );
 };
 

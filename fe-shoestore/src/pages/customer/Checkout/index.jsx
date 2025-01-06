@@ -133,8 +133,8 @@ const Checkout = () => {
           </div>
           <div className="scrollable">
             {products.map((product) => (
-              <>
-                <div key={product.id} className="checkout-summary__item">
+              <div key={product.id}>
+                <div  className="checkout-summary__item">
                   <Image src={product.image} alt={product.name} className="checkout-summary__image" width={120} />
                   <div className="checkout-summary__details">
                     <p className="checkout-summary__product-name">{product.name}</p>
@@ -143,7 +143,7 @@ const Checkout = () => {
                   <p className="checkout-summary__product-price">{product.price}</p>
                 </div>
                 <Divider style={{ marginTop: 1, marginBottom: 1 }} ></Divider>
-              </>
+              </div>
 
             ))}
           </div>

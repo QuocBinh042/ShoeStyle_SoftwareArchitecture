@@ -15,7 +15,7 @@ function Home() {
         <div className="header__slogan header__slogan--bottom">Conquer Every Journey!</div>
       </div>
       <FeaturedItems />
-      <div class="banner">
+      <div className="banner">
         <img src={banner} alt="Banner" />
       </div>
 
