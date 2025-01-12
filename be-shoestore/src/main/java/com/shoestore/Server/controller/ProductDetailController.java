@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("products-details")
+@RequestMapping("/api")
 public class ProductDetailController {
     private final ProductDetailService productDetailService;
 
@@ -26,7 +26,7 @@ public class ProductDetailController {
     }
 
 
-    @PostMapping
+    @PostMapping("/product-details/add")
     public ResponseEntity<?> addProductDetail(@Valid @RequestBody ProductDetail productDetail,
                                               BindingResult bindingResult      ) {
 
@@ -62,14 +62,14 @@ public class ProductDetailController {
         }
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Map<String,Object>> getProductDetailsByProductId(@PathVariable int id) {
+    @GetMapping("/products-details/by-product-id/{id}")
+    public ResponseEntity<Map<String,Object>> getProductDetailsByProductId(@PathVariable("id") int id) {
         List<ProductDetail> productDetails=productDetailService.getByProductId(id);
         Map<String,Object> response= new HashMap<>();
         response.put("productDetails",productDetails);
         return ResponseEntity.ok(response);
     }
-    @GetMapping("/productDetailId/{id}")
+    @GetMapping("/products-details/{id}")
     public ResponseEntity<ProductDetail> getProductDetailsById(@PathVariable int id) {
         ProductDetail productDetail=productDetailService.getProductDetailById(id);
         if (productDetail != null) {
@@ -79,7 +79,7 @@ public class ProductDetailController {
         }
     }
 
-    @PutMapping("/detail/{id}")
+    @PutMapping("/products-details/{id}")
     // chỉ cập nhật soluong
     public ResponseEntity<?> updateProductDetail(@PathVariable int id, @Valid @RequestBody ProductDetail productDetail, BindingResult bindingResult) {
         ProductDetail productDetail1 = productDetailService.getProductDetailById(id);

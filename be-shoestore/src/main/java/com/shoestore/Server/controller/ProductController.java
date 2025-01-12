@@ -114,27 +114,24 @@ public class ProductController {
 
     @GetMapping("/all-products")
     public ResponseEntity<Map<String, Object>> getAllProducts(
-            @RequestParam(defaultValue = "1") int page, // Thêm tham số page
-            @RequestParam(defaultValue = "12") int pageSize // Thêm tham số pageSize
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "12") int pageSize
     ) {
         List<Product> allProducts = productService.getAllProduct();
 
         // Tính toán phân trang
         int totalProducts = allProducts.size();
-//        int fromIndex = Math.min((page - 1) * pageSize, totalProducts);
-//        int toIndex = Math.min(page * pageSize, totalProducts);
-//        List<Product> paginatedProducts = allProducts.subList(fromIndex, toIndex);
         List<Product> paginatedProducts= productService.getProductsByPage(allProducts,page,pageSize);
         Map<String, Object> response = new HashMap<>();
         response.put("products", paginatedProducts);
-        response.put("total", totalProducts); // Trả về tổng số sản phẩm
+        response.put("total", totalProducts);
         return ResponseEntity.ok(response);
     }
 
 
 
 
-    @PostMapping
+    @PostMapping("/products/add")
     public ResponseEntity<?> addProduct(
             @RequestParam("image") MultipartFile[] files,  // Nhận mảng ảnh từ client
             @RequestParam("productName") String productName,  // Tên sản phẩm
@@ -244,7 +241,7 @@ public class ProductController {
         }
     }
 
-    @GetMapping("/detailFor/{id}")
+    @GetMapping("/product/{id}")
     public ResponseEntity<Product> getProductByIdForDetail(@PathVariable int id) {
         Product product = productService.getProductById(id);
         if (product != null) {
@@ -253,9 +250,9 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
-    @GetMapping("/detailsId/{id}") // Ánh xạ HTTP GET
+    @GetMapping("/product/by-product-details-id/{id}") // Ánh xạ HTTP GET
     public ResponseEntity<Product>  getProductsByProductDetails(@PathVariable int id){
-        Product product=productService.findByProductDetailsId(id);
+        Product product=productService.getProductByProductDetailsId(id);
         System.out.println("Id:"+id);
         if (product != null) {
             return ResponseEntity.ok(product);

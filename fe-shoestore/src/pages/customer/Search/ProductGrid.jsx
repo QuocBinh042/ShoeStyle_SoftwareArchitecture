@@ -3,9 +3,6 @@ import { Card, Row, Col, Pagination, Empty, Tooltip, Badge, Rate } from 'antd';
 import { HeartOutlined, ShoppingCartOutlined, ShoppingOutlined } from '@ant-design/icons';
 
 const ProductGrid = ({ products, totalProducts, currentPage, onPageChange }) => {
-  console.log("Current Page:", currentPage);
-  console.log("Products:", products);
-  console.log("Total Products:", totalProducts);
   return (
     <>
       {products.length === 0 ? (
@@ -13,9 +10,11 @@ const ProductGrid = ({ products, totalProducts, currentPage, onPageChange }) => 
       ) : (
         <Row gutter={[16, 16]}>
           {products.map((product) => {
-            const discountedPrice = (
+            const discountedPrice = Math.round(
               product.price - (product.price * (product.discount || 0)) / 100
-            ).toFixed(2);
+            );
+            const formattedPrice = product.price.toLocaleString('vi-VN'); // Giá gốc
+            const formattedDiscountedPrice = discountedPrice.toLocaleString('vi-VN'); // Giá giảm
             return (
               <Col key={product.productID} xs={24} sm={12} md={8} lg={6}>
                 <Badge.Ribbon
@@ -61,10 +60,10 @@ const ProductGrid = ({ products, totalProducts, currentPage, onPageChange }) => 
                       description={
                         <>
                           <span style={{ textDecoration: 'line-through', color: '#888', marginRight: 8 }}>
-                            ${product.price}
+                            {formattedPrice}₫
                           </span>
                           <span style={{ fontWeight: 'bold', color: '#fa541c' }}>
-                            ${discountedPrice}
+                            {formattedDiscountedPrice}₫
                           </span>
                         </>
                       }
@@ -77,16 +76,14 @@ const ProductGrid = ({ products, totalProducts, currentPage, onPageChange }) => 
         </Row>
       )}
       <Pagination
-        current={currentPage} // Trang hiện tại
-        total={totalProducts} // Tổng số sản phẩm
-        pageSize={12} // Số sản phẩm mỗi trang
-        onChange={onPageChange} // Hàm xử lý khi đổi trang
+        current={currentPage}
+        total={totalProducts}
+        pageSize={12}
+        onChange={onPageChange}
         style={{ marginTop: 20, textAlign: "center" }}
       />
     </>
   );
 };
-
-
 
 export default ProductGrid;

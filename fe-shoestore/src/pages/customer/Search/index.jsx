@@ -27,22 +27,18 @@ const Search = () => {
     const data = await fetchAllProducts({ page });
     if (data) {
       setProducts(data.products || []);
-      setTotalProducts(data.total || 0); // Cập nhật tổng số sản phẩm
-      console.log('All Products Loaded:', data.products);
+      setTotalProducts(data.total || 0);
     } else {
       console.log('No products received');
     }
   };
 
   const handlePageChange = async (page) => {
-    setCurrentPage(page); // Cập nhật trang hiện tại
-    console.log("Changing page to:", page);
+    setCurrentPage(page); 
 
     if (Object.values(filters).some(filter => filter)) {
-      // Nếu có bộ lọc, gọi hàm để lọc lại sản phẩm
       await handleFilterChange(filters, page);
     } else {
-      // Nếu không có bộ lọc, tải lại tất cả sản phẩm
       await loadAllProducts(page);
     }
   };
@@ -86,23 +82,22 @@ const Search = () => {
       brandIds: updatedFilters.brands,
       colors: updatedFilters.colors,
       sizes: updatedFilters.sizes,
-      minPrice: updatedFilters.priceRange ? updatedFilters.priceRange.split('-')[0] : null,
-      maxPrice: updatedFilters.priceRange ? updatedFilters.priceRange.split('-')[1] : null,
+      minPrice: updatedFilters.priceRange ? JSON.parse(updatedFilters.priceRange).minPrice : null,
+      maxPrice: updatedFilters.priceRange ? JSON.parse(updatedFilters.priceRange).maxPrice : null,
       sortBy: updatedFilters.sortBy || null,
     };
 
-    
+
 
     try {
-      const { products, total }= await fetchFilteredProducts(params, page); // Truyền thêm page vào
-      
+      const { products, total } = await fetchFilteredProducts(params, page); // Truyền thêm page vào
+
       if (Array.isArray(products) && products.length > 0) {
         setProducts(products);
-        setTotalProducts(total); // Cập nhật tổng số sản phẩm sau khi lọc
-        console.log('Filtered products:', totalProducts);
+        setTotalProducts(total); 
       } else {
         setProducts([]);
-        setTotalProducts(0); // Nếu không có sản phẩm nào, set tổng là 0
+        setTotalProducts(0); 
         console.log('No products found for these filters');
       }
     } catch (error) {
@@ -115,7 +110,7 @@ const Search = () => {
       <Layout style={{ padding: '20px 100px' }}>
         <Header style={{ padding: 0 }}>
           <ResultsHeader
-            resultsCount={products.length}
+            resultsCount={totalProducts}
             keywword=""
             onSortChange={handleSortChange}
             currentSort={filters.sortBy}

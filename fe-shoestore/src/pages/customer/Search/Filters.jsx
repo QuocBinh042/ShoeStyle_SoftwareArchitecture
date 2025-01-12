@@ -12,7 +12,6 @@ const Filters = ({ onFilterChange }) => {
     colors: [],
     sizes: [],
     priceRange: null,
-    // sortBy:null
   });
 
   useEffect(() => {
@@ -28,26 +27,24 @@ const Filters = ({ onFilterChange }) => {
   }, []);
 
   const priceRanges = [
-    { label: "Under 50", value: "<50" },
-    { label: "50 to 100", value: "50-100" },
-    { label: "100 to 150", value: "100-150" },
-    { label: "150 to 200", value: "150-200" },
-    { label: "200 to 300", value: "200-300" },
-    { label: "Over 300", value: ">300" },
+    { label: "Under 1.000.000", value: JSON.stringify({ minPrice: null, maxPrice: 1000000 }) },
+    { label: "1.000.000 to 2.000.000", value: JSON.stringify({ minPrice: 1000000, maxPrice: 2000000 }) },
+    { label: "2.000.000 to 3.000.000", value: JSON.stringify({ minPrice: 2000000, maxPrice: 3000000 }) },
+    { label: "3.000.000 to 5.000.000", value: JSON.stringify({ minPrice: 3000000, maxPrice: 5000000 }) },
+    { label: "Over 5.000.000", value: JSON.stringify({ minPrice: 5000000, maxPrice: null }) },
   ];
 
   const colors = ["RED", "BLUE", "GREEN", "YELLOW", "BLACK", "PURPRE", "ORANGE", "PINK"];
-  const sizes = [38, 37, 36, 39, 40, 41, 42, 43, 44];
+  const sizes = [36, 37, 38, 39, 40, 41, 42, 43, 44];
+  const formattedSizes = sizes.map((size) => `SIZE_${size}`);
 
-  // Cập nhật trạng thái bộ lọc và gọi callback
   const updateFilters = (key, value) => {
     setSelectedFilters((prev) => {
-      const updatedFilters = { ...prev, [key]: value };
-      onFilterChange(updatedFilters); // Gọi callback sau khi cập nhật bộ lọc
+      const updatedFilters = { ...prev, [key]: value }; 
+      onFilterChange(updatedFilters);
       return updatedFilters;
     });
   };
-  
 
   const items = [
     {
@@ -77,10 +74,11 @@ const Filters = ({ onFilterChange }) => {
       children: (
         <Radio.Group
           className="filters__prices"
+          value={selectedFilters.priceRange}
           onChange={(e) => updateFilters("priceRange", e.target.value)}
         >
           {priceRanges.map((item) => (
-            <Radio value={item.value} key={item.value}>
+            <Radio value={item.value} key={item.label}>
               {item.label}
             </Radio>
           ))}
@@ -111,8 +109,7 @@ const Filters = ({ onFilterChange }) => {
           {colors.map((color) => (
             <Button
               key={color}
-              className={`filters__colors-item ${selectedFilters.colors.includes(color) ? "selected" : ""
-                }`}
+              className={`filters__colors-item ${selectedFilters.colors.includes(color) ? "selected" : ""}`}
               style={{ backgroundColor: color }}
               onClick={() => {
                 const newColors = selectedFilters.colors.includes(color)
@@ -130,10 +127,9 @@ const Filters = ({ onFilterChange }) => {
       label: "Size",
       children: (
         <Row gutter={[8, 8]}>
-          {sizes.map((size) => (
+          {formattedSizes.map((size) => (
             <Button
-              className={`filters_sizes-item ${selectedFilters.sizes.includes(size) ? "selected" : ""
-                }`}
+              className={`filters__sizes-item ${selectedFilters.sizes.includes(size) ? "selected" : ""}`}
               key={size}
               onClick={() => {
                 const newSizes = selectedFilters.sizes.includes(size)
@@ -142,7 +138,7 @@ const Filters = ({ onFilterChange }) => {
                 updateFilters("sizes", newSizes);
               }}
             >
-              {size}
+              {size.replace("SIZE_", "")}
             </Button>
           ))}
         </Row>

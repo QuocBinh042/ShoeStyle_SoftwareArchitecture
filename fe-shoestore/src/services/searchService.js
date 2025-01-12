@@ -4,7 +4,6 @@ export const fetchFilters = async () => {
   return data;
 };
 export const fetchAllProducts = async ({ page = 1, pageSize = 12 }) => {
-  console.log("Page:", page, "PageSize:", pageSize);  // Kiểm tra giá trị truyền vào
   const data = await fetchData(`all-products?page=${page}&pageSize=${pageSize}&forceReload=1`);
   return data;
 };
@@ -48,20 +47,12 @@ export const fetchFilteredProducts = async (params,page) => {
   }
   // Full url request
   const fullUrl = `${baseUrl}?${queryString}`;  
-
-  console.log("Fetching filtered products from:", fullUrl); 
-
   try {
     const response = await fetchData(fullUrl);  
-    console.log("Response received:", response);  
     if (!response || !response.products || response.products.length === 0) {
       console.error("No data found in response.");
       return { products: [], total: 0 }; // Trả về đối tượng với products và total là 0
     }
-
-    console.log("Filtered total data received:", response.total);
-    
-    // Giả sử response trả về có cả products và total
     return { products: response.products, total: response.total || 0 };
   } catch (error) {
     console.error("Error fetching filtered products:", error);
