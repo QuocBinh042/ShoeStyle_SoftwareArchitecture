@@ -2,7 +2,7 @@ import React from "react";
 import { Card, Typography, Row, Col, Button, Divider } from "antd";
 import { CheckCircleOutlined } from "@ant-design/icons";
 
-const { Title, Text, Link } = Typography;
+const { Title, Text } = Typography;
 
 const PaymentSuccess = () => {
   return (

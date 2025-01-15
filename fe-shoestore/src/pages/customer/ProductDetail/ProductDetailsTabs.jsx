@@ -1,6 +1,6 @@
 import React from 'react';
 import { Image, Tabs } from 'antd';
-import ReviewTab from './ReviewTab';
+import ReviewTab from './Review';
 import shoe from '../../../assets/images/products/product2.jpg'
 const ProductDetailsTabs = () => {
   const items = [

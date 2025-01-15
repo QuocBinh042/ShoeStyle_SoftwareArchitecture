@@ -11,6 +11,7 @@ import PaymentSuccess from "../pages/customer/Payment";
 import Login from "../pages/auth/Login";
 import SignUp from "../pages/auth/SignUp";
 import ProductDetail from "../pages/customer/ProductDetail";
+
 export const routes = [
   {
     path: "/",

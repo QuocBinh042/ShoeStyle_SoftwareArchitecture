@@ -17,7 +17,8 @@ const items = [
   },
 ];
 const ReviewSummary = () => (
-  <div style={{ border: "1px solid gray", borderRadius: "8px", padding: "10px" }}>
+  <div style={{ borderRadius: "8px", padding: "10px" }}>
+    <h2>Reviews</h2>
     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
       <span style={{ fontSize: "48px", fontWeight: "bold" }}>4.9</span>
       <Rate disabled defaultValue={5} />
@@ -83,23 +84,16 @@ const ReviewList = ({ reviews }) => (
   </>
 );
 
-const ReviewTab = () => {
-  const [filter, setFilter] = useState("All");
-
-  const reviews = [
-    {
-      author: "Renalda Aji",
-      date: "19 hours ago",
-      rating: 5,
-      text: "Very good, I like it!",
-      productInfo: "Brand: abc - Size: 44 - Color: Silver",
-      additionalText: "Highly recommend!",
-    },
-  ];
+const Review = ({reviews}) => {
+  const [filter, setFilter] = useState("All"); 
 
   return (
     <div className="review-tab">
-      <div style={{ display: "flex", gap: "20px" }}>
+      <div style={{
+        display: "flex", gap: "20px",
+        padding: '1rem',
+        borderRadius: '0.5rem', marginTop: 20, background: 'white'
+      }}>
         <div>
           <ReviewSummary />
         </div>
@@ -115,4 +109,4 @@ const ReviewTab = () => {
   );
 };
 
-export default ReviewTab;
+export default Review;
