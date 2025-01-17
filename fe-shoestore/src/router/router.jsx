@@ -10,6 +10,8 @@ import PrivateRoutes from "../components/PrivateRoutes";
 import PaymentResult from "../pages/customer/Payment"
 import Login from "../pages/auth/Login";
 import SignUp from "../pages/auth/SignUp";
+import ProductDetail from "../pages/customer/ProductDetail";
+
 export const routes = [
   {
     path: "/",
@@ -25,6 +27,11 @@ export const routes = [
         path: "search",
         element: <Search />,
         breadcrumb: "Search", 
+      },
+      {
+        path: "product-detail",
+        element: <ProductDetail />,
+        breadcrumb: "ProductDetail", 
       },
       {
         path: "cart",

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import shoe from "../../../assets/images/products/shoe3.png";
-import { Tabs, Card, Image, Carousel, Badge } from "antd";
+import { Tabs, Card, Image, Carousel, Badge, Tooltip } from "antd";
+import { HeartOutlined, ShoppingCartOutlined, ShoppingOutlined } from "@ant-design/icons";
 const productsData = {
   bestsellers: [
     {
@@ -97,6 +98,17 @@ const TabProducts = () => {
                   <Image src={shoe} alt={product.name} />
                 </Badge.Ribbon>
               }
+              actions={[
+                <Tooltip title="Add to Cart">
+                  <ShoppingOutlined key="add-to-cart" />
+                </Tooltip>,
+                <Tooltip title="Buy now">
+                  <ShoppingCartOutlined key="buy-now" />
+                </Tooltip>,
+                <Tooltip title="Add to Wishlist">
+                  <HeartOutlined key="add-to-wishlist" />
+                </Tooltip>,
+              ]}
             >
               <Card.Meta
                 title={product.name}
@@ -111,12 +123,10 @@ const TabProducts = () => {
                         {product.oldPrice}
                       </span>
                     </p>
-                    <div style={{ justifyContent: 'space-between', display: 'flex' }}>
-                      <button className="tab-products__card__add-to-cart">Cart</button>
-                      <button className="tab-products__card__add-to-cart">Wish</button>
-                    </div>
+                   
                   </>
                 }
+                
               />
             </Card>
 

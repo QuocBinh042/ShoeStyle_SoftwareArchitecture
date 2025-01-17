@@ -10,6 +10,7 @@ import CustomBreadcrumb from '../../components/Breadcrumb';
 const { Header } = Layout;
 
 const CustomerLayout = () => {
+  
   const location = useLocation();
   const isHome = location.pathname === "/"; 
   return (
