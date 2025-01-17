@@ -141,3 +141,33 @@
   border: 1px solid #e0a800;
   margin-top: 10px;
 }
+.size-item {
+  width: 40px;
+  height: 40px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.color-item {
+  width: 80px;
+  height: 40px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: 5px;
+}
+.stock-item{
+  justify-content: center;
+  align-items: center;
+  height: 40px;
+  display: flex;
+  margin-left: 5px;
+}

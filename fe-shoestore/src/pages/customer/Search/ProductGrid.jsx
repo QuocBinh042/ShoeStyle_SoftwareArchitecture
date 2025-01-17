@@ -3,7 +3,8 @@ import { Card, Row, Col, Pagination, Empty, Tooltip, Badge, Rate } from 'antd';
 import { HeartOutlined, ShoppingCartOutlined, ShoppingOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 
-const ProductGrid = ({ products }) => {
+
+const ProductGrid = ({ products, totalProducts, currentPage, onPageChange }) => {
 
   const handleActionClick = (e, action) => {
     e.stopPropagation();
@@ -11,25 +12,45 @@ const ProductGrid = ({ products }) => {
   };
 
   const navigate = useNavigate();
+
   return (
     <>
       {products.length === 0 ? (
         <Empty />
       ) : (
-        <Row gutter={[16, 16]} >
+        <Row gutter={[16, 16]}>
           {products.map((product) => {
-            const discountedPrice = (
+            const discountedPrice = Math.round(
               product.price - (product.price * (product.discount || 0)) / 100
-            ).toFixed(2);
+            );
+            const formattedPrice = product.price.toLocaleString('vi-VN'); // Giá gốc
+            const formattedDiscountedPrice = discountedPrice.toLocaleString('vi-VN'); // Giá giảm
             return (
-              <Col key={product.id} xs={24} sm={12} md={8} lg={6}>
+              <Col key={product.productID} xs={24} sm={12} md={8} lg={6}>
                 <Badge.Ribbon
                   text={product.discount ? `-${product.discount}%` : ''}
                   color="red"
                   placement="start"
                 >
                   <Card
-                    cover={<img alt={product.name} src={product.image} />}
+                    cover={
+                      product.image ? (
+                        <img alt={product.productName} src={product.image} />
+                      ) : (
+                        <div
+                          style={{
+                            height: "200px",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            backgroundColor: "#f0f0f0",
+                            border: "1px dashed #d9d9d9",
+                          }}
+                        >
+                          <span style={{ color: "#999" }}>200x200</span>
+                        </div>
+                      )
+                    }
                     hoverable
                     actions={[
                       <Tooltip title="Add to Cart" key="add-to-cart">
@@ -44,25 +65,36 @@ const ProductGrid = ({ products }) => {
                     ]}
                     onClick={() => navigate("/product-detail")}
                   >
-                    <Rate disabled allowHalf defaultValue={2.5} style={{ marginBottom: 10, }} />
-                    <Card.Meta title={product.name} description={
-                      <>
-                        <span style={{ textDecoration: 'line-through', color: '#888', marginRight: 8 }}>
-                          ${product.price}
-                        </span>
-                        <span style={{ fontWeight: 'bold', color: '#fa541c' }}>
-                          ${discountedPrice}
-                        </span>
-                      </>
-                    } />
-                  </Card>
-                </Badge.Ribbon>
-              </Col>
-            )
 
+                    <Rate disabled allowHalf defaultValue={2.5} style={{ marginBottom: 10 }} />
+                    <Card.Meta
+                      title={product.productName}
+                      description={
+                        <>
+                          <span style={{ textDecoration: 'line-through', color: '#888', marginRight: 8 }}>
+                            {formattedPrice}₫
+                          </span>
+                          <span style={{ fontWeight: 'bold', color: '#fa541c' }}>
+                            {formattedDiscountedPrice}₫
+                          </span>
+                        </>
+                      }
+                    />
+
+                  </Card >
+                </Badge.Ribbon >
+              </Col >
+            );
           })}
-        </Row>)}
-      <Pagination align="center" defaultCurrent={1} total={50} style={{ marginTop: 20, }} />
+        </Row >
+      )}
+      <Pagination
+        current={currentPage}
+        total={totalProducts}
+        pageSize={12}
+        onChange={onPageChange}
+        style={{ marginTop: 20, textAlign: "center" }}
+      />
     </>
   );
 };

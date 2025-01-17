@@ -2,12 +2,12 @@ import CustomerLayout from "../layouts/CustomerLayout";
 import Home from "../pages/customer/Home";
 import Account from "../pages/customer/Account";
 import Cart from "../pages/customer/Cart";
-import Order from "../pages/customer/Order";
+import OrderSuccess from "../pages/customer/Order";
 import Checkout from "../pages/customer/Checkout";
 import Search from "../pages/customer/Search";
 import Error from "../pages/error";
 import PrivateRoutes from "../components/PrivateRoutes";
-import PaymentSuccess from "../pages/customer/Payment";
+import PaymentResult from "../pages/customer/Payment"
 import Login from "../pages/auth/Login";
 import SignUp from "../pages/auth/SignUp";
 import ProductDetail from "../pages/customer/ProductDetail";
@@ -47,7 +47,7 @@ export const routes = [
       },
       {
         path: "payment",
-        element: <PaymentSuccess />,
+        element: <PaymentResult />,
         breadcrumb: "payment",         
       },
       {
@@ -67,7 +67,7 @@ export const routes = [
       },
       {
         path: "order",
-        element: <Order />,
+        element: <OrderSuccess />,
         breadcrumb: "Order",
       },
       
