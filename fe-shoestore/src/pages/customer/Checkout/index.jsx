@@ -21,9 +21,9 @@ const Checkout = () => {
     const fetchProductDetails = async () => {
       const details = await Promise.all(
         selectedItems.map(async (item) => {
-          const productDetailId = item.key.split("-")[1]; // Lấy ID từ key
-          const detail = await fetchProductDetailById(productDetailId); // Gọi API để lấy thông tin chi tiết
-          return { ...item, detail }; // Kết hợp thông tin gốc với thông tin chi tiết
+          const productDetailId = item.key.split("-")[1]; 
+          const detail = await fetchProductDetailById(productDetailId); 
+          return { ...item, detail }; 
         })
       );
       setProductDetails(details);
@@ -93,7 +93,7 @@ const Checkout = () => {
           subtotal: productDetails.reduce((total, product) => total + product.quantity * product.price, 0),
           shippingCost: shippingCost,
           total: totalCost,
-          vnPayUrl, // Thêm link VNPay nếu có
+          vnPayUrl, 
         });
         setIsModalVisible(true)
       }

@@ -126,8 +126,8 @@ const Cart = () => {
           if (item.key === product.key) {
             return {
               ...item,
-              initialQuantity: updatedQuantity, // Cập nhật giá trị ban đầu
-              isChanged: false, // Đặt lại trạng thái
+              initialQuantity: updatedQuantity, 
+              isChanged: false, 
             };
           }
           return item;
@@ -170,7 +170,6 @@ const Cart = () => {
 
   //Delete cartItem
   const handleRemove = (key) => {
-    // Lấy cartId và productDetailId từ key
     const cartId = key.split("-")[0];
     const productDetailId = key.split("-")[1];
     deleteCartItem(cartId, productDetailId)
@@ -297,10 +296,10 @@ const Cart = () => {
               type="text"
               onClick={() => handleUpdateButtonClick(product)}
               style={{
-                color: product.isChanged ? "#1890ff" : "#999", // Màu đổi khi có thay đổi
+                color: product.isChanged ? "#1890ff" : "#999", 
                 fontWeight: product.isChanged ? "bold" : "normal",
               }}
-              disabled={!product.isChanged} // Chỉ bật khi có thay đổi
+              disabled={!product.isChanged} 
             >
               <CheckCircleOutlined /> Update
             </Button>
