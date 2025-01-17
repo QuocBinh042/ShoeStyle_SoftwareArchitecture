@@ -5,6 +5,7 @@ import com.shoestore.Server.repositories.PaymentRepository;
 import com.shoestore.Server.service.PaymentService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -33,5 +34,15 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public List<Payment> getAll() {
         return paymentRepository.findAll();
+    }
+
+    @Override
+    public void updateStatus(int orderId, String status) {
+        Payment payment= paymentRepository.findPaymentByOrderId(orderId);
+        if(payment!=null){
+            payment.setStatus(status);
+            payment.setPaymentDate(LocalDate.now());
+            paymentRepository.save(payment);
+        }
     }
 }

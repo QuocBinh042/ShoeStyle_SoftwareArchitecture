@@ -48,5 +48,5 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     long countByStatus(String status);
 
   List<Order> findByUser_UserID(int userID);
-
+  Order findByCode(String code);
 }

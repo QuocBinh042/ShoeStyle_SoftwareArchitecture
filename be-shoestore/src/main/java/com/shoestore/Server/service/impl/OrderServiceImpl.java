@@ -149,4 +149,11 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findByUser_UserID(userId);
     }
 
+
+
+    @Override
+    public Order findByCode(String code) {
+        return orderRepository.findByCode(code);
+    }
+
 }

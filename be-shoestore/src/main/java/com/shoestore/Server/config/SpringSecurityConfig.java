@@ -26,9 +26,9 @@ public class SpringSecurityConfig {
 @Bean
 public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 	http
-			.csrf(csrf -> csrf.disable()) // Tắt CSRF bằng cách dùng lambda
+			.csrf(csrf -> csrf.disable()) // Turn off CSRF
 			.authorizeHttpRequests(auth -> auth
-					.anyRequest().permitAll() // Cho phép tất cả các request không cần xác thực
+					.anyRequest().permitAll()
 			);
 
 	return http.build();

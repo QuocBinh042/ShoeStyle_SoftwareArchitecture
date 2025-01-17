@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/Order")
+@RequestMapping("/api/order")
 public class OrderController {
 
     @Autowired
@@ -36,17 +36,14 @@ public class OrderController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Order> getAll(@PathVariable("id") int id) {
-        // Lấy danh sách đơn hàng với chi tiết sản phẩm đã được tải
+    public ResponseEntity<Order> getOrderById(@PathVariable("id") int id) {
        Order order=orderService.findById(id);
         return ResponseEntity.ok(order);
     }
 
     @PostMapping("/update-status")
     public ResponseEntity<?> updateOrderStatus(@RequestBody Map<String, Object> payload) {
-//        System.out.println("Payload received: " + payload);
         try {
-            // Kiểm tra và chuyển đổi kiểu dữ liệu
             int orderId;
             Object orderIdObj = payload.get("orderId");
             if (orderIdObj instanceof Integer) {
@@ -60,7 +57,6 @@ public class OrderController {
             if (status == null || status.isEmpty()) {
                 return ResponseEntity.badRequest().body("status không hợp lệ!");
             }
-//            System.out.println("OrderId: " + orderId + ", Status: " + status);
             orderService.updateOrderStatus(orderId, status);
             return ResponseEntity.ok("Cập nhật trạng thái thành công!");
         } catch (Exception e) {
@@ -84,7 +80,7 @@ public class OrderController {
         return ResponseEntity.ok(stats);
     }
 
-    @GetMapping("/dsachOrders")
+    @GetMapping("/get-all")
     public List<Map<String, Object>> getAllOrders() {
         // Lấy danh sách đơn hàng với chi tiết sản phẩm đã được tải
         List<Order> orders = orderService.findAll();
@@ -129,13 +125,13 @@ public class OrderController {
         return ResponseEntity.ok(customers);
     }
 
-    @GetMapping("/OrderStatistics")
+    @GetMapping("/order-statistics")
     public Map<String, Long> getOrderStatistics() {
         return orderService.getOrderStatistics();
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Map<String, Object>>> getOrdersByUserId(@PathVariable("userId") int userId) {
+    @GetMapping("/user/{user-id}")
+    public ResponseEntity<List<Map<String, Object>>> getOrdersByUserId(@PathVariable("user-id") int userId) {
         try {
             List<Order> orders = orderService.findByUserId(userId);
             List<Map<String, Object>> result = orders.stream()

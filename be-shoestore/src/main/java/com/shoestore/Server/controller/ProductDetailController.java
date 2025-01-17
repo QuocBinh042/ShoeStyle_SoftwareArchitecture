@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/product-details")
 public class ProductDetailController {
     private final ProductDetailService productDetailService;
 
@@ -26,7 +26,7 @@ public class ProductDetailController {
     }
 
 
-    @PostMapping("/product-details/add")
+    @PostMapping("/add")
     public ResponseEntity<?> addProductDetail(@Valid @RequestBody ProductDetail productDetail,
                                               BindingResult bindingResult      ) {
 
@@ -62,14 +62,14 @@ public class ProductDetailController {
         }
     }
 
-    @GetMapping("/products-details/by-product-id/{id}")
+    @GetMapping("/by-product-id/{id}")
     public ResponseEntity<Map<String,Object>> getProductDetailsByProductId(@PathVariable("id") int id) {
         List<ProductDetail> productDetails=productDetailService.getByProductId(id);
         Map<String,Object> response= new HashMap<>();
         response.put("productDetails",productDetails);
         return ResponseEntity.ok(response);
     }
-    @GetMapping("/products-details/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<ProductDetail> getProductDetailsById(@PathVariable int id) {
         ProductDetail productDetail=productDetailService.getProductDetailById(id);
         if (productDetail != null) {
@@ -79,7 +79,7 @@ public class ProductDetailController {
         }
     }
 
-    @PutMapping("/products-details/{id}")
+    @PutMapping("/update/{id}")
     // chỉ cập nhật soluong
     public ResponseEntity<?> updateProductDetail(@PathVariable int id, @Valid @RequestBody ProductDetail productDetail, BindingResult bindingResult) {
         ProductDetail productDetail1 = productDetailService.getProductDetailById(id);

@@ -24,6 +24,7 @@ public class Order {
     private String status;
     private double total;
     private double feeShip;
+    private String code;
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "voucherID",nullable = true)
     @JsonIgnore
@@ -34,7 +35,6 @@ public class Order {
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     @JsonIgnore
     private Payment payment;
-
     private String shippingAddress;
     @ManyToOne
     @JoinColumn(name = "userID")
@@ -44,15 +44,5 @@ public class Order {
         this.orderID = orderID;
     }
 
-    @Override
-    public String toString() {
-        return "Order{" +
-                "orderID=" + orderID +
-                ", orderDate=" + orderDate +
-                ", status='" + status + '\'' +
-                ", total=" + total +
-                ", feeShip=" + feeShip +
-                ", user=" + user +
-                '}';
-    }
+
 }

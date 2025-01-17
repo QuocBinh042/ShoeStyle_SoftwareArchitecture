@@ -35,15 +35,12 @@ public class CartItemServiceImpl implements CartItemService {
                 .orElseThrow(() -> new IllegalArgumentException("Cart not found"));
         ProductDetail productDetail = productDetailRepository.findById(cartItem.getId().getProductDetailId())
                 .orElseThrow(() -> new IllegalArgumentException("ProductDetail not found"));
-        // Khởi tạo CartItemKey
+
         CartItemKey cartItemKey = new CartItemKey(cart.getCartID(), productDetail.getProductDetailID());
         cartItem.setId(cartItemKey);
 
-        // Gán lại đối tượng liên quan
         cartItem.setCart(cart);
         cartItem.setProductDetail(productDetail);
-        System.out.println(cartItem);
-        // Lưu CartItem
         return cartItemRepository.save(cartItem);
     }
 
@@ -61,6 +58,7 @@ public class CartItemServiceImpl implements CartItemService {
             entityCartItem.setQuantity(cartItem.getQuantity());
             entityCartItem.setCart(cartItem.getCart());
             entityCartItem.setProductDetail(cartItem.getProductDetail());
+            entityCartItem.setSubTotal(cartItem.getSubTotal());
             return cartItemRepository.save(entityCartItem);
         }
         return null;
@@ -69,6 +67,14 @@ public class CartItemServiceImpl implements CartItemService {
     @Override
     public void deleteCartItem(CartItemKey id) {
         cartItemRepository.deleteById(id);
+    }
+
+    @Override
+    public List<CartItem> getCartItemByPage(List<CartItem>cartItems,int page, int pageSize) {
+        int total = cartItems.size();
+        int fromIndex = Math.min((page - 1) * pageSize, total);
+        int toIndex = Math.min(page * pageSize, total);
+        return cartItems.subList(fromIndex, toIndex);
     }
 
 

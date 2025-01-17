@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/OrderDetail")
+@RequestMapping("/api/order-details")
 public class OrderDetailController {
 
     @Autowired
@@ -73,8 +73,8 @@ public class OrderDetailController {
     }
 
     // API lấy thông tin chi tiết đơn hàng theo orderID
-    @GetMapping("/layTT/{orderID}")
-    public ResponseEntity<Map<String, Object>> getOrderDetailByOrderID(@PathVariable Long orderID) {
+    @GetMapping("/by-order-id/{order-id}")
+    public ResponseEntity<Map<String, Object>> getOrderDetailByOrderID(@PathVariable("order-id") Long orderID) {
         Map<String, Object> orderDetail = orderDetailService.fetchOrderDetailByOrderID(orderID);
         return ResponseEntity.ok(orderDetail);
     }

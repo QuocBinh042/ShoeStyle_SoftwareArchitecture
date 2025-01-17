@@ -18,5 +18,5 @@ public interface OrderService {
     Order findById(int orderID);
     Order addOrder(Order order);
     List<Order> findByUserId(int userId);
-
+    Order findByCode(String orderCode);
 }

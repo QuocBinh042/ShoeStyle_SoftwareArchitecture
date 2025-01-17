@@ -9,4 +9,5 @@ public interface PaymentService {
     Payment getPaymentById(int id);
     Payment getPaymentByOrderId(int id);
     List<Payment> getAll();
+    void updateStatus(int orderId,String status);
 }
