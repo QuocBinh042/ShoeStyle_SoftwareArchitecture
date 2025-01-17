@@ -39,11 +39,6 @@ const menuCustomer = [
   },
   {
     key: '6',
-    label: <NavLink to="favorite" >Favorite</NavLink>,
-    icon: <HeartOutlined />,
-  },
-  {
-    key: '7',
     label: <NavLink to="account" >Account</NavLink>,
     icon: <UserOutlined />,
   },
