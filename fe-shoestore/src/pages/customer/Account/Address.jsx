@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Card, Button, Modal, List, Tag, Typography } from "antd";
-import AddressSelector from "../AddressSelector";
+import AddressSelector from "./AddressSelector";
 
 const { Text } = Typography;
 

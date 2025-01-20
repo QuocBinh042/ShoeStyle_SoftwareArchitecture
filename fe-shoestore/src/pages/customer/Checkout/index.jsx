@@ -17,11 +17,12 @@ const Checkout = () => {
   const [shippingMethod, setShippingMethod] = useState("Normal");
   const [paymentMethod, setPaymentMethod] = useState(null);
   const [modalData, setModalData] = useState(null);
+  console.log("Nhận dc:"+selectedItems)
   useEffect(() => {
     const fetchProductDetails = async () => {
       const details = await Promise.all(
         selectedItems.map(async (item) => {
-          const productDetailId = item.key.split("-")[1]; 
+          const productDetailId = item.key
           const detail = await fetchProductDetailById(productDetailId); 
           return { ...item, detail }; 
         })

@@ -54,7 +54,7 @@ const Cart = () => {
         )
       );
       const enrichedCartItems = data.cartItems.map((cartItem, index) => ({
-        key: `${cartItem.id.cartId}-${cartItem.id.productDetailId}`,
+        key: cartItem.id.productDetailId,
         name: products[index].productName,
         size: productDetails[index].size,
         colors: productDetails[index].color,
@@ -90,6 +90,7 @@ const Cart = () => {
       });
       return;
     }
+    console.log(selectedItems)
     navigate("/cart/checkout", { state: { selectedItems } });
   };
   //Check item

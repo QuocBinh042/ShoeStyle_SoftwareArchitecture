@@ -1,35 +1,76 @@
-import React, { useState } from "react";
-import { Row, Col, Button, Rate, InputNumber, Image, Tag, Input } from "antd";
+import React, { useState, useEffect } from "react";
+import { useParams,useNavigate } from "react-router-dom";
+import { Row, Col, Button, Rate, InputNumber, Image, Tag, Input, Modal } from "antd";
 import "./ProductDetail.scss";
 import { ShoppingCartOutlined, ShoppingOutlined } from "@ant-design/icons";
 import RelatedProducts from "./RelatedProducts";
 import Review from "./Review";
-
+import { fetchProductDetailByProductId } from "../../../services/productDetailService";
+import { fetchProductById, fetchProductByProductDetailId } from "../../../services/productService";
 const ProductDetails = () => {
+  const navigate = useNavigate();
+  const { productID } = useParams();
+  const [product, setProduct] = useState([]);
   const [mainImage, setMainImage] = useState("https://res.cloudinary.com/dowsceq4o/image/upload/v1735919650/project_ShoeStore/ImageProduct/1/kxgjis3uuvn3ulvjtluy.png");
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
+  const [availableColors, setAvailableColors] = useState([]);
+  const [availableSizes, setAvailableSizes] = useState([]);
+  
+  useEffect(() => {
+    const fetchProduct = async (productID) => {
+      try {
+        const details = await fetchProductDetailByProductId(productID);
+        const product = await fetchProductById(productID);
+        if (product && details && details.productDetails.length > 0) {
+          setProduct(product);
+          setAvailableColors([...new Set(details.productDetails.map(detail => detail.color))]);
+          setAvailableSizes([...new Set(details.productDetails.map(detail => detail.size))]);
+        } else {
+          console.error("Product or details not found");
+          setProduct(null); 
+        }
+      } catch (error) {
+        console.error("Error fetching product:", error);
+        setProduct(null); 
+      }
+    };
+    
+    if (productID) fetchProduct(productID);
+  }, [productID]);
+  
 
-  const product = {
-    id: 1,
-    name: 'Nike Air Max',
-    price: 180000,
-    discount: 20,
-    category: 'Running Shoes',
-    brand: 'Nike',
-    images: [
-      'https://res.cloudinary.com/dowsceq4o/image/upload/v1735919650/project_ShoeStore/ImageProduct/1/i3p1us11avw3p4ya1g02.png',
-      'https://res.cloudinary.com/dowsceq4o/image/upload/v1735919650/project_ShoeStore/ImageProduct/1/kxgjis3uuvn3ulvjtluy.png',
-      'https://res.cloudinary.com/dowsceq4o/image/upload/v1735919650/project_ShoeStore/ImageProduct/1/kxgjis3uuvn3ulvjtluy.png',
-      'https://res.cloudinary.com/dowsceq4o/image/upload/v1735919650/project_ShoeStore/ImageProduct/1/i3p1us11avw3p4ya1g02.png',
-    ],
-    sizes: [38, 37, 36, 39, 40, 41, 42, 43, 44],
-    colors: ['Blue', 'Red', 'Black', 'White'],
-    rate: 4.5,
-    reviewCount: 2.5,
-    decription: "Classic and comfortable, you'll want to wear these AF-1s time after time..."
+  const handleBuyNow = () => {
+    if (!selectedColor || !selectedSize) {
+      Modal.error({ content: "Please select color and size!" });
+      return;
+    }
+    
+    const selectedDetail = product?.productDetails?.find(
+      detail => detail.size === selectedSize && detail.color === selectedColor
+    );
+  
+    if (!selectedDetail) {
+      Modal.error({ content: "Selected size and color combination is not available!" });
+      return;
+    }
+  
+    const formattedItem = {
+      key: selectedDetail.productDetailID, 
+      name: product?.productName || 'Unknown',
+      price: product?.price || 0,
+      quantity: quantity,
+      color: selectedColor,
+      size: selectedSize,
+      image: product?.imageURL?.[0] || '',
+      stockQuantity: selectedDetail.stockQuantity, 
+    };
+  
+    const itemsToCheckout = [formattedItem];
+    navigate("/cart/checkout", { state: { selectedItems: itemsToCheckout } });
   };
+  
   const reviews = [
     {
       author: "Renalda Aji",
@@ -40,7 +81,7 @@ const ProductDetails = () => {
       additionalText: "Highly recommend!",
     },
   ];
-  const discountedPrice = (product.price - product.price * product.discount / 100);
+  // const discountedPrice = (product.price - product.price * product.discount / 100);
 
   const changeImage = (image) => {
     setMainImage(image);
@@ -67,7 +108,7 @@ const ProductDetails = () => {
             <Col span={10} className="product-image">
               <Image width={"100%"} src={mainImage} alt="Main Product" className="main-image" />
               <Row gutter={10} className="thumbnail-images">
-                {product.images.map((image, index) => (
+                {product?.imageURL?.map((image, index) => (
                   <Col key={index}>
                     <Image
                       preview={false}
@@ -77,50 +118,54 @@ const ProductDetails = () => {
                       className={`thumbnail ${mainImage === image ? "active" : ""}`}
                     />
                   </Col>
-                ))}
+                )) || <p>No images available</p>}
               </Row>
             </Col>
             <Col span={13} className="product-info">
-              <h3>{product.brand} / {product.category}</h3>
-              <h1>{product.name}</h1>
+            <h3>{product?.brand?.name || "Unknown Brand"} / {product?.category?.name || "Unknown Category"}</h3>
+
+
+              <h1>{product?.productName}</h1>
               <div className="product-pricing">
-                <span className="discounted-price">{discountedPrice} VNĐ</span>
-                <span className="original-price">{product.price} VNĐ</span>
-                {product.discount > 0 && <Tag color="green">{product.discount}%</Tag>}
+                <span className="discounted-price">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}</span>
+                <span className="original-price">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}</span>
+                {product.price > 0 && <Tag color="green">{product?.price}%</Tag>}
               </div>
-              <Rate allowHalf defaultValue={product.rate} disabled></Rate>
-              <span> {product.reviewCount} reviews</span>
+              <Rate allowHalf defaultValue={product?.rate} disabled></Rate>
+              <span> {product?.reviewCount} reviews</span>
               <h3>DESCRIPTION</h3>
-              <span>{product.decription}</span>
+              <span>{product?.description}</span>
               <h3>COLOR</h3>
               <Row gutter={10} className="options">
-                {product.colors.map((color) => (
-                  <Col key={color}>
+                {availableColors.map((color, index) => (
+                  <Col key={index}>
                     <Button
                       className={`box ${selectedColor === color ? "active" : ""}`}
                       onClick={() => handleColorSelect(color)}
                     >
                       <span style={{ display: 'flex', alignItems: "center", gap: "8px", }} >
-                        <span style={{ width: "16px", height: "16px", backgroundColor: color, borderRadius: "20%", border: "1px solid #ddd" }} />
+                        <span style={{ width: "16px", height: "16px", backgroundColor: color.toLowerCase(), borderRadius: "20%", border: "1px solid #ddd" }} />
                         {color}
                       </span>
                     </Button>
                   </Col>
                 ))}
               </Row>
+
               <h3>SIZE</h3>
               <Row gutter={10} className="options">
-                {product.sizes.map((size) => (
-                  <Col key={size}>
+                {availableSizes.map((size, index) => (
+                  <Col key={index}>
                     <Button
                       className={`box ${selectedSize === size ? "active" : ""}`}
                       onClick={() => handleSizeSelect(size)}
                     >
-                      {size}
+                      {size.replace("SIZE_", "")}
                     </Button>
                   </Col>
                 ))}
               </Row>
+
             </Col>
           </Row>
 
@@ -142,7 +187,7 @@ const ProductDetails = () => {
             </div>
             <div className="order-item">
               <span>Price</span>
-              <span>{discountedPrice}VNĐ</span>
+              <span>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}</span>
             </div>
             <Row justify="space-between" className='cart-summary__promo'>
               <Input placeholder="Promocode" className='cart-summary__promo-input' />
@@ -152,17 +197,17 @@ const ProductDetails = () => {
             </Row>
             <div className="order-total">
               <span>Sub Total</span>
-              <span>{(discountedPrice * quantity)}VNĐ</span>
+              <span>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price * quantity)}</span>
             </div>
 
             <div className="order-actions">
-              <Button icon={<ShoppingCartOutlined />} className="btn-buy-now">Buy Now</Button>
+              <Button icon={<ShoppingCartOutlined />} className="btn-buy-now" onClick={handleBuyNow}>Buy Now</Button>
               <Button icon={<ShoppingOutlined />} className="btn-add-to-cart" >Add To Cart </Button>
             </div>
           </div>
         </Col>
       </Row>
-      <Review reviews = {reviews}/>
+      <Review reviews={reviews} />
       <RelatedProducts />
     </div>
   );

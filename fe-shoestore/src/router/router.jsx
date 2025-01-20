@@ -29,10 +29,11 @@ export const routes = [
         breadcrumb: "Search", 
       },
       {
-        path: "product-detail",
+        path: "product-detail/:productID",
         element: <ProductDetail />,
-        breadcrumb: "ProductDetail", 
+        breadcrumb: "ProductDetail",
       },
+      
       {
         path: "cart",
         element: <Cart />,

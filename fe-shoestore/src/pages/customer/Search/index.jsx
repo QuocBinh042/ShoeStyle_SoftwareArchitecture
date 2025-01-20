@@ -17,7 +17,7 @@ const Search = () => {
     colors: [],
     sizes: [],
     priceRange: null,
-    sortBy: null, // Thêm sortBy vào filters
+    sortBy: null, 
   });
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -44,7 +44,7 @@ const Search = () => {
   };
 
   useEffect(() => {
-    loadAllProducts(currentPage); // Khi mới load, sẽ tải tất cả sản phẩm ở trang 1
+    loadAllProducts(currentPage); 
   }, []);
 
   const handleSortChange = (sortBy) => {
@@ -72,7 +72,6 @@ const Search = () => {
       !updatedFilters.priceRange &&
       !updatedFilters.sortBy
     ) {
-      // Nếu không có bộ lọc nào, tải lại tất cả sản phẩm
       loadAllProducts(page);
       return;
     }
@@ -90,7 +89,7 @@ const Search = () => {
 
 
     try {
-      const { products, total } = await fetchFilteredProducts(params, page); // Truyền thêm page vào
+      const { products, total } = await fetchFilteredProducts(params, page); 
 
       if (Array.isArray(products) && products.length > 0) {
         setProducts(products);
