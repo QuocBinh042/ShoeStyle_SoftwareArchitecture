@@ -3,25 +3,25 @@ package com.shoestore.Server.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
 @Entity
-@Table
+@Table(name = "Promotion")
 public class Promotion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "promotionID")
     private int promotionID;
     private String name;
     private String description;
-    private LocalDate startDate;
-    private LocalDate endDate;
-    @Column(name = "promotionType")
-    private String promotionType;
-    @Column(name = "promotionValue")
-    private String promotionValue;
-    @OneToMany(mappedBy = "promotion")
-    private List<Product> products;
+    private String discountType;
+    private BigDecimal discountValue;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
+    private boolean status;
+
 }
+

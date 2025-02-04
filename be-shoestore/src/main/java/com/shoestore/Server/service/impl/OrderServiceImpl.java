@@ -156,4 +156,15 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findByCode(code);
     }
 
+    @Override
+    public int getOrderCountByUserId(int id) {
+        return orderRepository.countOrdersByUserId(id);
+    }
+
+    @Override
+    public Double sumTotalAmountByUserId(int id) {
+        Double total = orderRepository.sumTotalAmountByUserId(id);
+        return total != null ? total : 0.0;
+    }
+
 }

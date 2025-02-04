@@ -11,3 +11,7 @@ export const getVnPayUrl = async (price,code) => {
     const data = await fetchData(`payment/vn-pay/create-info?price=${price}&code=${code}`);
     return data
 };
+export const fetcPaymentByOrder = async (id) => {
+    const data = await fetchData(`payment/by-order-id/${id}`);
+    return data;
+};

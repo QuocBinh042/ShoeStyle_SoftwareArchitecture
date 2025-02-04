@@ -16,6 +16,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "userID")
     private int userID;
+    @Column(name = "name", nullable = false, columnDefinition = "NVARCHAR(255)")
     private String name;
     private String email;
     @OneToMany(mappedBy = "user")

@@ -30,12 +30,14 @@ public class Order {
     @JsonIgnore
     private Voucher voucher;
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @Column(nullable = true)
     @JsonIgnore
     private List<OrderDetail> orderDetails;
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     @JsonIgnore
     private Payment payment;
     private String shippingAddress;
+    private String typePayment;
     @ManyToOne
     @JoinColumn(name = "userID")
     private User user;

@@ -14,8 +14,7 @@ public interface ProductDetailService {
     public ProductDetail addProductDetail(ProductDetail productDetail);
 
     List<ProductDetail> getByProductId(int productId);
-
-
+//    ProductDetail getByOrderDetailId(int id);
     ProductDetail save(ProductDetail productDetail);
     ProductDetail getProductDetailById(int id);
     public ProductDetail getProductDetailByProductIdAndColorAndSize(int productId, Color color, Size size);

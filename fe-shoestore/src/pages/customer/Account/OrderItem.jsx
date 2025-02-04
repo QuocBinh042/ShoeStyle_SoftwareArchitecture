@@ -6,11 +6,10 @@ function OrderItem({ order }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
-
   return (
     <>
       <Card
-        title={`Order ID: #${order.id}`}
+        title={`Order: #${order.code}`}
         extra={<Button onClick={showModal}>View Detail</Button>}
       >
         <div style={styles.row}>
@@ -24,7 +23,7 @@ function OrderItem({ order }) {
             <p><strong>Shipping Address:</strong> {order.shippingAddress}</p>
           </div>
 
-          <div style={styles.leftColumn}>
+          {/* <div style={styles.leftColumn}>
             <Image src={order.details.image} width={150} style={styles.image} />
             <div style={styles.details}>
               <h3 style={styles.name}>{order.details.name}</h3>
@@ -37,7 +36,7 @@ function OrderItem({ order }) {
                 <span>Total: {order.total}</span>
               </div>
             </div>
-          </div>
+          </div> */}
           
         </div>
       </Card>

@@ -31,7 +31,16 @@ public class OrderDetailController {
     private ProductDetailService productDetailService;
     @Autowired
     private OrderService orderService;
-
+    @GetMapping("/by-order-id/{order-id}")
+    public ResponseEntity<List<OrderDetail>> getOrderDetailByOrder(@PathVariable("order-id") int id) {
+        try {
+            List<OrderDetail> orderDetails=orderDetailService.findByOrderID(id);
+            return ResponseEntity.ok(orderDetails);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
     @PostMapping("/add")
     public ResponseEntity<OrderDetail> addProductDetail(@RequestBody OrderDetail orderDetail) {
         System.out.println(orderDetail);
@@ -70,13 +79,6 @@ public class OrderDetailController {
         }
         List<Product> products = orderDetailService.getTopSellingProducts(startDate, endDate, limit);
         return ResponseEntity.ok(products);
-    }
-
-    // API lấy thông tin chi tiết đơn hàng theo orderID
-    @GetMapping("/by-order-id/{order-id}")
-    public ResponseEntity<Map<String, Object>> getOrderDetailByOrderID(@PathVariable("order-id") Long orderID) {
-        Map<String, Object> orderDetail = orderDetailService.fetchOrderDetailByOrderID(orderID);
-        return ResponseEntity.ok(orderDetail);
     }
 
 

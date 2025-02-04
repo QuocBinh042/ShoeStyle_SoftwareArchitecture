@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams,useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Row, Col, Button, Rate, InputNumber, Image, Tag, Input, Modal } from "antd";
 import "./ProductDetail.scss";
 import { ShoppingCartOutlined, ShoppingOutlined } from "@ant-design/icons";
@@ -7,6 +7,7 @@ import RelatedProducts from "./RelatedProducts";
 import Review from "./Review";
 import { fetchProductDetailByProductId } from "../../../services/productDetailService";
 import { fetchProductById, fetchProductByProductDetailId } from "../../../services/productService";
+import { addCartItem } from "../../../services/cartItemService";
 const ProductDetails = () => {
   const navigate = useNavigate();
   const { productID } = useParams();
@@ -17,7 +18,8 @@ const ProductDetails = () => {
   const [selectedColor, setSelectedColor] = useState(null);
   const [availableColors, setAvailableColors] = useState([]);
   const [availableSizes, setAvailableSizes] = useState([]);
-  
+  const [selectedStock, setSelectedStock] = useState(null);
+
   useEffect(() => {
     const fetchProduct = async (productID) => {
       try {
@@ -29,48 +31,52 @@ const ProductDetails = () => {
           setAvailableSizes([...new Set(details.productDetails.map(detail => detail.size))]);
         } else {
           console.error("Product or details not found");
-          setProduct(null); 
+          setProduct(null);
         }
       } catch (error) {
         console.error("Error fetching product:", error);
-        setProduct(null); 
+        setProduct(null);
       }
     };
-    
+
     if (productID) fetchProduct(productID);
   }, [productID]);
-  
+
 
   const handleBuyNow = () => {
-    if (!selectedColor || !selectedSize) {
+    if (!selectedSize) {
       Modal.error({ content: "Please select color and size!" });
       return;
     }
-    
+
     const selectedDetail = product?.productDetails?.find(
-      detail => detail.size === selectedSize && detail.color === selectedColor
+      detail => detail.size === selectedSize
     );
-  
+
+    if (quantity > selectedStock) {
+      Modal.error({ content: `Cannot buy more than ${selectedStock} items.` });
+      return;
+    }
     if (!selectedDetail) {
       Modal.error({ content: "Selected size and color combination is not available!" });
       return;
     }
-  
+
     const formattedItem = {
-      key: selectedDetail.productDetailID, 
+      key: selectedDetail.productDetailID,
       name: product?.productName || 'Unknown',
       price: product?.price || 0,
       quantity: quantity,
       color: selectedColor,
       size: selectedSize,
       image: product?.imageURL?.[0] || '',
-      stockQuantity: selectedDetail.stockQuantity, 
+      stockQuantity: selectedDetail.stockQuantity,
     };
-  
+
     const itemsToCheckout = [formattedItem];
     navigate("/cart/checkout", { state: { selectedItems: itemsToCheckout } });
   };
-  
+
   const reviews = [
     {
       author: "Renalda Aji",
@@ -89,15 +95,68 @@ const ProductDetails = () => {
 
   const handleSizeSelect = (size) => {
     setSelectedSize(size);
+    const sizeStock = product?.productDetails?.find(
+      (detail) => detail.size === size
+    )?.stockQuantity;
+
+    console.log(sizeStock)
+    setSelectedStock(sizeStock);
   };
 
   const handleColorSelect = (color) => {
     setSelectedColor(color);
   };
 
+  const handleAddToCart = () => {
+    if (!selectedSize) {
+      Modal.error({ content: "Please select both size!" });
+      return;
+    }
+
+    const selectedDetail = product?.productDetails?.find(
+      detail => detail.size === selectedSize
+    );
+
+    if (!selectedDetail) {
+      Modal.error({ content: "Selected size combination is not available!" });
+      return;
+    }
+
+    if (quantity > selectedStock) {
+      Modal.error({ content: `Cannot add more than ${selectedStock} items to the cart.` });
+      return;
+    }
+
+    const cartItem = {
+      id: {
+        cartId: 1,
+        productDetailId: selectedDetail.productDetailID,
+      },
+      quantity,
+      subTotal: product?.price * quantity,
+    };
+
+    console.log("Cart Item:", cartItem);
+    try {
+      addCartItem(cartItem)
+      Modal.success({ content: "Added to cart successfully!" });
+    } catch (error) {
+      Modal.error({
+        content: "Failed add to cart. Please try again.",
+      });
+    }
+
+  };
 
   const handleQuantityChange = (value) => {
-    setQuantity(value);
+    if (value > selectedStock) {
+      Modal.warning({
+        content: `Only ${selectedStock} items are available in stock.`,
+      });
+      setQuantity(1);
+    } else {
+      setQuantity(value);
+    }
   };
 
   return (
@@ -122,7 +181,7 @@ const ProductDetails = () => {
               </Row>
             </Col>
             <Col span={13} className="product-info">
-            <h3>{product?.brand?.name || "Unknown Brand"} / {product?.category?.name || "Unknown Category"}</h3>
+              <h3>{product?.brand?.name || "Unknown Brand"} / {product?.category?.name || "Unknown Category"}</h3>
 
 
               <h1>{product?.productName}</h1>
@@ -131,8 +190,8 @@ const ProductDetails = () => {
                 <span className="original-price">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}</span>
                 {product.price > 0 && <Tag color="green">{product?.price}%</Tag>}
               </div>
-              <Rate allowHalf defaultValue={product?.rate} disabled></Rate>
-              <span> {product?.reviewCount} reviews</span>
+              {/* <Rate allowHalf defaultValue={product?.rate} disabled></Rate>
+              <span>Stock: </span> */}
               <h3>DESCRIPTION</h3>
               <span>{product?.description}</span>
               <h3>COLOR</h3>
@@ -165,6 +224,12 @@ const ProductDetails = () => {
                   </Col>
                 ))}
               </Row>
+              {selectedSize && (
+                <div style={{ marginTop: '10px' }}>
+                  <span>Stock for size {selectedSize.replace("SIZE_", "")}: </span>
+                  <strong>{selectedStock}</strong>
+                </div>
+              )}
 
             </Col>
           </Row>
@@ -175,15 +240,24 @@ const ProductDetails = () => {
             <h3>Order Details</h3>
             <div className="order-item">
               <span>Quantity</span>
-              <InputNumber min={1} max={10} value={quantity} onChange={handleQuantityChange} />
+              <InputNumber
+                min={1}
+                // max={selectedStock || 1} 
+                value={quantity}
+                onChange={handleQuantityChange}
+                disabled={!selectedSize}
+              />
             </div>
-            <div className="order-item">
+            {/* <div className="order-item">
               <span>Color</span>
               <span>{selectedColor}</span>
-            </div>
+            </div> */}
             <div className="order-item">
               <span>Size</span>
-              <span>{selectedSize}</span>
+              <span>
+                {selectedSize ? selectedSize.replace("SIZE_", "") : "No size selected"}
+              </span>
+
             </div>
             <div className="order-item">
               <span>Price</span>
@@ -202,7 +276,7 @@ const ProductDetails = () => {
 
             <div className="order-actions">
               <Button icon={<ShoppingCartOutlined />} className="btn-buy-now" onClick={handleBuyNow}>Buy Now</Button>
-              <Button icon={<ShoppingOutlined />} className="btn-add-to-cart" >Add To Cart </Button>
+              <Button icon={<ShoppingOutlined />} className="btn-add-to-cart" onClick={handleAddToCart} >Add To Cart </Button>
             </div>
           </div>
         </Col>

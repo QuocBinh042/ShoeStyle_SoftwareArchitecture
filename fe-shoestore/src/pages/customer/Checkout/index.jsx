@@ -17,14 +17,13 @@ const Checkout = () => {
   const [shippingMethod, setShippingMethod] = useState("Normal");
   const [paymentMethod, setPaymentMethod] = useState(null);
   const [modalData, setModalData] = useState(null);
-  console.log("Nhận dc:"+selectedItems)
   useEffect(() => {
     const fetchProductDetails = async () => {
       const details = await Promise.all(
         selectedItems.map(async (item) => {
           const productDetailId = item.key
-          const detail = await fetchProductDetailById(productDetailId); 
-          return { ...item, detail }; 
+          const detail = await fetchProductDetailById(productDetailId);
+          return { ...item, detail };
         })
       );
       setProductDetails(details);
@@ -51,7 +50,8 @@ const Checkout = () => {
       feeShip: shippingCost,
       shippingAddress: `${infoUser.address.street}, ${infoUser.address.ward}, ${infoUser.address.district}, ${infoUser.address.city}`,
       user: { userID: 1 },
-      code: orderCode
+      code: orderCode,
+      typePayment: paymentMethod === "VNPay" ? "VNPay" : "Cash on Delivery",
     };
 
     try {
@@ -62,10 +62,11 @@ const Checkout = () => {
         // Add order details
         await Promise.all(
           productDetails.map(async (product) => {
+            const productDetail=await fetchProductDetailById(product.detail.productDetailID)
             const orderDetail = {
               quantity: product.quantity,
               price: product.price,
-              productDetail: { productDetailID: product.detail.productDetailID },
+              productDetail:productDetail,
               order: { orderID },
             };
             await addOrderDetails(orderDetail);
@@ -80,21 +81,21 @@ const Checkout = () => {
         };
         await addPayment(payment);
         let vnPayUrl = null;
-        if (paymentMethod === "vnpay") {
-          const vnPayResponse = await getVnPayUrl(totalCost,orderCode);
+        if (paymentMethod === "VNPay") {
+          const vnPayResponse = await getVnPayUrl(totalCost, orderCode);
           vnPayUrl = vnPayResponse.paymentUrl;
         }
         // Set modal data
         setModalData({
           email: infoUser.email,
           transactionDate: new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" }),
-          paymentMethod: paymentMethod === "vnpay" ? "VNPay" : "Cash on Delivery",
+          paymentMethod: paymentMethod === "VNPay" ? "VNPay" : "Cash on Delivery",
           shippingMethod: shippingMethod === "Express" ? "Express delivery (1-3 business days)" : "Normal delivery (3-5 business days)",
           products: productDetails,
           subtotal: productDetails.reduce((total, product) => total + product.quantity * product.price, 0),
           shippingCost: shippingCost,
           total: totalCost,
-          vnPayUrl, 
+          vnPayUrl,
         });
         setIsModalVisible(true)
       }
@@ -191,10 +192,10 @@ const Checkout = () => {
           value={paymentMethod}
           onChange={(e) => setPaymentMethod(e.target.value)}
         >
-          <Radio value="vnpay">
+          <Radio value="VNPay">
             <img src={logoVNPAY} className="payment-logo" /> VNPay
           </Radio>
-          <Radio value="cod">Cash on Delivery</Radio>
+          <Radio value="Cod">Cash on Delivery</Radio>
         </Radio.Group>
       ),
     },
@@ -230,7 +231,7 @@ const Checkout = () => {
                   <Image src={product.image} className="checkout-summary__image" width={120} />
                   <div className="checkout-summary__details">
                     <p className="checkout-summary__product-name">{product.name}</p>
-                    <p>{`${product.detail.color} / ${product.detail.size}`}</p>
+                    <p>{`${product.detail.color} / ${product.detail.size.replace("SIZE_", "")}`}</p>
                     <p>Quantity: {product.quantity}</p>
                   </div>
                   <p className="checkout-summary__product-price">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.quantity * product.price)}</p>

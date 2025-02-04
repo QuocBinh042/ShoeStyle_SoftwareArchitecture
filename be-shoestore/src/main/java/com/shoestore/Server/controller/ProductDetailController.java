@@ -69,6 +69,13 @@ public class ProductDetailController {
         response.put("productDetails",productDetails);
         return ResponseEntity.ok(response);
     }
+    @GetMapping("/by-order-detail-id/{id}")
+    public ResponseEntity<Map<String,Object>> getProductDetailsByOrderDetailId(@PathVariable("id") int id) {
+        List<ProductDetail> productDetails=productDetailService.getByProductId(id);
+        Map<String,Object> response= new HashMap<>();
+        response.put("productDetails",productDetails);
+        return ResponseEntity.ok(response);
+    }
     @GetMapping("/{id}")
     public ResponseEntity<ProductDetail> getProductDetailsById(@PathVariable int id) {
         ProductDetail productDetail=productDetailService.getProductDetailById(id);

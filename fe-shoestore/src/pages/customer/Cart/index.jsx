@@ -114,8 +114,8 @@ const Cart = () => {
     const updatedQuantity = product.quantity;
     const updatedData = {
       id: {
-        cartId: product.key.split("-")[0],
-        productDetailId: product.key.split("-")[1],
+        cartId: 1,
+        productDetailId: product.key,
       },
       quantity: updatedQuantity,
       subTotal: updatedQuantity * product.price,
@@ -171,8 +171,8 @@ const Cart = () => {
 
   //Delete cartItem
   const handleRemove = (key) => {
-    const cartId = key.split("-")[0];
-    const productDetailId = key.split("-")[1];
+    const cartId = 1;
+    const productDetailId = key;
     deleteCartItem(cartId, productDetailId)
       .then((result) => {
         if (result === 200) {

@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@ant-design/icons": "^5.5.2",
+    "@ant-design/plots": "^2.3.3",
     "antd": "^5.22.7",
     "cloudinary": "^2.5.1",
     "cra-template": "1.2.0",

@@ -1,50 +1,79 @@
-
-
-import React, { useState } from "react";
-import { Card, Button, Modal, List, Tag, Typography } from "antd";
-import AddressSelector from "./AddressSelector";
+import React, { useEffect, useState } from "react";
+import { Card, Button, Modal, List, Tag, Typography, message } from "antd";
+import AddressAddForm from "./AddressAddForm ";
+import AddressEditForm from "./AddressEditForm"; // Import AddressEditForm
+import { fetchAddressByUser, deleteAddress } from "../../../services/addressService";
 
 const { Text } = Typography;
+const { confirm } = Modal;
 
 const AddressManagement = () => {
-  const [addresses, setAddresses] = useState([
-    {
-      id: 1,
-      type: "Home",
-      name: "Malik Wiwoho",
-      phone: "+44 - 7100 - 2012 - 03",
-      address: "HCM",
-      isDefault: true,
-    },
-    {
-      id: 2,
-      type: "Office",
-      name: "Malik Wiwoho",
-      phone: "+44 - 7100 - 2012 - 03",
-      address: " USA",
-      isDefault: false,
-    },
-  ]);
-
+  const [addresses, setAddresses] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [editAddress, setEditAddress] = useState(null); // Địa chỉ đang chỉnh sửa
 
-  // Function để thêm địa chỉ mới
+  useEffect(() => {
+    loadAddressUser(1);
+  }, []);
+
+  const loadAddressUser = async (userId) => {
+    try {
+      const fetchAddress = await fetchAddressByUser(userId);
+      setAddresses(fetchAddress);
+    } catch (error) {
+      console.error("Failed to load addresses:", error);
+    }
+  };
+
+  const handleDeleteAddress = async (id) => {
+    try {
+      await deleteAddress(id);
+      setAddresses(addresses.filter((address) => address.addressID !== id));
+      message.success("Address deleted successfully.");
+    } catch (error) {
+      console.error("Failed to delete address:", error);
+      message.error("Failed to delete address.");
+    }
+  };
+
+  const showConfirmDelete = (id) => {
+    confirm({
+      title: "Are you sure you want to delete this address?",
+      content: "This action cannot be undone.",
+      okText: "Yes, Delete",
+      okType: "danger",
+      cancelText: "Cancel",
+      onOk: () => handleDeleteAddress(id),
+    });
+  };
+
   const handleAddAddress = (newAddress) => {
-    setAddresses([
-      ...addresses,
-      {
-        id: addresses.length + 1,
-        ...newAddress,
-      },
-    ]);
-    setIsModalVisible(false); 
+    loadAddressUser(1)
+    setAddresses([...addresses, { addressID: addresses.length + 1, ...newAddress }]);
+
+    setIsModalVisible(false);
+  };
+
+  const handleEditAddress = (updatedAddress) => {
+    loadAddressUser(1)
+    setAddresses(
+      addresses.map((addr) =>
+        addr.addressID === updatedAddress.addressID ? updatedAddress : addr
+      )
+    );
+    setIsModalVisible(false);
+    setEditAddress(null);
+  };
+
+  const openModal = (address = null) => {
+    setEditAddress(address); // Nếu address là null, nghĩa là chế độ thêm mới
+    setIsModalVisible(true);
   };
 
   return (
     <div style={{ padding: "20px" }}>
       <div style={{ display: "flex", justifyContent: "end", marginBottom: "20px" }}>
-        {/* <h2>Address</h2> */}
-        <Button type="primary" onClick={() => setIsModalVisible(true)}>
+        <Button type="primary" onClick={() => openModal()}>
           Add New Address
         </Button>
       </div>
@@ -62,19 +91,25 @@ const AddressManagement = () => {
             >
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <Text strong>{item.type}</Text>
-                {item.isDefault && <Tag color="blue">Default</Tag>}
+                {item.default && <Tag color="blue">Default</Tag>}
               </div>
               <p>
-                <Text strong>{item.name}</Text>
+                <Text strong>{item.fullName}</Text>
                 <br />
                 <Text>{item.phone}</Text>
                 <br />
-                <Text>{item.address}</Text>
+                <Text>{item.street}, {item.ward}, {item.district}, {item.city}</Text>
               </p>
               <div style={{ display: "flex", justifyContent: "end", alignItems: "center" }}>
                 <div>
-                  <Button type="link">Edit</Button>
-                  <Button type="link" danger>
+                  <Button type="link" onClick={() => openModal(item)}>
+                    Edit
+                  </Button>
+                  <Button
+                    type="link"
+                    danger
+                    onClick={() => showConfirmDelete(item.addressID)}
+                  >
                     Delete
                   </Button>
                 </div>
@@ -84,13 +119,17 @@ const AddressManagement = () => {
         )}
       />
       <Modal
-        title="Add New Address"
+        title={editAddress ? "Edit Address" : "Add New Address"}
         open={isModalVisible}
         width={500}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
       >
-        <AddressSelector onSubmit={handleAddAddress} />
+        {editAddress ? (
+          <AddressEditForm initialData={editAddress} onSubmit={handleEditAddress} />
+        ) : (
+          <AddressAddForm onSubmit={handleAddAddress} />
+        )}
       </Modal>
     </div>
   );

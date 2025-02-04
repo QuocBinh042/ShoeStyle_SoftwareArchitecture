@@ -49,4 +49,8 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
 
   List<Order> findByUser_UserID(int userID);
   Order findByCode(String code);
+  @Query("SELECT COUNT(o) FROM Order o WHERE o.user.userID = :userId")
+  int countOrdersByUserId(int userId);
+  @Query("SELECT SUM(o.total) FROM Order o WHERE o.user.userID = :userId")
+  Double sumTotalAmountByUserId(int userId);
 }

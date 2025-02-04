@@ -8,14 +8,11 @@ import {
 import { Layout, Menu, theme } from 'antd';
 import MyOrder from './MyOrder';
 import Address from './Address';
-
+import MyInfo from './MyInfo';
+import DashBoard from './Dashboard'
 const { Content, Sider } = Layout;
 
-// Dashboard Component (Example for demo)
-const Dashboard = () => <div>Dashboard Content</div>;
 
-// Account Info Component (Example for demo)
-const AccountInfo = () => <div>Account Info Content</div>;
 
 function getItem(label, key, icon) {
   return {
@@ -45,11 +42,11 @@ const Account = () => {
   const renderContent = () => {
     switch (selectedKey) {
       case '1':
-        return <Dashboard />;
+        return <DashBoard />;
       case '2':
         return <MyOrder />;
       case '3':
-        return <AccountInfo />;
+        return <MyInfo />;
       case '4':
         return <Address />;
       default:
