@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/vouchers")
+@RequestMapping("/api/voucher")
 public class VoucherController {
 
     @Autowired
@@ -29,7 +30,25 @@ public class VoucherController {
 
     @Autowired
     private VoucherService voucherService;
-
+    @GetMapping("/eligible")
+    public List<Voucher> getEligibleVouchers(@RequestParam BigDecimal orderValue) {
+        return voucherService.getEligibleVouchers(orderValue);
+    }
+    @GetMapping("/by-voucher-id/{id}")
+    public ResponseEntity<Voucher> getVoucherById(@PathVariable int id) {
+        Optional<Voucher> voucher = voucherRepository.findById(id);
+        if (voucher.isPresent()) {
+            return ResponseEntity.ok(voucher.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<String> deleteVoucher(@PathVariable("id") int id) {
+        voucherService.deleteVoucher(id);
+        System.out.println("voucher deleted  : ");
+        return ResponseEntity.ok("Voucher deleted");
+    }
 //    @GetMapping("/search")
 //    public ResponseEntity<Map<String, Object>> searchVouchers(
 //            @RequestParam(required = false) String startDate,
@@ -62,65 +81,52 @@ public class VoucherController {
 //        return ResponseEntity.ok(response);
 //    }
 
-    @PostMapping("/add")
-    public ResponseEntity<Voucher> addVoucher(@RequestBody Voucher voucherDTO) {
-        Voucher savedVoucher = voucherService.addVoucher(voucherDTO);
-        return ResponseEntity.ok(savedVoucher);
-    }
+//    @PostMapping("/add")
+//    public ResponseEntity<Voucher> addVoucher(@RequestBody Voucher voucherDTO) {
+//        Voucher savedVoucher = voucherService.addVoucher(voucherDTO);
+//        return ResponseEntity.ok(savedVoucher);
+//    }
 
     // Phương thức GET để lấy thông  tin voucher theo ID
-    @GetMapping("/{id}")
-    public ResponseEntity<Voucher> getVoucherById(@PathVariable int id) {
-        Optional<Voucher> voucher = voucherRepository.findById(id);
-        if (voucher.isPresent()) {
-            return ResponseEntity.ok(voucher.get());
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-    }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Voucher> updateVoucher(@PathVariable int id, @RequestBody Voucher voucher) {
-        Voucher updatedVoucher = voucherService.updateVoucher(id, voucher);
-        if (updatedVoucher != null) {
-            return ResponseEntity.ok(updatedVoucher);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
-    }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteVoucher(@PathVariable("id") int id) {
-        voucherService.deleteVoucher(id);
-        System.out.println("voucher deleted  : ");
-        return ResponseEntity.ok("Voucher deleted");
-    }
+//    @PutMapping("/{id}")
+//    public ResponseEntity<Voucher> updateVoucher(@PathVariable int id, @RequestBody Voucher voucher) {
+//        Voucher updatedVoucher = voucherService.updateVoucher(id, voucher);
+//        if (updatedVoucher != null) {
+//            return ResponseEntity.ok(updatedVoucher);
+//        } else {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+//        }
+//    }
 
-    @GetMapping
-    public ResponseEntity<Map<String, Object>> getVouchers(
-            @RequestParam(required = false, defaultValue = "all") String status,
-            @RequestParam(required = false, defaultValue = "") String search
-    ) {
-        // Lấy danh sách Voucher từ service
-        List<Voucher> vouchers;
 
-        // Nếu trạng thái là "all", gọi phương thức getAllVouchers từ service
-        if ("all".equals(status)) {
-            // Lấy tất cả các voucher và lọc theo search (nếu có)
-            vouchers = voucherService.getAllVouchers().stream()
-                    .filter(v -> v.getName().toLowerCase().contains(search.toLowerCase()))
-                    .collect(Collectors.toList());
-        } else {
-            // Nếu trạng thái không phải "all", gọi phương thức từ voucherRepository với status và search
-            vouchers = voucherRepository.findByStatusAndNameContainingIgnoreCase(status, search);
-        }
 
-        // Chuẩn bị response trả về cho client
-        Map<String, Object> response = new HashMap<>();
-        response.put("vouchers", vouchers);  // Danh sách voucher đã lọc
-
-        return ResponseEntity.ok(response);
-    }
+//    @GetMapping
+//    public ResponseEntity<Map<String, Object>> getVouchers(
+//            @RequestParam(required = false, defaultValue = "all") String status,
+//            @RequestParam(required = false, defaultValue = "") String search
+//    ) {
+//        // Lấy danh sách Voucher từ service
+//        List<Voucher> vouchers;
+//
+//        // Nếu trạng thái là "all", gọi phương thức getAllVouchers từ service
+//        if ("all".equals(status)) {
+//            // Lấy tất cả các voucher và lọc theo search (nếu có)
+//            vouchers = voucherService.getAllVouchers().stream()
+//                    .filter(v -> v.getName().toLowerCase().contains(search.toLowerCase()))
+//                    .collect(Collectors.toList());
+//        } else {
+//            // Nếu trạng thái không phải "all", gọi phương thức từ voucherRepository với status và search
+//            vouchers = voucherRepository.findByStatusAndNameContainingIgnoreCase(status, search);
+//        }
+//
+//        // Chuẩn bị response trả về cho client
+//        Map<String, Object> response = new HashMap<>();
+//        response.put("vouchers", vouchers);  // Danh sách voucher đã lọc
+//
+//        return ResponseEntity.ok(response);
+//    }
 
 
     @GetMapping("/search")

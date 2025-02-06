@@ -242,7 +242,7 @@ public class ProductController {
     }
 
     @GetMapping("/product/{id}")
-    public ResponseEntity<Product> getProductByIdForDetail(@PathVariable int id) {
+    public ResponseEntity<Product> getProductById(@PathVariable int id) {
         Product product = productService.getProductById(id);
         if (product != null) {
             return ResponseEntity.ok(product);
@@ -250,7 +250,7 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
-    @GetMapping("/product/by-product-details-id/{id}") // Ánh xạ HTTP GET
+    @GetMapping("/product/by-product-details-id/{id}") 
     public ResponseEntity<Product>  getProductsByProductDetails(@PathVariable int id){
         Product product=productService.getProductByProductDetailsId(id);
         System.out.println("Id:"+id);

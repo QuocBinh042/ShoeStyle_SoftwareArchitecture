@@ -19,4 +19,6 @@ public interface OrderService {
     Order addOrder(Order order);
     List<Order> findByUserId(int userId);
     Order findByCode(String orderCode);
+    int getOrderCountByUserId(int id);
+    Double sumTotalAmountByUserId(int id);
 }

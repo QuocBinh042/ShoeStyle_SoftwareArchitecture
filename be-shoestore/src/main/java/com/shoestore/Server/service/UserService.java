@@ -10,15 +10,12 @@ public interface UserService {
     public void save(User user);
 
     public User findByEmail(String email);
-
-    public List<User> findAll();
-
     public User addUser(User user);
     public void deleteUser(int userID);
     public List<User> getAllUsers();
     public User findUserById(int id);
     public List<User> searchUsers(String status, String tenRole, String username);
-    public User updateUser(int id, UserDTO user);
+    public User updateUser(int id, User user);
     public void saveUser(User user);
     public User findById(int id);
     public User getUserById(int id);

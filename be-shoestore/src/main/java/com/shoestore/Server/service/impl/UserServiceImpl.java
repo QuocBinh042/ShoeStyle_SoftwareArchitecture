@@ -48,16 +48,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> findAll() {
-        return userRepository.findAll();
-    }
-
-//    @Override
-//    public User findById(int id) {
-//        return userRepository.findById(id).orElse(null);
-//    }
-
-    @Override
     public List<User> getUserByName(String username) {
         return List.of();
     }
@@ -108,24 +98,21 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updateUser(int id, UserDTO updatedUser) {
+    public User updateUser(int id, User updatedUser) {
         // Tìm người dùng cũ từ database
         User existingUser = userRepository.findById(id).orElse(null);
 
         if (existingUser == null) {
             return null; // Hoặc ném ra exception nếu không tìm thấy
         }
-
-        // Cập nhật các trường cần thiết từ đối tượng updatedUser vào existingUser
         existingUser.setName(updatedUser.getName());
         existingUser.setUserName(updatedUser.getUserName());
         existingUser.setPassword(updatedUser.getPassword());
         existingUser.setPhoneNumber(updatedUser.getPhoneNumber());
         existingUser.setEmail(updatedUser.getEmail());
         existingUser.setStatus(updatedUser.getStatus());
-        existingUser.setCI(updatedUser.getCi());
+        existingUser.setCI(updatedUser.getCI());
 
-        // Cập nhật vai trò từ UserDTO
         if (updatedUser.getRole() != null) {
             Role role = roleRepository.findById(updatedUser.getRole().getRoleID()).orElse(null);
             if (role != null) {

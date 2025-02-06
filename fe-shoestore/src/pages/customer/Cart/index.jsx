@@ -6,6 +6,7 @@ import { ArrowLeftOutlined, CheckCircleOutlined, DeleteOutlined, DownCircleFille
 import { fetchCartItemByCartId, updateCartItem, deleteCartItem } from "../../../services/cartItemService";
 import { fetchProductDetailById } from "../../../services/productDetailService";
 import { fetchProductByProductDetailId } from "../../../services/productService";
+import { getDiscountByProduct } from "../../../services/promotionService";
 const Cart = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -15,31 +16,6 @@ const Cart = () => {
   const [pageSize, setPageSize] = useState(3);
   const [totalItems, setTotalItems] = useState(0);
   const [isChanged, setIsChanged] = useState(false);
-  
-  // const handleSizeChange = (size, key) => {
-  //   const sizeKey = `SIZE_${size}`;  
-  //   const updatedItems = cartItems.map((item) =>
-  //     item.key === key ? { ...item, selectedSize: size, size: sizeKey } : item
-  //   );
-  //   console.log(updatedItems)
-  //   setCartItems(updatedItems);
-  // };
-  // const colorOptions = [
-  //   { value: "RED", label: "RED" },
-  //   { value: "GREEN", label: "GREEN" },
-  //   { value: "BLUE", label: "BLUE" },
-  //   { value: "YELLOW", label: "YELLOW" },
-  //   { value: "BLACK", label: "BLACK" },
-  //   { value: "WHITE", label: "WHITE" },
-  //   { value: "PINK", label: "PINK" },
-  // ];
-  // const handleColorChange = (color, key) => {
-  //   const updatedItems = cartItems.map((item) =>
-  //     item.key === key ? { ...item, colors: color } : item
-  //   );
-  //   console.log(updatedItems)
-  //   setCartItems(updatedItems);
-  // };
 
   const loadCartItemByUser = async (id, page = 1, size = 3) => {
     const data = await fetchCartItemByCartId(id, page, size);
@@ -53,14 +29,17 @@ const Cart = () => {
           fetchProductByProductDetailId(detail.productDetailID)
         )
       );
+      const discountPrices = await Promise.all(
+        products.map(product => getDiscountByProduct(product.productID))
+      );
       const enrichedCartItems = data.cartItems.map((cartItem, index) => ({
-        key: `${cartItem.id.cartId}-${cartItem.id.productDetailId}`,
+        key: cartItem.id.productDetailId,
         name: products[index].productName,
         size: productDetails[index].size,
         colors: productDetails[index].color,
         quantity: cartItem.quantity,
         initialQuantity: cartItem.quantity,
-        price: products[index].price,
+        price: discountPrices[index] ,
         image: products[index].imageURL,
         stockQuantity: productDetails[index].stockQuantity,
         isChecked: false,
@@ -90,6 +69,7 @@ const Cart = () => {
       });
       return;
     }
+    console.log(selectedItems)
     navigate("/cart/checkout", { state: { selectedItems } });
   };
   //Check item
@@ -113,8 +93,8 @@ const Cart = () => {
     const updatedQuantity = product.quantity;
     const updatedData = {
       id: {
-        cartId: product.key.split("-")[0],
-        productDetailId: product.key.split("-")[1],
+        cartId: 1,
+        productDetailId: product.key,
       },
       quantity: updatedQuantity,
       subTotal: updatedQuantity * product.price,
@@ -126,8 +106,8 @@ const Cart = () => {
           if (item.key === product.key) {
             return {
               ...item,
-              initialQuantity: updatedQuantity, 
-              isChanged: false, 
+              initialQuantity: updatedQuantity,
+              isChanged: false,
             };
           }
           return item;
@@ -170,8 +150,8 @@ const Cart = () => {
 
   //Delete cartItem
   const handleRemove = (key) => {
-    const cartId = key.split("-")[0];
-    const productDetailId = key.split("-")[1];
+    const cartId = 1;
+    const productDetailId = key;
     deleteCartItem(cartId, productDetailId)
       .then((result) => {
         if (result === 200) {
@@ -296,10 +276,10 @@ const Cart = () => {
               type="text"
               onClick={() => handleUpdateButtonClick(product)}
               style={{
-                color: product.isChanged ? "#1890ff" : "#999", 
+                color: product.isChanged ? "#1890ff" : "#999",
                 fontWeight: product.isChanged ? "bold" : "normal",
               }}
-              disabled={!product.isChanged} 
+              disabled={!product.isChanged}
             >
               <CheckCircleOutlined /> Update
             </Button>

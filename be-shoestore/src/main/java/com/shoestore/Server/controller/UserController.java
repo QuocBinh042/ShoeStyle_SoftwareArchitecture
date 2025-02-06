@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/user")
 public class UserController {
   @Autowired
   private UserService userService;
@@ -55,9 +55,13 @@ public class UserController {
     return ResponseEntity.status(HttpStatus.CREATED)
             .body("User registered successfully");
   }
-
+  @GetMapping("/by-user-id/{id}")
+  public ResponseEntity<User> getUserById(@PathVariable int id) {
+    User user = userService.getUserById(id);
+    return user != null ? ResponseEntity.ok(user) : ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+  }
   // Tìm người dùng theo email
-  @GetMapping("/findByEmail")
+  @GetMapping("/by-email")
   public ResponseEntity<?> findByEmail(@RequestParam String email) {
     User user = userService.findByEmail(email);
     if (user != null) {
@@ -68,22 +72,13 @@ public class UserController {
   }
 
   // Lấy danh sách tất cả người dùng
-  @GetMapping("/findAll")
+  @GetMapping("/get-all")
   public ResponseEntity<?> findAllUsers() {
-    return ResponseEntity.ok(userService.findAll()); // Trả về danh sách tất cả người dùng
+    return ResponseEntity.ok(userService.getAllUsers());
   }
 
 
-
-// này của phương
-  @GetMapping("/users/list")
-  @ResponseBody
-  public ResponseEntity<List<User>> getAllUsers() {
-    List<User> users = userService.getAllUsers();
-    return ResponseEntity.ok(users); // Trả về JSON
-  }
-
-  @PostMapping("/users/add")
+  @PostMapping("/add")
   public ResponseEntity<Map<String, Object>> addUser(@RequestBody UserDTO userDTO) {
     try {
       // Chuyển UserDTO sang User
@@ -177,24 +172,7 @@ public class UserController {
     return ResponseEntity.ok(response);
   }
 
-  @PostMapping("/users/search")
-  public ResponseEntity<List<User>> timKiem(
-          @RequestParam(value = "name", required = false) String name,
-          @RequestParam(value = "roleName", required = false) String roleName,
-          @RequestParam(value = "status", required = false) String status) {
 
-    System.out.println("RoleName: " + roleName);
-    System.out.println("UserName: " + name);
-    System.out.println("Status: " + status);
-
-    List<User> users = userService.searchUsers(name, roleName, status);
-
-    if (users != null && !users.isEmpty()) {
-      return ResponseEntity.ok(users);  // Trả về danh sách người dùng dưới dạng JSON
-    } else {
-      return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Collections.emptyList());  // Trả về mã lỗi 404 nếu không tìm thấy
-    }
-  }
   @GetMapping("/users/search")
   public ResponseEntity<List<User>> searchUsers(
           @RequestParam(value = "name", required = false) String name,
@@ -203,26 +181,16 @@ public class UserController {
     List<User> users = userService.searchUsers(name, roleName, status);
     return ResponseEntity.ok(users); // Trả về JSON
   }
-  @GetMapping("/users/{id}")
-  public ResponseEntity<User> getUser(@PathVariable int id) {
-    User user = userService.getUserById(id);  // Giả sử bạn có phương thức này
-    return user != null ? ResponseEntity.ok(user) : ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-  }
 
-  @PutMapping(value = "/users/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<?> updateUser(@PathVariable int id, @RequestBody UserDTO updatedUser) {
 
-    // Kiểm tra người dùng có tồn tại không
+  @PutMapping(value = "/update/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<?> updateUser(@PathVariable int id, @RequestBody User user) {
     User existingUser = userService.getUserById(id);
 
     if (existingUser == null) {
       return ResponseEntity.notFound().build();
     }
-
-    // Cập nhật thông tin người dùng
-    User updated = userService.updateUser(id, updatedUser);
-
-    // Trả về người dùng đã được cập nhật
+    User updated = userService.updateUser(id, user);
     return ResponseEntity.ok(updated);
   }
 

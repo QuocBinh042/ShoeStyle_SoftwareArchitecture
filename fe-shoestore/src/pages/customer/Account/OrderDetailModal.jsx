@@ -2,31 +2,18 @@ import { Modal, Tabs, Timeline, Tag, Image, Steps, Divider } from "antd";
 import React from "react";
 
 function OrderDetailModal({ isOpen, onClose, order }) {
-  const orderHistory = [
-    {
-      status: "Order Placed",
-      time: "Oct 24, 2024",
-    },
-    {
-      status: "Processing",
-      time: "Oct 28, 2024",
-    },
-    {
-      status: "Shipped",
-      time: "Oct 30, 2024",
-      estimatedDelivery: "Estimated Delivery Date: Nov 01, 2024",
-    },
-    {
-      status: "Delivered",
-      time: "Nov 01, 2024",
-      details: "Shipped successfully!",
-    },  
-    
-  ];
+  if (!order) return null;
+  console.log(order)
+  // Tính tổng tiền dựa trên danh sách chi tiết
+  const calculateTotal = () =>
+    order.details.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
 
   return (
     <Modal
-      title={`Order #${order.id}`}
+      title={`Order #${order.code}`}
       open={isOpen}
       onCancel={onClose}
       footer={null}
@@ -34,44 +21,25 @@ function OrderDetailModal({ isOpen, onClose, order }) {
       centered
     >
       <div style={{ padding: "20px" }}>
-        {/* Progress Section */}
         <div style={{ marginBottom: 20 }}>
           <Steps
-            current={orderHistory.length - 1} // Đặt trạng thái hiện tại là trạng thái cuối cùng
+            current={order.orderHistory?.length - 1 || 0}
             direction="horizontal"
             style={{ marginBottom: 20 }}
           >
-            {orderHistory.map((item, index) => (
+            {order.orderHistory?.map((item, index) => (
               <Steps.Step
                 key={index}
                 title={item.status}
                 description={item.time}
-                status={index === orderHistory.length - 1 ? "finish" : "process"} // Màu xanh cho trạng thái cuối cùng
+                status={index === order.orderHistory.length - 1 ? "finish" : "process"}
               />
             ))}
           </Steps>
         </div>
-          <Divider/>
+        <Divider />
 
-        {/* Item Details Section */}
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ display: "flex", alignItems: "center", margin:0 }}>
-            <Image src={order.details.image} width={100} />
-            <div style={{ marginLeft: 20 }}>
-              <h3>{order.details.name}</h3>
-              <Tag color="black">{order.details.color}</Tag>
-              <Tag color="blue">{order.details.size}</Tag>
-              <Tag color="red">{order.details.price}</Tag>
-              <div style={{ marginTop: 10 }}>Quantity: {order.quantity}</div>
-              <div style={{ marginTop: 10 }}>
-                <b>Total:</b> {order.total}
-              </div>
-            </div>
-          </div>
-        </div>
-        <Divider/>
         <div style={{ marginBottom: 30 }}>
-          <h3 style={{margin:0}}>Shipping Details</h3>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <div>
               <h4>Ordered From</h4>
@@ -86,25 +54,67 @@ function OrderDetailModal({ isOpen, onClose, order }) {
             </div>
           </div>
         </div>
-        <Divider/>
+        <div style={{ marginBottom: 20 }}>
+          <h3 style={{ marginBottom:20 }}>Shipping Details</h3>
+          {order.details.map((detail, index) => (
+            <div
+              key={index}
+              style={{ display: "flex", alignItems: "center", marginBottom: 20 }}
+            >
+              <Image
+                src={detail.image}
+                width={100}
+                style={{ borderRadius: "5px" }}
+              />
+              <div style={{ marginLeft: 20 }}>
+                {/* <h3>{detail.name}</h3> */}
+                <Tag color={detail.color}>{detail.color}</Tag>
+                <Tag color="blue">{detail.size}</Tag>
+                <Tag color="red">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(detail.price)}</Tag>
+                <div style={{ marginTop: 10 }}>Quantity: {detail.quantity}</div>
+                <div style={{ marginTop: 10 }}>
+                  Subtotal:<b> {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(detail.price * detail.quantity)}</b>
+                </div>
+              </div>
+            </div>
+          ))}
+          <h5 style={{fontSize:18}}>Total price: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(calculateTotal())}</h5>
+        </div>
+        <Divider />
+
+        {/* Shipping Details */}
+        
+        <Divider />
+
+        {/* Payment Summary */}
         <div>
-          <h3 style={{margin:0}}>Payment Summary</h3>
+          <h3 style={{ margin: 0 }}>Payment Summary</h3>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <p>Payment Method:</p>
             <p>{order.paymentMethod}</p>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <p>Payment status:</p>
+            <p>{order.paymentStatus}</p>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
             <p>Shipping:</p>
-            <p>{order.shippingCost}</p>
+            <p> {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.feeShip)}</p>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <p>Discount:</p>
             <p>{order.discount}</p>
           </div>
-          <Divider/>
-          <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold" }}>
-            <p style={{fontSize:20}}>Total:</p>
-            <p style={{fontSize:20}}>{order.total}</p>
+          <Divider />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontWeight: "bold",
+            }}
+          >
+            <p style={{ fontSize: 20 }}>Total:</p>
+            <p style={{ fontSize: 20 }}> {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.total)}</p>
           </div>
         </div>
       </div>

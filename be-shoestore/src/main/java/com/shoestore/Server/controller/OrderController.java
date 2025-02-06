@@ -37,7 +37,7 @@ public class OrderController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Order> getOrderById(@PathVariable("id") int id) {
-       Order order=orderService.findById(id);
+        Order order = orderService.findById(id);
         return ResponseEntity.ok(order);
     }
 
@@ -130,28 +130,22 @@ public class OrderController {
         return orderService.getOrderStatistics();
     }
 
-    @GetMapping("/user/{user-id}")
-    public ResponseEntity<List<Map<String, Object>>> getOrdersByUserId(@PathVariable("user-id") int userId) {
+    @GetMapping("/by-user-id/{user-id}")
+    public ResponseEntity<List<Order>> getOrdersByUserId(@PathVariable("user-id") int userId) {
         try {
             List<Order> orders = orderService.findByUserId(userId);
-            List<Map<String, Object>> result = orders.stream()
-                    .map(order -> {
-                        Map<String, Object> map = new HashMap<>();
-                        map.put("orderID", order.getOrderID());
-                        map.put("dateCreated", order.getOrderDate());
-                        map.put("name", order.getUser().getName());
-                        map.put("totalPrice", order.getTotal());
-                        map.put("status", order.getStatus());
-                        return map;
-                    })
-                    .collect(Collectors.toList());
-            System.out.println(orders);
-            return ResponseEntity.ok(result);
+            return ResponseEntity.ok(orders);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-
+    @GetMapping("/count/{user-id}")
+    public int countUserOrders(@PathVariable("user-id") int id) {
+        return orderService.getOrderCountByUserId(id);
+    }
+    @GetMapping("/total-spent/{user-id}")
+    public Double getTotalSpent(@PathVariable("user-id") int id) {
+        return orderService.sumTotalAmountByUserId(id);
+    }
 }

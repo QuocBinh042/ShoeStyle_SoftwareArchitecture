@@ -8,14 +8,10 @@ import {
 import { Layout, Menu, theme } from 'antd';
 import MyOrder from './MyOrder';
 import Address from './Address';
-
+import DashBoard from './Dashboard'
 const { Content, Sider } = Layout;
 
-// Dashboard Component (Example for demo)
-const Dashboard = () => <div>Dashboard Content</div>;
 
-// Account Info Component (Example for demo)
-const AccountInfo = () => <div>Account Info Content</div>;
 
 function getItem(label, key, icon) {
   return {
@@ -28,8 +24,7 @@ function getItem(label, key, icon) {
 const items = [
   getItem('Dashboard', '1', <DesktopOutlined />),
   getItem('My Order', '2', <InboxOutlined />),
-  getItem('Account Info', '3', <UserOutlined />),
-  getItem('Address', '4', <UserOutlined />),
+  getItem('Address', '3', <UserOutlined />),
   getItem('Logout', '5', <LogoutOutlined />),
 ];
 
@@ -45,12 +40,10 @@ const Account = () => {
   const renderContent = () => {
     switch (selectedKey) {
       case '1':
-        return <Dashboard />;
+        return <DashBoard />;
       case '2':
         return <MyOrder />;
       case '3':
-        return <AccountInfo />;
-      case '4':
         return <Address />;
       default:
         return <div>Welcome to the Dashboard</div>;

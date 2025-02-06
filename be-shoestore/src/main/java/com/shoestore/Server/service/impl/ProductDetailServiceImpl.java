@@ -32,6 +32,11 @@ public class ProductDetailServiceImpl implements ProductDetailService {
 
     }
 
+//    @Override
+//    public ProductDetail getByOrderDetailId(int id) {
+//        return productDetailRepository.findByO;
+//    }
+
     @Override
     public ProductDetail save(ProductDetail productDetail) {
         // Kiểm tra tính hợp lệ (nếu cần)

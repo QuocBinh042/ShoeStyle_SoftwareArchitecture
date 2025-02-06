@@ -6,7 +6,7 @@ import "./Search.scss";
 import { Header } from 'antd/es/layout/layout';
 import ResultsHeader from './ResultHeader';
 import { fetchAllProducts, fetchFilteredProducts } from '../../../services/searchService';
-
+import { getDiscountByProduct } from '../../../services/promotionService';
 const { Sider, Content } = Layout;
 
 const Search = () => {
@@ -17,7 +17,7 @@ const Search = () => {
     colors: [],
     sizes: [],
     priceRange: null,
-    sortBy: null, // Thêm sortBy vào filters
+    sortBy: null,
   });
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -25,16 +25,26 @@ const Search = () => {
 
   const loadAllProducts = async (page) => {
     const data = await fetchAllProducts({ page });
-    if (data) {
-      setProducts(data.products || []);
+    if (data && Array.isArray(data.products)) {
+      const updatedProducts = await Promise.all(
+        data.products.map(async (product) => {
+          const discountPrice = await getDiscountByProduct(product.productID);
+          return {
+            ...product,
+            discountPrice: discountPrice && discountPrice < product.price ? discountPrice : null
+          };
+        })
+      );
+      setProducts(updatedProducts);
       setTotalProducts(data.total || 0);
+      console.log(updatedProducts)
     } else {
       console.log('No products received');
     }
   };
 
   const handlePageChange = async (page) => {
-    setCurrentPage(page); 
+    setCurrentPage(page);
 
     if (Object.values(filters).some(filter => filter)) {
       await handleFilterChange(filters, page);
@@ -44,7 +54,7 @@ const Search = () => {
   };
 
   useEffect(() => {
-    loadAllProducts(currentPage); // Khi mới load, sẽ tải tất cả sản phẩm ở trang 1
+    loadAllProducts(currentPage);
   }, []);
 
   const handleSortChange = (sortBy) => {
@@ -72,7 +82,6 @@ const Search = () => {
       !updatedFilters.priceRange &&
       !updatedFilters.sortBy
     ) {
-      // Nếu không có bộ lọc nào, tải lại tất cả sản phẩm
       loadAllProducts(page);
       return;
     }
@@ -87,17 +96,26 @@ const Search = () => {
       sortBy: updatedFilters.sortBy || null,
     };
 
-
-
     try {
-      const { products, total } = await fetchFilteredProducts(params, page); // Truyền thêm page vào
+      const { products, total } = await fetchFilteredProducts(params, page);
 
       if (Array.isArray(products) && products.length > 0) {
-        setProducts(products);
-        setTotalProducts(total); 
+        // Lấy giá khuyến mãi
+        const updatedProducts = await Promise.all(
+          products.map(async (product) => {
+            const discountPrice = await getDiscountByProduct(product.productID);
+            return {
+              ...product,
+              discountPrice: discountPrice && discountPrice < product.price ? discountPrice : null
+            };
+          })
+        );
+
+        setProducts(updatedProducts);
+        setTotalProducts(total);
       } else {
         setProducts([]);
-        setTotalProducts(0); 
+        setTotalProducts(0);
         console.log('No products found for these filters');
       }
     } catch (error) {

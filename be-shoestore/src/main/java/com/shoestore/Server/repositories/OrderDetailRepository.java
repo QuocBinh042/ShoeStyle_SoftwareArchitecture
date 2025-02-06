@@ -9,14 +9,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.awt.print.Pageable;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-
+@Repository
 public interface OrderDetailRepository extends JpaRepository<OrderDetail, Integer> {
-
+    List<OrderDetail> findByOrder_OrderID(int id);
     @Query("SELECT od FROM OrderDetail od WHERE od.productDetail.productDetailID = :productDetailID AND od.order.orderID = :orderID")
     List<OrderDetail> findByProductIDAndOrderID(@Param("productDetailID") int productID, @Param("orderID") int orderID);
 

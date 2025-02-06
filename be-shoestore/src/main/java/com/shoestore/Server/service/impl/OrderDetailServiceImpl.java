@@ -179,13 +179,15 @@ public class OrderDetailServiceImpl implements OrderDetailService {
     }
 
 
-    @Override
-    public List<OrderDetail> findByProductIDAndOrderID(int productID, int orderID) {
-        return orderDetailRepository.findByProductIDAndOrderID(productID, orderID);
-    }
+
     @Override
     public OrderDetail save(OrderDetail orderDetail) {
         return orderDetailRepository.save(orderDetail);
+    }
+
+    @Override
+    public List<OrderDetail> findByOrderID(int orderID) {
+        return orderDetailRepository.findByOrder_OrderID(orderID);
     }
 //    @Override
 //    public Optional<OrderDetail> findByProductIDAndOrderIDDelete(int productID, int orderID) {
