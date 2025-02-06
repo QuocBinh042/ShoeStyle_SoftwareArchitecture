@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Radio, Button, Image, Table, Steps, Divider, Modal } from "antd";
+import { Radio, Button, Image, Table, Steps, Divider, Modal, Card } from "antd";
+import { CarOutlined, TagOutlined } from "@ant-design/icons";
 import "./Checkout.scss";
 import OrderSuccess from "../Order";
 import { useLocation } from "react-router-dom";
@@ -8,15 +9,19 @@ import { addOrder } from "../../../services/orderService";
 import { addOrderDetails } from "../../../services/orderDetailService";
 import logoVNPAY from '../../../assets/images/logos/vnpay_logo.png'
 import { addPayment, getVnPayUrl } from "../../../services/paymentService";
+import { fetchVoucherWithPrice } from "../../../services/voucherService";
 const Checkout = () => {
   const location = useLocation();
   const selectedItems = location.state?.selectedItems || [];
   const [current, setCurrent] = useState(0);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isModalVoucherVisible, setisModalVoucherVisible] = useState(false);
   const [productDetails, setProductDetails] = useState([]);
   const [shippingMethod, setShippingMethod] = useState("Normal");
   const [paymentMethod, setPaymentMethod] = useState(null);
   const [modalData, setModalData] = useState(null);
+  const [vouchers, setVouchers] = useState([]); // State lưu danh sách voucher
+  const [selectedVoucher, setSelectedVoucher] = useState(null);
   useEffect(() => {
     const fetchProductDetails = async () => {
       const details = await Promise.all(
@@ -31,8 +36,47 @@ const Checkout = () => {
 
     fetchProductDetails();
   }, [selectedItems]);
-  const shippingCost = shippingMethod === "Express" ? 30000 : 0;
-  const totalCost = productDetails.reduce((total, product) => total + product.quantity * product.price, 0) + shippingCost;
+  const calculateTotalCost = () => {
+    let subtotal = productDetails.reduce((total, product) => total + product.quantity * product.price, 0);
+    let shippingCost = shippingMethod === "Express" ? 30000 : 0;
+    let discount = 0;
+
+    if (selectedVoucher) {
+      if (selectedVoucher.freeShipping) {
+        discount = shippingCost  // Áp dụng miễn phí vận chuyển
+      } else {
+        if (selectedVoucher.discountType === "PERCENT") {
+          discount = (selectedVoucher.discountValue / 100) * subtotal;
+        } else if (selectedVoucher.discountType === "FIXED") {
+          discount = selectedVoucher.discountValue;
+        }
+      }
+    }
+    // console.log("Calculated discount:", (selectedVoucher?.discountValue / 100) * subtotal);
+    // console.log(subtotal)
+    // console.log(shippingCost)
+    // console.log("GiảM GIÁ"+ discount)
+
+
+    return subtotal + shippingCost - discount;
+  };
+
+  // Cập nhật totalCost
+  const totalCost = calculateTotalCost();
+
+  const shippingCost = shippingMethod === "Express" ? 30000 : 0
+  useEffect(() => {
+    const fetchVouchers = async () => {
+      try {
+        const response = await fetchVoucherWithPrice(totalCost);
+        setVouchers(response || []);
+      } catch (error) {
+        console.error("Error fetching vouchers:", error);
+      }
+    };
+
+    if (totalCost > 0) fetchVouchers(); // Gọi API nếu đơn hàng có giá trị
+  }, [totalCost]);
   const createOrder = async () => {
     if (!paymentMethod) {
       Modal.error({
@@ -62,11 +106,11 @@ const Checkout = () => {
         // Add order details
         await Promise.all(
           productDetails.map(async (product) => {
-            const productDetail=await fetchProductDetailById(product.detail.productDetailID)
+            const productDetail = await fetchProductDetailById(product.detail.productDetailID)
             const orderDetail = {
               quantity: product.quantity,
               price: product.price,
-              productDetail:productDetail,
+              productDetail: productDetail,
               order: { orderID },
             };
             await addOrderDetails(orderDetail);
@@ -147,6 +191,38 @@ const Checkout = () => {
       ),
       action: null,
     },
+    {
+      key: '4',
+      title: 'Select a Voucher',
+      content: (
+        <>
+          {selectedVoucher ? (
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              {selectedVoucher.freeShipping ? (
+                <>
+                  <CarOutlined style={{ color: "green" }} />
+                  <span>{selectedVoucher.code} - Freeship</span>
+                </>
+              ) : selectedVoucher.discountType === "PERCENT" ? (
+                <>
+                  <TagOutlined style={{ color: "red" }} />
+                  <span>{selectedVoucher.code} - {selectedVoucher.discountValue}% off coupon</span>
+                </>
+              ) : (
+                <>
+                  <TagOutlined style={{ color: "red" }} />
+                  <span>{selectedVoucher.code} - {selectedVoucher.discountValue?.toLocaleString() || "0"}₫ off coupon</span>
+                </>
+              )}
+            </div>
+          ) : (
+            <p>No voucher selected</p>
+          )}
+
+        </>
+      ),
+      action: <Button type="link" onClick={() => setisModalVoucherVisible(true)}>Change</Button>
+    },
   ];
 
   const columns = [
@@ -214,7 +290,6 @@ const Checkout = () => {
                 key={index}
                 title={<span className="custom-step-title">{step.title}</span>}
                 description={step.content}
-                // description={current === index ? step.content : null} 
                 onClick={() => setCurrent(index)} />
             ))}
           </Steps>
@@ -252,7 +327,22 @@ const Checkout = () => {
             <p className="checkout-summary__shipping">Shipping
               <span>{shippingMethod === "Express" ? "30.000 ₫" : "FREE"}</span>
             </p>
-            <p className="checkout-summary__discount">Discount price<span>0</span></p>
+            <p className="checkout-summary__discount">
+              Discount
+              <span>
+                {selectedVoucher ? (
+                  selectedVoucher.freeShipping ? (
+                    `- ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(shippingCost)} (Ship)`
+                  ) : selectedVoucher.discountType === "PERCENT" ? (
+                    `- ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
+                      (selectedVoucher.discountValue / 100) * productDetails.reduce((total, product) => total + product.quantity * product.price, 0)
+                    )} (${selectedVoucher.discountValue}%)`
+                  ) : (
+                    `- ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedVoucher.discountValue)}`
+                  )
+                ) : "0"}
+              </span>
+            </p>
             <Divider style={{ marginTop: 5, marginBottom: 10 }} ></Divider>
             <h4 className="checkout-summary__totals">Total <span>
               {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalCost)}
@@ -268,6 +358,43 @@ const Checkout = () => {
       >
         <OrderSuccess data={modalData} />
       </Modal>
+      <Modal
+        open={isModalVoucherVisible}
+        onCancel={() => setisModalVoucherVisible(false)}
+        centered
+        footer={null}
+      >
+        <h3>Select a Voucher</h3>
+        <Radio.Group onChange={(e) => setSelectedVoucher(vouchers.find(v => v.voucherID === e.target.value))}>
+          {vouchers.map((voucher) => (
+            <Card key={voucher.voucherID} className="voucher-card">
+              <Radio value={voucher.voucherID}>
+                {voucher.code} - {voucher.freeShipping ? (
+                
+                  <>
+                    <CarOutlined style={{ color: "green" }} />  Freeship
+                  </>
+                ) : voucher.discountType === "PERCENT" ? (
+                  <>
+                    <TagOutlined style={{ color: "red" }} /> {voucher.discountValue}% off coupon
+                  </>
+                ) : (
+                  <>
+                    <TagOutlined style={{ color: "red" }} /> {voucher.discountValue?.toLocaleString() || "0"}₫ off coupon
+                  </>
+                )}
+              </Radio>
+            </Card>
+          ))}
+        </Radio.Group>
+
+        <div style={{ marginTop: 16 }}>
+          <Button type="primary" onClick={() => setisModalVoucherVisible(false)}>
+            Select
+          </Button>
+        </div>
+      </Modal>
+
     </>
   );
 };

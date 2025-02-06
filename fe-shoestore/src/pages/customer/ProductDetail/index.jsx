@@ -8,6 +8,7 @@ import Review from "./Review";
 import { fetchProductDetailByProductId } from "../../../services/productDetailService";
 import { fetchProductById, fetchProductByProductDetailId } from "../../../services/productService";
 import { addCartItem } from "../../../services/cartItemService";
+import { getDiscountByProduct } from "../../../services/promotionService";
 const ProductDetails = () => {
   const navigate = useNavigate();
   const { productID } = useParams();
@@ -20,17 +21,28 @@ const ProductDetails = () => {
   const [availableSizes, setAvailableSizes] = useState([]);
   const [selectedStock, setSelectedStock] = useState(null);
 
+  const [discountedPrice, setDiscountedPrice] = useState(null);
+
   useEffect(() => {
     const fetchProduct = async (productID) => {
       try {
         const details = await fetchProductDetailByProductId(productID);
         const product = await fetchProductById(productID);
+        const discount = await getDiscountByProduct(productID);
+
         if (product && details && details.productDetails.length > 0) {
           setProduct(product);
           setAvailableColors([...new Set(details.productDetails.map(detail => detail.color))]);
           setAvailableSizes([...new Set(details.productDetails.map(detail => detail.size))]);
+
+          if (discount && discount !== null) {
+            // Nếu có discount, sử dụng giá discount
+            setDiscountedPrice(discount);
+          } else {
+            // Nếu không có discount, sử dụng giá gốc
+            setDiscountedPrice(product.price);
+          }
         } else {
-          console.error("Product or details not found");
           setProduct(null);
         }
       } catch (error) {
@@ -41,6 +53,7 @@ const ProductDetails = () => {
 
     if (productID) fetchProduct(productID);
   }, [productID]);
+
 
 
   const handleBuyNow = () => {
@@ -65,7 +78,7 @@ const ProductDetails = () => {
     const formattedItem = {
       key: selectedDetail.productDetailID,
       name: product?.productName || 'Unknown',
-      price: product?.price || 0,
+      price: discountedPrice || 0,
       quantity: quantity,
       color: selectedColor,
       size: selectedSize,
@@ -87,7 +100,7 @@ const ProductDetails = () => {
       additionalText: "Highly recommend!",
     },
   ];
-  // const discountedPrice = (product.price - product.price * product.discount / 100);
+
 
   const changeImage = (image) => {
     setMainImage(image);
@@ -98,8 +111,6 @@ const ProductDetails = () => {
     const sizeStock = product?.productDetails?.find(
       (detail) => detail.size === size
     )?.stockQuantity;
-
-    console.log(sizeStock)
     setSelectedStock(sizeStock);
   };
 
@@ -186,12 +197,22 @@ const ProductDetails = () => {
 
               <h1>{product?.productName}</h1>
               <div className="product-pricing">
-                <span className="discounted-price">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}</span>
-                <span className="original-price">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}</span>
-                {product.price > 0 && <Tag color="green">{product?.price}%</Tag>}
+                {discountedPrice && discountedPrice < product.price ? (
+                  <>
+                    <span className="discounted-price">
+                      {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(discountedPrice)}
+                    </span>
+                    <span className="original-price" style={{ textDecoration: "line-through", color: "#888" }}>
+                      {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}
+                    </span>
+                  </>
+                ) : (
+                  <span className="discounted-price">
+                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}
+                  </span>
+                )}
               </div>
-              {/* <Rate allowHalf defaultValue={product?.rate} disabled></Rate>
-              <span>Stock: </span> */}
+
               <h3>DESCRIPTION</h3>
               <span>{product?.description}</span>
               <h3>COLOR</h3>
@@ -242,16 +263,11 @@ const ProductDetails = () => {
               <span>Quantity</span>
               <InputNumber
                 min={1}
-                // max={selectedStock || 1} 
                 value={quantity}
                 onChange={handleQuantityChange}
                 disabled={!selectedSize}
               />
             </div>
-            {/* <div className="order-item">
-              <span>Color</span>
-              <span>{selectedColor}</span>
-            </div> */}
             <div className="order-item">
               <span>Size</span>
               <span>
@@ -261,7 +277,7 @@ const ProductDetails = () => {
             </div>
             <div className="order-item">
               <span>Price</span>
-              <span>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}</span>
+              <span>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(discountedPrice)}</span>
             </div>
             <Row justify="space-between" className='cart-summary__promo'>
               <Input placeholder="Promocode" className='cart-summary__promo-input' />
@@ -271,7 +287,7 @@ const ProductDetails = () => {
             </Row>
             <div className="order-total">
               <span>Sub Total</span>
-              <span>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price * quantity)}</span>
+              <span>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(discountedPrice * quantity)}</span>
             </div>
 
             <div className="order-actions">

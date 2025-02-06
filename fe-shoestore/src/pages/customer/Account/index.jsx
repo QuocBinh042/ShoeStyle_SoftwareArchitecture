@@ -8,7 +8,6 @@ import {
 import { Layout, Menu, theme } from 'antd';
 import MyOrder from './MyOrder';
 import Address from './Address';
-import MyInfo from './MyInfo';
 import DashBoard from './Dashboard'
 const { Content, Sider } = Layout;
 
@@ -25,8 +24,7 @@ function getItem(label, key, icon) {
 const items = [
   getItem('Dashboard', '1', <DesktopOutlined />),
   getItem('My Order', '2', <InboxOutlined />),
-  getItem('Account Info', '3', <UserOutlined />),
-  getItem('Address', '4', <UserOutlined />),
+  getItem('Address', '3', <UserOutlined />),
   getItem('Logout', '5', <LogoutOutlined />),
 ];
 
@@ -46,8 +44,6 @@ const Account = () => {
       case '2':
         return <MyOrder />;
       case '3':
-        return <MyInfo />;
-      case '4':
         return <Address />;
       default:
         return <div>Welcome to the Dashboard</div>;

@@ -38,28 +38,29 @@ VALUES
 ('2122232425', 'customer20@example.com', 'Rachel Green', '$2a$10$piYOHuFhF7WWTyziAev08.RtlRcnZuruhfrTrgYWO6phJ4l1XvSBm', '2122232425', 'Active', 'rachelgreen20', 2);
 
 
-INSERT INTO Address (city, district, street, ward, userID)
+INSERT INTO Address (city, district, street, ward, fullName, phone, type, isDefault, userID)
 VALUES 
-('Hanoi', 'Ba Dinh', '123 Le Loi', 'Ward 1', 1),
-('Hanoi', 'Cau Giay', '456 Hoang Hoa Tham', 'Ward 2', 2),
-('Hanoi', 'Dong Da', '789 Nguyen Chi Thanh', 'Ward 3', 3),
-('Ho Chi Minh', 'District 1', '12 Hai Ba Trung', 'Ward 4', 4),
-('Ho Chi Minh', 'District 2', '34 Nguyen Hue', 'Ward 5', 5),
-('Da Nang', 'Hai Chau', '56 Tran Phu', 'Ward 6', 6),
-('Da Nang', 'Thanh Khe', '78 Dien Bien Phu', 'Ward 7', 7),
-('Can Tho', 'Ninh Kieu', '90 Vo Van Kiet', 'Ward 8', 8),
-('Hai Phong', 'Le Chan', '11 Nguyen Trai', 'Ward 9', 9),
-('Hai Phong', 'Ngo Quyen', '22 Hai Ba Trung', 'Ward 10', 10),
-('Hue', 'Phu Nhuan', '33 Nguyen Cong Tru', 'Ward 11', 11),
-('Hue', 'Thuan Thanh', '44 Le Loi', 'Ward 12', 12),
-('Nha Trang', 'Van Thanh', '55 Tran Phu', 'Ward 13', 13),
-('Nha Trang', 'Phuoc Long', '66 Nguyen Thien Thuat', 'Ward 14', 14),
-('Vung Tau', 'Ward 1', '77 Tran Hung Dao', 'Ward 15', 15),
-('Vung Tau', 'Ward 2', '88 Nguyen Trai', 'Ward 16', 16),
-('Da Lat', 'Ward 5', '99 Le Hong Phong', 'Ward 17', 17),
-('Da Lat', 'Ward 6', '10 Nguyen Van Cu', 'Ward 18', 18),
-('Quy Nhon', 'An Nhon', '20 Tran Hung Dao', 'Ward 19', 19),
-('Quy Nhon', 'Quy Nhon', '30 Vo Thi Sau', 'Ward 20', 20);
+('Hanoi', 'Ba Dinh', '123 Le Loi', 'Ward 1', 'John Doe', '0123456789', 'Home', 1, 1),
+('Hanoi', 'Cau Giay', '456 Hoang Hoa Tham', 'Ward 2', 'Jane Doe', '0987654321', 'Office', 0, 2),
+('Hanoi', 'Dong Da', '789 Nguyen Chi Thanh', 'Ward 3', 'Alice Smith', '0912345678', 'Home', 1, 3),
+('Ho Chi Minh', 'District 1', '12 Hai Ba Trung', 'Ward 4', 'Bob Johnson', '0901122334', 'Office', 0, 4),
+('Ho Chi Minh', 'District 2', '34 Nguyen Hue', 'Ward 5', 'Charlie Brown', '0933445566', 'Home', 1, 5),
+('Da Nang', 'Hai Chau', '56 Tran Phu', 'Ward 6', 'David Lee', '0977889900', 'Home', 0, 6),
+('Da Nang', 'Thanh Khe', '78 Dien Bien Phu', 'Ward 7', 'Eva Green', '0911223344', 'Office', 1, 7),
+('Can Tho', 'Ninh Kieu', '90 Vo Van Kiet', 'Ward 8', 'Frank White', '0933778899', 'Home', 0, 8),
+('Hai Phong', 'Le Chan', '11 Nguyen Trai', 'Ward 9', 'Grace Black', '0976554433', 'Office', 1, 9),
+('Hai Phong', 'Ngo Quyen', '22 Hai Ba Trung', 'Ward 10', 'Helen Blue', '0944556677', 'Home', 0, 10),
+('Hue', 'Phu Nhuan', '33 Nguyen Cong Tru', 'Ward 11', 'Isaac Green', '0911334455', 'Home', 1, 11),
+('Hue', 'Thuan Thanh', '44 Le Loi', 'Ward 12', 'Jack Brown', '0933223344', 'Office', 0, 12),
+('Nha Trang', 'Van Thanh', '55 Tran Phu', 'Ward 13', 'Kathy White', '0988776655', 'Home', 1, 13),
+('Nha Trang', 'Phuoc Long', '66 Nguyen Thien Thuat', 'Ward 14', 'Leo Black', '0912445566', 'Office', 0, 14),
+('Vung Tau', 'Ward 1', '77 Tran Hung Dao', 'Ward 15', 'Mona Green', '0944332211', 'Home', 1, 15),
+('Vung Tau', 'Ward 2', '88 Nguyen Trai', 'Ward 16', 'Nick White', '0933442233', 'Office', 0, 16),
+('Da Lat', 'Ward 5', '99 Le Hong Phong', 'Ward 17', 'Olivia Brown', '0911222211', 'Home', 1, 17),
+('Da Lat', 'Ward 6', '10 Nguyen Van Cu', 'Ward 18', 'Paul Black', '0988334455', 'Office', 0, 18),
+('Quy Nhon', 'An Nhon', '20 Tran Hung Dao', 'Ward 19', 'Quinn Green', '0944551122', 'Home', 1, 19),
+('Quy Nhon', 'Quy Nhon', '30 Vo Thi Sau', 'Ward 20', 'Rita White', '0912342211', 'Office', 0, 20);
+
 
 
 -- Thêm dữ liệu cho bảng Brand
@@ -112,16 +113,22 @@ VALUES
     (7, '0914444454'), 
     (8, '0915554564'),
     (9, '0916666846');
+INSERT INTO Promotion (name, description, discountType, discountValue, startDate, endDate, status) VALUES
+('Sale 10%', '10% off promotion for products', 'percent', 10, '2025-02-01 00:00:00', '2025-02-28 23:59:59', 1),
+('Sale 20%', '20% off promotion for products', 'percent', 20, '2025-02-01 00:00:00', '2025-02-28 23:59:59', 1),
+('Sale 50K', '50,000 VND off promotion', 'fixed', 50000, '2025-02-01 00:00:00', '2025-02-28 23:59:59', 1),
+('Sale 100K', '100,000 VND off promotion', 'fixed', 100000, '2025-02-01 00:00:00', '2025-02-28 23:59:59', 1),
+('Sale 5%', '5% off promotion for products', 'percent', 5, '2025-02-01 00:00:00', '2025-02-28 23:59:59', 1);
 
 INSERT INTO Product (description, price, productName, status, brandID, categoryID, promotionID, supplierID,createDate)
 VALUES
-('High-performance running shoes.', 1000000, 'Nike Air Max 270', 'Available', 1, 1, NULL, 1,GETDATE()),
-('Lightweight basketball sneakers.', 1200000, 'Adidas Harden Vol. 5', 'Available', 2, 2, NULL, 2,GETDATE()),
-('Stylish hiking boots.', 1500000, 'Timberland Premium', 'Available', 3, 3, NULL, 3,GETDATE()),
-('Everyday wear sneakers.', 800000, 'Converse Chuck Taylor', 'Available', 4, 4, NULL, 4,GETDATE()),
-('Elegant leather loafers.', 1000000, 'Clarks Originals', 'Available', 5, 5, NULL, 5,GETDATE()),
-('Performance tennis shoes.', 1100000, 'Asics Gel-Resolution', 'Available', 1, 6, NULL, 6,GETDATE()),
-('Classic skate shoes.', 750000, 'Vans Old Skool', 'Available', 2, 7, NULL, 7,GETDATE()),
+('High-performance running shoes.', 1000000, 'Nike Air Max 270', 'Available', 1, 1, 1, 1,GETDATE()),
+('Lightweight basketball sneakers.', 1200000, 'Adidas Harden Vol. 5', 'Available', 2, 2, 2, 2,GETDATE()),
+('Stylish hiking boots.', 1500000, 'Timberland Premium', 'Available', 3, 3, 4, 3,GETDATE()),
+('Everyday wear sneakers.', 800000, 'Converse Chuck Taylor', 'Available', 4, 4, 5, 4,GETDATE()),
+('Elegant leather loafers.', 1000000, 'Clarks Originals', 'Available', 5, 5, 1, 5,GETDATE()),
+('Performance tennis shoes.', 1100000, 'Asics Gel-Resolution', 'Available', 1, 6, 3, 6,GETDATE()),
+('Classic skate shoes.', 750000, 'Vans Old Skool', 'Available', 2, 7, 2, 7,GETDATE()),
 ('Premium long-distance runners.', 950000, 'Brooks Ghost 14', 'Available', 3, 8, NULL, 8,GETDATE()),
 ('Breathable sports sandals.', 500000, 'Teva Hurricane XLT2', 'Available', 4, 9, NULL, 9,GETDATE()),
 ('Luxury high heels.', 2000000, 'Jimmy Choo Romy 100', 'Available', 5, 10, NULL, 10,GETDATE()),
@@ -168,56 +175,79 @@ VALUES
 
 INSERT INTO ProductDetail (color, size, stockQuantity, productID)
 VALUES
-('RED', 'SIZE_38', 50, 1),
+('RED', 'SIZE_36', 50, 1),
+('RED', 'SIZE_37', 40, 1),
+('RED', 'SIZE_38', 30, 1),
 ('BLUE', 'SIZE_39', 30, 2),
-('GREEN', 'SIZE_40', 20, 3),
-('YELLOW', 'SIZE_41', 40, 4),
-('BLACK', 'SIZE_42', 35, 5),
-('WHITE', 'SIZE_43', 25, 6),
-('PINK', 'SIZE_44', 60, 7),
-('RED', 'SIZE_38', 45, 8),
-('BLUE', 'SIZE_39', 50, 9),
+('BLUE', 'SIZE_40', 50, 2),
+('GREEN', 'SIZE_41', 20, 3),
+('GREEN', 'SIZE_42', 40, 3),
+('GREEN', 'SIZE_43', 35, 3),
+('YELLOW', 'SIZE_36', 50, 4),
+('YELLOW', 'SIZE_37', 20, 4),
+('YELLOW', 'SIZE_38', 30, 4),
+('BLACK', 'SIZE_39', 45, 5),
+('BLACK', 'SIZE_40', 35, 5),
+('WHITE', 'SIZE_41', 25, 6),
+('WHITE', 'SIZE_42', 50, 6),
+('PINK', 'SIZE_43', 60, 7),
+('PINK', 'SIZE_44', 50, 7),
+('RED', 'SIZE_36', 45, 8),
+('RED', 'SIZE_37', 55, 8),
+('BLUE', 'SIZE_38', 50, 9),
+('BLUE', 'SIZE_39', 30, 9),
 ('GREEN', 'SIZE_40', 20, 10),
-('YELLOW', 'SIZE_41', 30, 11),
-('BLACK', 'SIZE_42', 50, 12),
-('WHITE', 'SIZE_43', 20, 13),
-('PINK', 'SIZE_44', 40, 14),
-('RED', 'SIZE_38', 35, 15),
-('BLUE', 'SIZE_39', 25, 16),
-('GREEN', 'SIZE_40', 30, 17),
-('YELLOW', 'SIZE_41', 50, 18),
-('BLACK', 'SIZE_42', 20, 19),
-('WHITE', 'SIZE_43', 60, 20),
-('PINK', 'SIZE_44', 40, 21),
-('RED', 'SIZE_38', 50, 22),
+('GREEN', 'SIZE_41', 25, 10),
+('YELLOW', 'SIZE_42', 40, 11),
+('YELLOW', 'SIZE_43', 35, 11),
+('BLACK', 'SIZE_44', 25, 12),
+('BLACK', 'SIZE_36', 50, 12),
+('WHITE', 'SIZE_37', 60, 13),
+('WHITE', 'SIZE_38', 30, 13),
+('PINK', 'SIZE_39', 45, 14),
+('PINK', 'SIZE_40', 50, 14),
+('RED', 'SIZE_41', 35, 15),
+('RED', 'SIZE_42', 25, 15),
+('BLUE', 'SIZE_43', 50, 16),
+('BLUE', 'SIZE_44', 60, 16),
+('GREEN', 'SIZE_36', 30, 17),
+('GREEN', 'SIZE_37', 45, 17),
+('YELLOW', 'SIZE_38', 30, 18),
+('BLACK', 'SIZE_39', 40, 19),
+('BLACK', 'SIZE_40', 50, 19),
+('WHITE', 'SIZE_41', 55, 20),
+('WHITE', 'SIZE_42', 35, 20),
+('PINK', 'SIZE_43', 60, 21),
+('PINK', 'SIZE_44', 50, 21),
+('RED', 'SIZE_36', 50, 22),
+('RED', 'SIZE_37', 40, 22),
+('BLUE', 'SIZE_38', 30, 23),
 ('BLUE', 'SIZE_39', 45, 23),
-('GREEN', 'SIZE_40', 30, 24),
-('YELLOW', 'SIZE_41', 55, 25),
-('BLACK', 'SIZE_42', 65, 26),
-('WHITE', 'SIZE_43', 35, 27),
-('PINK', 'SIZE_44', 45, 28),
-('RED', 'SIZE_38', 40, 29),
-('BLUE', 'SIZE_39', 25, 30),
-('GREEN', 'SIZE_40', 50, 31),
-('YELLOW', 'SIZE_41', 45, 32),
-('BLACK', 'SIZE_42', 30, 33),
-('WHITE', 'SIZE_43', 50, 34),
-('PINK', 'SIZE_44', 40, 35),
-('RED', 'SIZE_38', 35, 36),
-('BLUE', 'SIZE_39', 30, 37),
-('GREEN', 'SIZE_40', 50, 38),
-('YELLOW', 'SIZE_41', 45, 39),
-('BLACK', 'SIZE_42', 20, 40),
-('WHITE', 'SIZE_43', 55, 41),
-('PINK', 'SIZE_44', 60, 42),
-('RED', 'SIZE_38', 25, 43),
-('BLUE', 'SIZE_39', 40, 44),
-('GREEN', 'SIZE_40', 45, 45),
-('YELLOW', 'SIZE_41', 30, 46),
-('BLACK', 'SIZE_42', 20, 47),
-('WHITE', 'SIZE_43', 35, 48),
-('PINK', 'SIZE_44', 50, 49),
-('RED', 'SIZE_38', 60, 50);
+('GREEN', 'SIZE_40', 50, 24),
+('YELLOW', 'SIZE_41', 45, 25),
+('BLACK', 'SIZE_42', 40, 26),
+('BLACK', 'SIZE_43', 55, 27),
+('WHITE', 'SIZE_44', 50, 28),
+('PINK', 'SIZE_36', 30, 29),
+('PINK', 'SIZE_37', 35, 29),
+('RED', 'SIZE_38', 45, 30),
+('BLUE', 'SIZE_39', 25, 31),
+('GREEN', 'SIZE_40', 50, 32),
+('YELLOW', 'SIZE_41', 30, 33),
+('BLACK', 'SIZE_42', 60, 34),
+('WHITE', 'SIZE_43', 40, 35),
+('PINK', 'SIZE_44', 25, 36),
+('RED', 'SIZE_36', 50, 37),
+('RED', 'SIZE_37', 40, 38),
+('BLUE', 'SIZE_38', 45, 39),
+('BLUE', 'SIZE_39', 35, 40),
+('GREEN', 'SIZE_40', 30, 41),
+('GREEN', 'SIZE_41', 50, 42),
+('YELLOW', 'SIZE_42', 40, 43),
+('BLACK', 'SIZE_43', 45, 44),
+('WHITE', 'SIZE_44', 35, 45),
+('PINK', 'SIZE_36', 60, 46);
+
 
 INSERT INTO Product_ImageURL (productID, imageURL)
 VALUES
@@ -475,25 +505,17 @@ VALUES
 
 
 
-INSERT INTO Promotion (description, endDate, name, promotionType, promotionValue, startDate)
-VALUES
-('Black Friday Sale', '2024-11-30', 'Black Friday', 'Percentage', '20%', '2024-11-01'),
-('Christmas Sale', '2024-12-25', 'Christmas', 'Percentage', '25%', '2024-12-01'),
-('New Year Sale', '2025-01-15', 'New Year', 'Flat', '$50', '2025-01-01'),
-('Summer Sale', '2024-06-30', 'Summer', 'Percentage', '15%', '2024-06-01'),
-('Back to School', '2024-09-15', 'School', 'Flat', '$30', '2024-08-15'),
-('Mid Year Sale', '2024-07-15', 'Mid Year', 'Percentage', '10%', '2024-07-01'),
-('Easter Discount', '2024-04-15', 'Easter', 'Flat', '$20', '2024-04-01'),
-('Valentine Special', '2024-02-14', 'Valentine', 'Percentage', '15%', '2024-02-01'),
-('Halloween Sale', '2024-10-31', 'Halloween', 'Flat', '$40', '2024-10-01'),
-('Lunar New Year', '2024-02-15', 'Lunar New Year', 'Percentage', '20%', '2024-01-25');
 
 
-INSERT INTO Voucher (description, discountType, discountValue, endDate, name, startDate, status, minValueOrder)
+
+INSERT INTO Voucher (code, description, discountValue, discountType, minOrderValue, freeShipping, startDate, endDate, status)
 VALUES
-('Welcome Voucher', 'Percentage', 10, '2024-12-31', 'WELCOME10', '2024-12-10', 'Upcoming', 300000),
-('Holiday Discount', 'Flat', 20000, '2024-12-25', 'HOLIDAY20', '2024-12-01', 'Active', 200000),
-('Year-End Sale', 'Percentage', 15, '2024-12-31', 'YEAR15', '2024-12-15', 'Ended', 250000);
+('SPRINGSALE20', 'Get 20% off on your next order.', 20, 'PERCENT', 100000, 0, '2025-02-01T00:00:00', '2025-03-15T23:59:59', 1),
+('FREESHIP100K', 'Free shipping for orders above 100,000 VND.', 0, 'FIXED', 100000, 1, '2025-02-01T00:00:00', '2025-03-10T23:59:59', 1),
+('SUMMERSALE15', 'Save 15% on summer collection.', 15, 'PERCENT', 50000, 0, '2025-01-01T00:00:00', '2025-06-30T23:59:59', 1),
+('NEWUSER50K', 'Get 50,000 VND off your first order.', 50000, 'FIXED', 50000, 0, '2025-01-01T00:00:00', '2025-01-31T23:59:59', 1),
+('WINTERDISCOUNT25', 'Get 25% off on all winter wear.', 25, 'PERCENT', 200000, 0, '2024-12-01T00:00:00', '2025-12-31T23:59:59', 1);
+
 
 
 INSERT INTO Cart (createAt, userID)
