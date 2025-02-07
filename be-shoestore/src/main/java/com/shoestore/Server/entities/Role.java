@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.ToString;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.List;
 
@@ -21,4 +22,7 @@ public class Role {
     @JsonBackReference
     @ToString.Exclude
     private List<User> users;
+    public List<SimpleGrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority(name)); // Giả sử chỉ có một quyền
+    }
 }

@@ -24,10 +24,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/voucher")
 public class VoucherController {
-
-    @Autowired
-    private VoucherRepository voucherRepository;
-
     @Autowired
     private VoucherService voucherService;
     @GetMapping("/eligible")
@@ -36,12 +32,9 @@ public class VoucherController {
     }
     @GetMapping("/by-voucher-id/{id}")
     public ResponseEntity<Voucher> getVoucherById(@PathVariable int id) {
-        Optional<Voucher> voucher = voucherRepository.findById(id);
-        if (voucher.isPresent()) {
-            return ResponseEntity.ok(voucher.get());
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+        Voucher voucher=voucherService.getVoucherById(id);
+        return ResponseEntity.ok(voucher);
+
     }
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteVoucher(@PathVariable("id") int id) {

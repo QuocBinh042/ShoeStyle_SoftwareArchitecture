@@ -333,11 +333,11 @@ const Cart = () => {
               </div>
             )} */}
             <Card>
-              <Row justify="space-between" style={{ marginBottom: 16 }}>
+              {/* <Row justify="space-between" style={{ marginBottom: 16 }}>
                 <Col>Subtotal</Col>
                 <Col>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(subtotal)}</Col>
-              </Row>
-              <Row justify="space-between" className='cart-summary__promo'>
+              </Row> */}
+              {/* <Row justify="space-between" className='cart-summary__promo'>
                 <Input placeholder="Promocode" className='cart-summary__promo-input' />
                 <Button className='cart-summary__promo-apply' type="primary">
                   Apply
@@ -346,7 +346,7 @@ const Cart = () => {
               <Row justify="space-between" style={{ marginBottom: 16 }}>
                 <Col>Discount</Col>
                 <Col>$0.00</Col>
-              </Row>
+              </Row> */}
               <Row justify="space-between" className="cart-item__total-price" style={{ marginBottom: 24, fontWeight: 700 }}>
                 <Col>Total</Col>
                 <Col>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(subtotal)}</Col>

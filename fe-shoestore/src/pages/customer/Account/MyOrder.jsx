@@ -13,7 +13,7 @@ const onChange = (key) => {
 function MyOrder() {
   const [orders, setOrders] = useState([]);
   useEffect(() => {
-    loadOrdersWithDetails(2)
+    loadOrdersWithDetails(1)
   }, []);
   const loadOrdersWithDetails = async (userId) => {
     try {
@@ -24,7 +24,6 @@ function MyOrder() {
         fetchedOrders.map(async (order) => {
           const details = await fetchOrderDetailByOrder(order.orderID);
           const payment = await fetcPaymentByOrder(order.orderID);
-          console.log(payment)
           const formattedDetails = details.map((detail) => ({
             id: detail.id,
             price: detail.price,
@@ -33,7 +32,6 @@ function MyOrder() {
             color: detail.productDetail.color,
             stockQuantity: detail.productDetail.stockQuantity,
           }));
-
           return {
             id: order.orderID,
             name: order.user.name,
@@ -46,7 +44,8 @@ function MyOrder() {
             details: formattedDetails,
             code:order.code,
             paymentStatus:payment.status,
-            feeShip:order.feeShip
+            feeShip:order.feeShip,
+            discount:order.discount
           };
         })
       );

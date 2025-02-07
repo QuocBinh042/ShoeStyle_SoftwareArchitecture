@@ -3,8 +3,6 @@ import React from "react";
 
 function OrderDetailModal({ isOpen, onClose, order }) {
   if (!order) return null;
-  console.log(order)
-  // Tính tổng tiền dựa trên danh sách chi tiết
   const calculateTotal = () =>
     order.details.reduce(
       (sum, item) => sum + item.price * item.quantity,
@@ -103,7 +101,7 @@ function OrderDetailModal({ isOpen, onClose, order }) {
           </div>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <p>Discount:</p>
-            <p>{order.discount}</p>
+            <p> - {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.discount)}</p>
           </div>
           <Divider />
           <div

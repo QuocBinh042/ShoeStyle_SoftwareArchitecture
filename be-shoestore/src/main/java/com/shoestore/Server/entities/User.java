@@ -43,13 +43,6 @@ public class User {
     @JsonBackReference
     private List<Review> reviews;
 
-    public User(int userID) {
-        this.userID = userID;
-    }
-
-    public User() {
-
-    }
 
     @Override
     public String toString() {

@@ -20,8 +20,10 @@ const Checkout = () => {
   const [shippingMethod, setShippingMethod] = useState("Normal");
   const [paymentMethod, setPaymentMethod] = useState(null);
   const [modalData, setModalData] = useState(null);
-  const [vouchers, setVouchers] = useState([]); // State lưu danh sách voucher
-  const [selectedVoucher, setSelectedVoucher] = useState(null);
+  const [vouchers, setVouchers] = useState([]); 
+  const [selectedVoucher, setSelectedVoucher] = useState(null); 
+  const [totalCost, setTotalCost] = useState(0);
+const [discount, setDiscount] = useState(0);
   useEffect(() => {
     const fetchProductDetails = async () => {
       const details = await Promise.all(
@@ -36,6 +38,13 @@ const Checkout = () => {
 
     fetchProductDetails();
   }, [selectedItems]);
+  
+
+useEffect(() => {
+  const { totalCost, discount } = calculateTotalCost();
+  setTotalCost(totalCost);
+  setDiscount(discount);
+}, [productDetails, selectedVoucher, shippingMethod]);
   const calculateTotalCost = () => {
     let subtotal = productDetails.reduce((total, product) => total + product.quantity * product.price, 0);
     let shippingCost = shippingMethod === "Express" ? 30000 : 0;
@@ -43,7 +52,7 @@ const Checkout = () => {
 
     if (selectedVoucher) {
       if (selectedVoucher.freeShipping) {
-        discount = shippingCost  // Áp dụng miễn phí vận chuyển
+        discount = shippingCost  
       } else {
         if (selectedVoucher.discountType === "PERCENT") {
           discount = (selectedVoucher.discountValue / 100) * subtotal;
@@ -52,17 +61,9 @@ const Checkout = () => {
         }
       }
     }
-    // console.log("Calculated discount:", (selectedVoucher?.discountValue / 100) * subtotal);
-    // console.log(subtotal)
-    // console.log(shippingCost)
-    // console.log("GiảM GIÁ"+ discount)
 
-
-    return subtotal + shippingCost - discount;
+    return { totalCost: subtotal + shippingCost - discount, discount };
   };
-
-  // Cập nhật totalCost
-  const totalCost = calculateTotalCost();
 
   const shippingCost = shippingMethod === "Express" ? 30000 : 0
   useEffect(() => {
@@ -96,6 +97,8 @@ const Checkout = () => {
       user: { userID: 1 },
       code: orderCode,
       typePayment: paymentMethod === "VNPay" ? "VNPay" : "Cash on Delivery",
+      ...(selectedVoucher && { voucher: { voucherID: selectedVoucher.voucherID } }),
+      discount:discount
     };
 
     try {
