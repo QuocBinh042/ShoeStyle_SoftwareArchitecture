@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Input, Select, Button, Checkbox, message } from "antd";
 import { addAddress } from "../../../services/addressService";
 import { fetchAddressByUser,updateAddress } from "../../../services/addressService";
+import { useAuth } from "../../../context/AuthContext";
 const AddressAddForm = ({ onSubmit }) => {
   const [tinhList, setTinhList] = useState([]);
   const [quanList, setQuanList] = useState([]);
@@ -15,7 +16,7 @@ const AddressAddForm = ({ onSubmit }) => {
   const [phone, setPhone] = useState("");
   const [type, setType] = useState("Home");
   const [isDefault, setIsDefault] = useState(false);
-
+  const { user } = useAuth();
   useEffect(() => {
     fetch("https://esgoo.net/api-tinhthanh/1/0.htm")
       .then((response) => response.json())
@@ -82,7 +83,7 @@ const AddressAddForm = ({ onSubmit }) => {
       phone,
       type,
       default: isDefault,
-      user: { userID: 1 },
+      user: { userID: user.id },
     };
 
     try {

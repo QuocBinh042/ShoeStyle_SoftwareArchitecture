@@ -36,6 +36,7 @@ public class Order {
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     @JsonIgnore
     private Payment payment;
+    @Column(name = "shippingAddress", nullable = false, columnDefinition = "NVARCHAR(100)")
     private String shippingAddress;
     private String typePayment;
     private double discount;

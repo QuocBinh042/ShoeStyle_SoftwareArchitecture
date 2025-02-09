@@ -24,5 +24,6 @@ export const deleteCartItem = async (cartId, productDetailId) => {
     if (data) {
         console.log('Cart item deleted successfully:', data);
     }
+    console.log(data)
     return data;
 };

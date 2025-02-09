@@ -1,64 +1,61 @@
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+import axios from "axios";
 
+const API_BASE_URL = "http://localhost:8080/api"; // Đổi thành API của bạn
+
+// Hàm lấy token từ localStorage
+const getAuthToken = () => localStorage.getItem("token");
+
+// Hàm tạo instance của Axios với headers chứa token
+const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+});
+
+// Thêm interceptor để tự động gắn token vào headers
+apiClient.interceptors.request.use((config) => {
+  const token = getAuthToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Hàm gọi API
 export const fetchData = async (endpoint) => {
   try {
-    const response = await fetch(API_BASE_URL + endpoint);
-    if (!response.ok) {
-      throw new Error('Failed to fetch data');
-    }
-    return response.json();
+    const response = await apiClient.get(endpoint);
+    return response.data;
   } catch (error) {
-    console.error('Error fetching data:', error);
-    return null;
+    console.error("API Error:", error);
+    throw error;
   }
 };
-export const postData = async (endpoint, body) => {
+
+export const postData = async (endpoint, data) => {
   try {
-    const response = await fetch(API_BASE_URL + endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
-    if (!response.ok) {
-      throw new Error('Failed to post data');
-    }
-    return response.json();
+    const response = await apiClient.post(endpoint, data);
+    return response.data;
   } catch (error) {
-    console.error('Error posting data:', error);
-    return null;
+    console.error("API Error:", error);
+    throw error;
   }
 };
-export const putData = async (endpoint, body) => {
+
+export const putData = async (endpoint, data) => {
   try {
-    const response = await fetch(API_BASE_URL + endpoint, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
-    if (!response.ok) {
-      throw new Error('Failed to update data');
-    }
-    return response.json();
+    const response = await apiClient.put(endpoint, data);
+    return response.data;
   } catch (error) {
-    console.error('Error updating data:', error);
-    return null;
+    console.error("API Error:", error);
+    throw error;
   }
 };
+
 export const deleteData = async (endpoint) => {
   try {
-    const response = await fetch(API_BASE_URL + endpoint, {
-      method: 'DELETE',
-    });
-    if (!response.ok) {
-      throw new Error('Failed to delete data');
-    }
-    return response.status
+    const response = await apiClient.delete(endpoint);
+    return response.data;
   } catch (error) {
-    console.error('Error deleting data:', error);
-    return null;
+    console.error("API Error:", error);
+    throw error;
   }
 };

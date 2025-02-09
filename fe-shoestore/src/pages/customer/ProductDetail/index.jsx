@@ -9,6 +9,7 @@ import { fetchProductDetailByProductId } from "../../../services/productDetailSe
 import { fetchProductById, fetchProductByProductDetailId } from "../../../services/productService";
 import { addCartItem } from "../../../services/cartItemService";
 import { getDiscountByProduct } from "../../../services/promotionService";
+import { useAuth } from "../../../context/AuthContext";
 const ProductDetails = () => {
   const navigate = useNavigate();
   const { productID } = useParams();
@@ -22,7 +23,8 @@ const ProductDetails = () => {
   const [selectedStock, setSelectedStock] = useState(null);
 
   const [discountedPrice, setDiscountedPrice] = useState(null);
-
+  const { user } = useAuth();
+  
   useEffect(() => {
     const fetchProduct = async (productID) => {
       try {
@@ -140,14 +142,12 @@ const ProductDetails = () => {
 
     const cartItem = {
       id: {
-        cartId: 1,
+        cartId: user.id,
         productDetailId: selectedDetail.productDetailID,
       },
       quantity,
       subTotal: product?.price * quantity,
     };
-
-    console.log("Cart Item:", cartItem);
     try {
       addCartItem(cartItem)
       Modal.success({ content: "Added to cart successfully!" });

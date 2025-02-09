@@ -4,7 +4,7 @@ import { ShoppingCartOutlined, DollarOutlined, UserOutlined, EditOutlined } from
 import { countOrderByUser, sumAmount, fetchOrderByUser } from "../../../services/orderService";
 import { fetchUserInfoById, updateUserInfo } from "../../../services/userService";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-
+import { useAuth } from "../../../context/AuthContext";
 const { Title, Text } = Typography;
 
 const UserDashboard = () => {
@@ -15,14 +15,16 @@ const UserDashboard = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [user, setUser] = useState({});
     const [form] = Form.useForm();
+    const { user: authUser } = useAuth();
 
     useEffect(() => {
-        fetchUserInfo(2);
-        fetchQuantityOrder(1);
-        fetchtotalAmount(1);
-        fetchOrders(1);
-    }, []);
-
+        if (authUser) {
+            fetchUserInfo(authUser.id);
+            fetchQuantityOrder(authUser.id);
+            fetchtotalAmount(authUser.id);
+            fetchOrders(authUser.id);
+        }
+    }, [authUser]);
     const fetchQuantityOrder = async (userId) => {
         const count = await countOrderByUser(userId);
         setQuantityOrder(count);
@@ -91,10 +93,9 @@ const UserDashboard = () => {
                 <Avatar size={100} icon={<UserOutlined />} />
                 <Title level={3}>{user.name}</Title>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", padding: "10px" }}>
-                    <Text><b>User name: </b> {user.userName}</Text>
                     <Text><b>Email: </b> {user.email}</Text>
+                    <Text><b>User name: </b> {user.userName}</Text>
                     <Text><b>CI: </b> {user.ci}</Text>
-
                     <Text><b>Phone: </b> {user.phoneNumber}</Text>
                 </div>
                 <Button type="primary" icon={<EditOutlined />} onClick={showModal} style={{ marginTop: 10 }}>Edit</Button>
@@ -125,7 +126,7 @@ const UserDashboard = () => {
                 </ResponsiveContainer>
             </Card>
 
-            
+
             <Card title="Current orders" style={{ marginTop: 20 }}>
                 <Table dataSource={filteredOrders} columns={columns} pagination={false} />
             </Card>
@@ -137,32 +138,23 @@ const UserDashboard = () => {
                 onCancel={handleCancel}
             >
                 <Form form={form} layout="vertical">
-                    <Form.Item name="userName" label="User name">
-                        <Input disabled />
-                    </Form.Item>
-
-                    <Form.Item
-                        name="name"
-                        label="Name"
-                        rules={[
-                            { required: true, message: "Please enter your name!" },
-                            { pattern: /^[A-Za-zÀ-Ỹà-ỹ\s]+$/, message: "Name cannot contain numbers or special characters!" }
-                        ]}
-                    >
-                        <Input />
-                    </Form.Item>
-
                     <Form.Item
                         name="email"
                         label="Email"
+
+                    >
+                        <Input disabled />
+                    </Form.Item>
+                    <Form.Item
+                        name="userName"
+                        label="User name"
                         rules={[
-                            { required: true, message: "Please enter your email!" },
-                            { type: "email", message: "Please enter a valid email!" }
+                            { required: true, message: "Please enter your user name!" },
+                            { pattern: /^[A-Za-z].*/, message: "User name must start with a letter!" }
                         ]}
                     >
                         <Input />
                     </Form.Item>
-
                     <Form.Item
                         name="phoneNumber"
                         label="Phone"

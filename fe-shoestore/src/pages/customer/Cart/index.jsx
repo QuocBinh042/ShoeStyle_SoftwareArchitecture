@@ -7,6 +7,7 @@ import { fetchCartItemByCartId, updateCartItem, deleteCartItem } from "../../../
 import { fetchProductDetailById } from "../../../services/productDetailService";
 import { fetchProductByProductDetailId } from "../../../services/productService";
 import { getDiscountByProduct } from "../../../services/promotionService";
+import { useAuth } from "../../../context/AuthContext";
 const Cart = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -16,7 +17,7 @@ const Cart = () => {
   const [pageSize, setPageSize] = useState(3);
   const [totalItems, setTotalItems] = useState(0);
   const [isChanged, setIsChanged] = useState(false);
-
+  const { user } = useAuth();
   const loadCartItemByUser = async (id, page = 1, size = 3) => {
     const data = await fetchCartItemByCartId(id, page, size);
     if (data && Array.isArray(data.cartItems)) {
@@ -55,8 +56,12 @@ const Cart = () => {
 
 
   useEffect(() => {
-    loadCartItemByUser(1)
-  }, []);
+    if (user?.id) {
+      loadCartItemByUser(user.id);
+    } else {
+      setCartItems([]); 
+    }
+  }, [user]);
   //To checkout form
   const handleCheckout = () => {
 
@@ -93,7 +98,7 @@ const Cart = () => {
     const updatedQuantity = product.quantity;
     const updatedData = {
       id: {
-        cartId: 1,
+        cartId: user.id,
         productDetailId: product.key,
       },
       quantity: updatedQuantity,
@@ -150,11 +155,11 @@ const Cart = () => {
 
   //Delete cartItem
   const handleRemove = (key) => {
-    const cartId = 1;
+    const cartId = user.id;
     const productDetailId = key;
     deleteCartItem(cartId, productDetailId)
       .then((result) => {
-        if (result === 200) {
+        if (result === "CarItem deleted") {
           loadCartItemByUser(cartId, currentPage, pageSize);
           Modal.success({
             content: 'Item removed successfully!',

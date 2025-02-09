@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '../../../context/AuthContext';
 import {
   DesktopOutlined,
   InboxOutlined,
@@ -25,13 +26,11 @@ const items = [
   getItem('Dashboard', '1', <DesktopOutlined />),
   getItem('My Order', '2', <InboxOutlined />),
   getItem('Address', '3', <UserOutlined />),
-  getItem('Logout', '5', <LogoutOutlined />),
 ];
 
 const Account = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const [selectedKey, setSelectedKey] = useState('1'); // State for selected menu item
-
+  const [selectedKey, setSelectedKey] = useState('1'); 
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();

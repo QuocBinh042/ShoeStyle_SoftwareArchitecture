@@ -4,7 +4,7 @@ export const fetchFilters = async () => {
   return data;
 };
 export const fetchAllProducts = async ({ page = 1, pageSize = 12 }) => {
-  const data = await fetchData(`all-products?page=${page}&pageSize=${pageSize}&forceReload=1`);
+  const data = await fetchData(`search/all-products?page=${page}&pageSize=${pageSize}&forceReload=1`);
   return data;
 };
 export const fetchFilteredProducts = async (params,page) => {

@@ -1,29 +1,38 @@
-import React from 'react';
-import { Form, Input, Button, Typography, Row, Col, Card } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
-
-const { Title } = Typography;
+import React, { useState } from "react";
+import { Form, Input, Button, Typography, Row, Col, Card, message } from "antd";
+import { UserOutlined, LockOutlined } from "@ant-design/icons";
+import { login } from "../../../services/authService";
+const { Title, Text } = Typography;
 
 const LoginPage = () => {
-  const onFinish = (values) => {
-    console.log('Success:', values);
+  const [loading, setLoading] = useState(false);
+
+  const onFinish = async (values) => {
+    setLoading(true);
+    try {
+      const data = await login(values);
+      if (data?.token) {
+        message.success("Login successful");
+      } else {
+        message.error("Login failed");
+      }
+    } catch (error) {
+      message.error(error.response?.data?.message || "Đã có lỗi xảy ra!");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <Row justify="center" align="middle" style={{ height: '100vh' }}>
+    <Row justify="center" align="middle" style={{ height: "80vh" }}>
       <Col xs={24} sm={18} md={12} lg={8}>
-        <Card bordered={false} style={{ boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
-          <Title level={2} style={{ textAlign: 'center' }}>Login</Title>
-          <Form
-            name="login"
-            onFinish={onFinish}
-            initialValues={{ remember: true }}
-            layout="vertical"
-          >
+        <Card bordered={false} style={{ boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)" }}>
+          <Title level={2} style={{ textAlign: "center" }}>Login</Title>
+          <Form name="login" onFinish={onFinish} layout="vertical">
             <Form.Item
               name="email"
               label="Email address"
-              rules={[{ required: true, message: 'Please input your email address!' }]}
+              rules={[{ required: true, message: "Please input your email address!" }]}
             >
               <Input prefix={<UserOutlined />} placeholder="Enter your email address" />
             </Form.Item>
@@ -31,20 +40,19 @@ const LoginPage = () => {
             <Form.Item
               name="password"
               label="Password"
-              rules={[{ required: true, message: 'Please input your password!' }]}
+              rules={[{ required: true, message: "Please input your password!" }]}
             >
-              <Input.Password
-                prefix={<LockOutlined />}
-                placeholder="Enter your password"
-              />
+              <Input.Password prefix={<LockOutlined />} placeholder="Enter your password" />
             </Form.Item>
-
             <Form.Item>
-              <Button type="primary" block htmlType="submit">
+              <Button type="primary" block htmlType="submit" loading={loading}>
                 Login
               </Button>
             </Form.Item>
           </Form>
+          <Text style={{ display: "block", textAlign: "center", marginTop: "16px" }}>
+            Don't have an account? <a href="/sign-up">Sign up here</a>
+          </Text>
         </Card>
       </Col>
     </Row>
