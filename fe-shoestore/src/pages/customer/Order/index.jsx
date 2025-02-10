@@ -5,7 +5,7 @@ import { CheckCircleOutlined } from "@ant-design/icons";
 const { Title, Text } = Typography;
 
 const OrderSuccess = ({ data }) => {
-  if (!data) return null; // Nếu không có dữ liệu, không render gì cả
+  if (!data) return null; 
   const handlePayment = () => {
     if (data.vnPayUrl) {
       window.location.href = data.vnPayUrl;

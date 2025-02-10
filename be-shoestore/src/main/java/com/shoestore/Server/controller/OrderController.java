@@ -4,9 +4,11 @@ package com.shoestore.Server.controller;
 import com.shoestore.Server.entities.Order;
 import com.shoestore.Server.entities.User;
 import com.shoestore.Server.entities.Voucher;
+import com.shoestore.Server.service.MailService;
 import com.shoestore.Server.service.OrderService;
 import com.shoestore.Server.service.UserService;
 import com.shoestore.Server.service.VoucherService;
+import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +32,8 @@ public class OrderController {
     private UserService userService;
     @Autowired
     private VoucherService voucherService;
+    @Autowired
+    private MailService mailService;
     @PostMapping("/add")
     public ResponseEntity<Order> createBasicOrder(@RequestBody Order order) {
         User user = userService.findById(order.getUser().getUserID());
@@ -44,7 +48,15 @@ public class OrderController {
         Order newOrder = orderService.addOrder(order);
         return ResponseEntity.ok(newOrder);
     }
-
+    @PostMapping("/mail-confirm")
+    public String sendEmail(@RequestParam String to, @RequestParam String subject, @RequestParam String text) {
+        try {
+            mailService.sendOrderConfirmation(to,subject,text);
+            return "Email sent successfully!";
+        } catch (MessagingException e) {
+            return "Failed to send email: " + e.getMessage();
+        }
+    }
 
     @GetMapping("/{id}")
     public ResponseEntity<Order> getOrderById(@PathVariable("id") int id) {

@@ -1,6 +1,5 @@
 import { fetchData,postData } from './apiService'
 export const addOrder = async (order) => {
-    console.log(order)
     const data = await postData(`order/add`, order);
     if (data) {
         console.log('Order added successfully:', data);
@@ -13,11 +12,9 @@ export const fetchOrderByUser = async (id) => {
 };
 export const countOrderByUser = async (id) => {
     const data = await fetchData(`order/count/${id}`);
-    console.log(data)
     return data;
 };
 export const sumAmount = async (id) => {
     const data = await fetchData(`order/total-spent/${id}`);
-    console.log(data)
     return data;
 };

@@ -35,4 +35,12 @@ public class ProductSpecification {
     public static Specification<Product> hasMaxPrice(Double maxPrice) {
         return (root, query, builder) -> maxPrice == null ? null : builder.lessThanOrEqualTo(root.get("price"), maxPrice);
     }
+    public static Specification<Product> hasName(String keyword) {
+        return (root, query, builder) -> {
+            if (keyword == null || keyword.trim().isEmpty()) {
+                return null;
+            }
+            return builder.like(builder.lower(root.get("productName")), "%" + keyword.toLowerCase() + "%");
+        };
+    }
 }

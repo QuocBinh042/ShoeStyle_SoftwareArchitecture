@@ -42,48 +42,6 @@ public class SearchController {
         response.put("suppliers",supplierService.getAllSupplier());
         return ResponseEntity.ok(response);
     }
-    @GetMapping("/filtered")
-    public ResponseEntity<LinkedHashMap<String, Object>> getFilteredProducts(
-            @RequestParam(required = false) List<Integer> categoryIds,
-            @RequestParam(required = false) List<Integer> brandIds,
-            @RequestParam(required = false) List<String> colors,
-            @RequestParam(required = false) List<String> sizes,
-            @RequestParam(required = false) Double minPrice,
-            @RequestParam(required = false) Double maxPrice,
-            @RequestParam(required = false) String sortBy,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "12") int pageSize
-    ) {
-        try {
-            if (sortBy != null) {
-                sortBy = URLDecoder.decode(sortBy, StandardCharsets.UTF_8.toString());
-                System.out.println("SortBy sau khi giải mã: " + sortBy);
-            }
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        if ((categoryIds == null || categoryIds.isEmpty()) &&
-                (brandIds == null || brandIds.isEmpty()) &&
-                (colors == null || colors.isEmpty()) &&
-                (sizes == null || sizes.isEmpty()) &&
-                minPrice == null &&
-                maxPrice == null &&
-                sortBy == null) {
-            List<Product> allProducts = productService.getAllProduct();
-            LinkedHashMap<String, Object> response = new LinkedHashMap<>();
-            response.put("products", allProducts);
-            return ResponseEntity.ok(response);
-        }
-        // Tiến hành lấy dữ liệu sản phẩm với các tham số đã giải mã
-        List<Product> products = productService.getFilteredProducts(categoryIds, brandIds, colors, sizes, minPrice, maxPrice, sortBy);
-
-        LinkedHashMap<String, Object> response = new LinkedHashMap<>();
-        int totalProducts =products.size();
-        List<Product> paginatedProducts= productService.getProductsByPage(products,page,pageSize);
-        response.put("total", totalProducts);
-        response.put("products", paginatedProducts);
-        return ResponseEntity.ok(response);
-    }
     @GetMapping("/all-products")
     public ResponseEntity<Map<String, Object>> getAllProducts(
             @RequestParam(defaultValue = "1") int page,
@@ -97,6 +55,51 @@ public class SearchController {
         Map<String, Object> response = new HashMap<>();
         response.put("products", paginatedProducts);
         response.put("total", totalProducts);
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/filtered")
+    public ResponseEntity<LinkedHashMap<String, Object>> getFilteredProducts(
+            @RequestParam(required = false) List<Integer> categoryIds,
+            @RequestParam(required = false) List<Integer> brandIds,
+            @RequestParam(required = false) List<String> colors,
+            @RequestParam(required = false) List<String> sizes,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String sortBy,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "12") int pageSize
+    ) {
+        try {
+            if (sortBy != null) {
+                sortBy = URLDecoder.decode(sortBy, StandardCharsets.UTF_8.toString());
+            }
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        if ((categoryIds == null || categoryIds.isEmpty()) &&
+                (brandIds == null || brandIds.isEmpty()) &&
+                (colors == null || colors.isEmpty()) &&
+                (sizes == null || sizes.isEmpty()) &&
+                minPrice == null &&
+                maxPrice == null &&
+                keyword == null &&
+                sortBy == null) {
+            List<Product> allProducts = productService.getAllProduct();
+            LinkedHashMap<String, Object> response = new LinkedHashMap<>();
+            response.put("products", allProducts);
+            return ResponseEntity.ok(response);
+        }
+        List<Product> products = productService.getFilteredProducts(
+                categoryIds, brandIds, colors, sizes,keyword, minPrice, maxPrice ,sortBy);
+
+        LinkedHashMap<String, Object> response = new LinkedHashMap<>();
+        int totalProducts = products.size();
+        List<Product> paginatedProducts = productService.getProductsByPage(products, page, pageSize);
+
+        response.put("total", totalProducts);
+        response.put("products", paginatedProducts);
         return ResponseEntity.ok(response);
     }
 }

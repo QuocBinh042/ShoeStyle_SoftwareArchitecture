@@ -7,6 +7,7 @@ import { Header } from 'antd/es/layout/layout';
 import ResultsHeader from './ResultHeader';
 import { fetchAllProducts, fetchFilteredProducts } from '../../../services/searchService';
 import { getDiscountByProduct } from '../../../services/promotionService';
+
 const { Sider, Content } = Layout;
 
 const Search = () => {
@@ -18,6 +19,7 @@ const Search = () => {
     sizes: [],
     priceRange: null,
     sortBy: null,
+    keyword: "", // Thêm từ khóa tìm kiếm vào filters
   });
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -37,7 +39,6 @@ const Search = () => {
       );
       setProducts(updatedProducts);
       setTotalProducts(data.total || 0);
-      console.log(updatedProducts)
     } else {
       console.log('No products received');
     }
@@ -45,7 +46,6 @@ const Search = () => {
 
   const handlePageChange = async (page) => {
     setCurrentPage(page);
-
     if (Object.values(filters).some(filter => filter)) {
       await handleFilterChange(filters, page);
     } else {
@@ -65,11 +65,20 @@ const Search = () => {
     handleFilterChange({ ...filters, sortBy });
   };
 
+  const handleKeywordChange = (keyword) => {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      keyword,
+    }));
+    handleFilterChange({ ...filters, keyword });
+  };
+
   const handleFilterChange = useCallback(async (newFilters, page = currentPage) => {
     const updatedFilters = {
       ...filters,
       ...newFilters,
       sortBy: newFilters.sortBy !== undefined ? newFilters.sortBy : filters.sortBy,
+      keyword: newFilters.keyword !== undefined ? newFilters.keyword : filters.keyword,
     };
 
     setFilters(updatedFilters);
@@ -80,7 +89,8 @@ const Search = () => {
       !updatedFilters.colors.length &&
       !updatedFilters.sizes.length &&
       !updatedFilters.priceRange &&
-      !updatedFilters.sortBy
+      !updatedFilters.sortBy &&
+      !updatedFilters.keyword
     ) {
       loadAllProducts(page);
       return;
@@ -94,13 +104,13 @@ const Search = () => {
       minPrice: updatedFilters.priceRange ? JSON.parse(updatedFilters.priceRange).minPrice : null,
       maxPrice: updatedFilters.priceRange ? JSON.parse(updatedFilters.priceRange).maxPrice : null,
       sortBy: updatedFilters.sortBy || null,
+      keyword: updatedFilters.keyword || null,
     };
 
     try {
       const { products, total } = await fetchFilteredProducts(params, page);
-
+      console.log(params)
       if (Array.isArray(products) && products.length > 0) {
-        // Lấy giá khuyến mãi
         const updatedProducts = await Promise.all(
           products.map(async (product) => {
             const discountPrice = await getDiscountByProduct(product.productID);
@@ -126,10 +136,11 @@ const Search = () => {
   return (
     <Layout>
       <Layout style={{ padding: '20px 100px' }}>
-        <Header style={{ padding: 0 }}>
+        <Header style={{ padding: 0, marginBottom: 10 }}>
           <ResultsHeader
             resultsCount={totalProducts}
-            keywword=""
+            keyword={filters.keyword}
+            onKeywordChange={handleKeywordChange}
             onSortChange={handleSortChange}
             currentSort={filters.sortBy}
           />
@@ -138,16 +149,16 @@ const Search = () => {
           <Sider width={280} className='sider'>
             <Filters onFilterChange={handleFilterChange} />
           </Sider>
-          <Content style={{ padding: 0 }}>
+          <Content style={{ padding: 0, marginTop: 10 }}>
             <ProductGrid
               products={products}
               totalProducts={totalProducts}
               currentPage={currentPage}
               onPageChange={handlePageChange}
             />
-
           </Content>
         </Layout>
+
       </Layout>
     </Layout>
   );

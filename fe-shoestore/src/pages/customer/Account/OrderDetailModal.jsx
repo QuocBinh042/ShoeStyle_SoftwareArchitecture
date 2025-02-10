@@ -39,11 +39,11 @@ function OrderDetailModal({ isOpen, onClose, order }) {
 
         <div style={{ marginBottom: 30 }}>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <div>
+            {/* <div>
               <h4>Ordered From</h4>
               <p>{order.sellerName}</p>
               <p>{order.sellerAddress}</p>
-            </div>
+            </div> */}
             <div>
               <h4>Shipping Address</h4>
               <p>{order.name}</p>

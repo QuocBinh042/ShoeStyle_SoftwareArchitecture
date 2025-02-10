@@ -20,7 +20,7 @@ public interface ProductService {
     List<ProductDTO> getTop10NewArrivals();
     List<ProductDTO> getTop10Trending();
     //Search
-    List<Product> getFilteredProducts(List<Integer> categoryIds, List<Integer> brandIds, List<String> colors, List<String> sizes, Double minPrice, Double maxPrice,String sortBy);
+    List<Product> getFilteredProducts(List<Integer> categoryIds, List<Integer> brandIds, List<String> colors, List<String> sizes,String keyword, Double minPrice, Double maxPrice,String sortBy);
     Page<Product> findProducts(String keyword, String sortBy, String order, Pageable pageable);
     List<Product> getProductsByPage(List<Product> products, int page, int pageSize);
 }

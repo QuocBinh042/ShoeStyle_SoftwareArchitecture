@@ -63,7 +63,7 @@ public class AuthController {
                     .body(Collections.singletonMap("message", "Email does not exist"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Collections.singletonMap("message", "Error"));
+                    .body(Collections.singletonMap("message", "Password or email is invalid"));
         }
     }
 

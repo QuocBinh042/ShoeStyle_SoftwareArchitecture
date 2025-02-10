@@ -1,41 +1,49 @@
 import React, { useState } from 'react';
-import { useAuth } from '../../../context/AuthContext';
+import { useNavigate } from 'react-router-dom'; 
+import { Modal, Layout, Menu, theme } from 'antd';
 import {
   DesktopOutlined,
   InboxOutlined,
   LogoutOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { Layout, Menu, theme } from 'antd';
+import { logout } from '../../../services/authService'; 
 import MyOrder from './MyOrder';
 import Address from './Address';
-import DashBoard from './Dashboard'
+import DashBoard from './Dashboard';
+
 const { Content, Sider } = Layout;
-
-
-
-function getItem(label, key, icon) {
-  return {
-    key,
-    icon,
-    label,
-  };
-}
-
-const items = [
-  getItem('Dashboard', '1', <DesktopOutlined />),
-  getItem('My Order', '2', <InboxOutlined />),
-  getItem('Address', '3', <UserOutlined />),
-];
 
 const Account = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const [selectedKey, setSelectedKey] = useState('1'); 
+  const [selectedKey, setSelectedKey] = useState('1');
+  const navigate = useNavigate(); 
+
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
 
-  // Render content based on selected menu item
+  
+  const handleLogout = () => {
+    Modal.confirm({
+      title: 'Are you sure you want to log out?',
+      content: 'You will be redirected to the home page after logging out.',
+      okText: 'Log out',
+      cancelText: 'Cancel',
+      onOk: () => {
+        logout(); 
+        navigate('/');
+      },
+    });
+  };
+
+  // Menu items
+  const items = [
+    { key: '1', label: 'Dashboard', icon: <DesktopOutlined /> },
+    { key: '2', label: 'My Order', icon: <InboxOutlined /> },
+    { key: '3', label: 'Address', icon: <UserOutlined /> },
+    { key: '4', label: 'Log out', icon: <LogoutOutlined style={{ color: 'red' }} />, onClick: handleLogout },
+  ];
   const renderContent = () => {
     switch (selectedKey) {
       case '1':
@@ -44,18 +52,11 @@ const Account = () => {
         return <MyOrder />;
       case '3':
         return <Address />;
-      default:
-        return <div>Welcome to the Dashboard</div>;
     }
   };
 
   return (
-    <Layout
-      style={{
-        minHeight: '120vh',
-        padding: '20px 100px',
-      }}
-    >
+    <Layout style={{ minHeight: '120vh', padding: '20px 100px' }}>
       <Sider
         style={{ background: '#f5f5f5' }}
         collapsible
@@ -68,15 +69,11 @@ const Account = () => {
           defaultSelectedKeys={['1']}
           mode="inline"
           items={items}
-          onClick={(e) => setSelectedKey(e.key)} // Update selectedKey on menu click
+          onClick={(e) => setSelectedKey(e.key)}
         />
       </Sider>
       <Layout>
-        <Content
-          style={{
-            margin: '0 16px',
-          }}
-        >
+        <Content style={{ margin: '0 16px' }}>
           <div
             style={{
               padding: 24,

@@ -47,11 +47,8 @@ public class SpringSecurityConfig {
 		http
 				.cors().and().csrf().disable()
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/api/auth/login", "/api/auth/sign-up", "/api/search/**",
-								"/api/promotion/**","/api/products/**","/api/product-details/**",
-								"/api/cart-item/**"
-						).permitAll()
-						.anyRequest().authenticated()
+						.requestMatchers("/api/admin/**", "/api/user/profile").authenticated()
+						.anyRequest().permitAll()
 				)
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authenticationProvider(authenticationProvider(userDetailsService, passwordEncoder))
@@ -59,6 +56,7 @@ public class SpringSecurityConfig {
 
 		return http.build();
 	}
+
 
 
 }

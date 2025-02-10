@@ -5,14 +5,16 @@ import logo from '../../assets/images/logos/LogoShoeStore.png';
 import Footer from '../../components/Footer';
 import { Content } from 'antd/es/layout/layout';
 import { Outlet, useLocation } from 'react-router-dom';
-import menuCustomer from '../../components/Menu/menuCustomer'
+import { getMenuCustomer } from '../../components/Menu/menuCustomer';
+import { useNavigate } from 'react-router-dom';
 import CustomBreadcrumb from '../../components/Breadcrumb';
 const { Header } = Layout;
 
 const CustomerLayout = () => {
   
-  const location = useLocation();
-  const isHome = location.pathname === "/"; 
+    const location = useLocation();
+    const navigate = useNavigate(); 
+    const isHome = location.pathname === "/"; 
   return (
     <Layout>
       <Header className='header'>
@@ -21,7 +23,7 @@ const CustomerLayout = () => {
           <Menu
             theme='dark'
             mode="horizontal"
-            items={menuCustomer}
+            items={getMenuCustomer(navigate)} 
             className='header__menu--item'
           />
         </div>
