@@ -19,25 +19,25 @@ public class Address {
     @Column(name = "addressID")
     private int addressID;
 
-    @Column(name = "street", nullable = false, columnDefinition = "NVARCHAR(255)")
+    @Column(name = "street", nullable = false, columnDefinition = "NVARCHAR(50)")
     private String street;
 
-    @Column(name = "city", nullable = false, columnDefinition = "NVARCHAR(255)")
+    @Column(name = "city", nullable = false, columnDefinition = "NVARCHAR(20)")
     private String city;
 
-    @Column(name = "ward", nullable = false, columnDefinition = "NVARCHAR(255)")
+    @Column(name = "ward", nullable = false, columnDefinition = "NVARCHAR(20)")
     private String ward;
 
-    @Column(name = "district", nullable = false, columnDefinition = "NVARCHAR(255)")
+    @Column(name = "district", nullable = false, columnDefinition = "NVARCHAR(20)")
     private String district;
 
-    @Column(name = "fullName", nullable = false, columnDefinition = "NVARCHAR(255)")
+    @Column(name = "fullName", nullable = false, columnDefinition = "NVARCHAR(20)")
     private String fullName;
 
-    @Column(name = "phone", nullable = false, columnDefinition = "NVARCHAR(255)")
+    @Column(name = "phone", nullable = false, columnDefinition = "NVARCHAR(10)")
     private String phone;
 
-    @Column(columnDefinition = "NVARCHAR(255)")
+    @Column(columnDefinition = "NVARCHAR(20)")
     private String type;
 
     @Column(name = "isDefault", nullable = false)

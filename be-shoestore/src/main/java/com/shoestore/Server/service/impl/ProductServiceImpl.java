@@ -59,7 +59,7 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
-    public List<Product> getFilteredProducts(List<Integer> categoryIds, List<Integer> brandIds, List<String> colors, List<String> sizes, Double minPrice, Double maxPrice, String sortBy) {
+    public List<Product> getFilteredProducts(List<Integer> categoryIds, List<Integer> brandIds, List<String> colors, List<String> sizes,String keyword, Double minPrice, Double maxPrice, String sortBy) {
         Specification<Product> spec = Specification.where(null);
 
         if (categoryIds != null && !categoryIds.isEmpty()) {
@@ -85,7 +85,9 @@ public class ProductServiceImpl implements ProductService {
         if (maxPrice != null) {
             spec = spec.and(ProductSpecification.hasMaxPrice(maxPrice));
         }
-
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            spec = spec.and(ProductSpecification.hasName(keyword));
+        }
         if (sortBy != null) {
             switch (sortBy) {
                 case "Price: High-Low":

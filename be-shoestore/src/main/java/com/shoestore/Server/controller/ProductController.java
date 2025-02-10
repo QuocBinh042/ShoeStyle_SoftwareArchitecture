@@ -39,7 +39,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/products")
 public class ProductController {
 
     @Value("${user.dir}")
@@ -52,7 +52,6 @@ public class ProductController {
     private final CategoryService categoryService;
     private final BrandService brandService;
     private final SupplierService supplierService;
-    private List<Product> paginatedProducts;
 
 
     public ProductController(ProductService productService, CategoryService categoryService, BrandService brandService, SupplierService supplierService) {
@@ -61,77 +60,7 @@ public class ProductController {
         this.brandService = brandService;
         this.supplierService = supplierService;
     }
-    @GetMapping("/search/show-filtered")
-    public ResponseEntity<Map<String,Object>> getFiltered(){
-        Map<String,Object> response= new HashMap<>();
-        response.put("categories",categoryService.getAllCategory());
-        response.put("brands",brandService.getAllBrand());
-        response.put("suppliers",supplierService.getAllSupplier());
-        return ResponseEntity.ok(response);
-    }
-    @GetMapping("/search/filtered")
-    public ResponseEntity<LinkedHashMap<String, Object>> getFilteredProducts(
-            @RequestParam(required = false) List<Integer> categoryIds,
-            @RequestParam(required = false) List<Integer> brandIds,
-            @RequestParam(required = false) List<String> colors,
-            @RequestParam(required = false) List<String> sizes,
-            @RequestParam(required = false) Double minPrice,
-            @RequestParam(required = false) Double maxPrice,
-            @RequestParam(required = false) String sortBy,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "12") int pageSize
-    ) {
-        try {
-            if (sortBy != null) {
-                sortBy = URLDecoder.decode(sortBy, StandardCharsets.UTF_8.toString());
-                System.out.println("SortBy sau khi giải mã: " + sortBy);
-            }
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        if ((categoryIds == null || categoryIds.isEmpty()) &&
-                (brandIds == null || brandIds.isEmpty()) &&
-                (colors == null || colors.isEmpty()) &&
-                (sizes == null || sizes.isEmpty()) &&
-                minPrice == null &&
-                maxPrice == null &&
-                sortBy == null) {
-            List<Product> allProducts = productService.getAllProduct();
-            LinkedHashMap<String, Object> response = new LinkedHashMap<>();
-            response.put("products", allProducts);
-            return ResponseEntity.ok(response);
-        }
-        // Tiến hành lấy dữ liệu sản phẩm với các tham số đã giải mã
-        List<Product> products = productService.getFilteredProducts(categoryIds, brandIds, colors, sizes, minPrice, maxPrice, sortBy);
-
-        LinkedHashMap<String, Object> response = new LinkedHashMap<>();
-        int totalProducts =products.size();
-        List<Product> paginatedProducts= productService.getProductsByPage(products,page,pageSize);
-        response.put("total", totalProducts);
-        response.put("products", paginatedProducts);
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping("/all-products")
-    public ResponseEntity<Map<String, Object>> getAllProducts(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "12") int pageSize
-    ) {
-        List<Product> allProducts = productService.getAllProduct();
-
-        // Tính toán phân trang
-        int totalProducts = allProducts.size();
-        List<Product> paginatedProducts= productService.getProductsByPage(allProducts,page,pageSize);
-        Map<String, Object> response = new HashMap<>();
-        response.put("products", paginatedProducts);
-        response.put("total", totalProducts);
-        return ResponseEntity.ok(response);
-    }
-
-
-
-
-    @PostMapping("/products/add")
+    @PostMapping("/add")
     public ResponseEntity<?> addProduct(
             @RequestParam("image") MultipartFile[] files,  // Nhận mảng ảnh từ client
             @RequestParam("productName") String productName,  // Tên sản phẩm
@@ -241,7 +170,7 @@ public class ProductController {
         }
     }
 
-    @GetMapping("/product/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable int id) {
         Product product = productService.getProductById(id);
         if (product != null) {
@@ -250,7 +179,7 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
-    @GetMapping("/product/by-product-details-id/{id}") 
+    @GetMapping("/by-product-details-id/{id}")
     public ResponseEntity<Product>  getProductsByProductDetails(@PathVariable int id){
         Product product=productService.getProductByProductDetailsId(id);
         System.out.println("Id:"+id);
@@ -412,4 +341,6 @@ public class ProductController {
 
         return ResponseEntity.ok(response);
     }
+
+
 }

@@ -31,6 +31,11 @@ public class VoucherServiceImpl implements VoucherService {
     }
 
     @Override
+    public Voucher getVoucherById(int id) {
+        return voucherRepository.findById(id).orElse(null);
+    }
+
+    @Override
     public void deleteVoucher(int voucherID) {
         voucherRepository.deleteById(voucherID);
     }

@@ -27,7 +27,7 @@ public class Order {
     private String code;
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "voucherID",nullable = true)
-    @JsonIgnore
+//    @JsonIgnore
     private Voucher voucher;
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     @Column(nullable = true)
@@ -36,8 +36,10 @@ public class Order {
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     @JsonIgnore
     private Payment payment;
+    @Column(name = "shippingAddress", nullable = false, columnDefinition = "NVARCHAR(100)")
     private String shippingAddress;
     private String typePayment;
+    private double discount;
     @ManyToOne
     @JoinColumn(name = "userID")
     private User user;

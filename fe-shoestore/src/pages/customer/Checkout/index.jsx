@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Radio, Button, Image, Table, Steps, Divider, Modal, Card } from "antd";
+import { Radio, Button, Image, Table, Steps, Divider, Modal, Card, Tag } from "antd";
 import { CarOutlined, TagOutlined } from "@ant-design/icons";
 import "./Checkout.scss";
 import OrderSuccess from "../Order";
@@ -10,6 +10,8 @@ import { addOrderDetails } from "../../../services/orderDetailService";
 import logoVNPAY from '../../../assets/images/logos/vnpay_logo.png'
 import { addPayment, getVnPayUrl } from "../../../services/paymentService";
 import { fetchVoucherWithPrice } from "../../../services/voucherService";
+import { fetchAddressByUser, deleteAddress } from "../../../services/addressService";
+import { useAuth } from "../../../context/AuthContext";
 const Checkout = () => {
   const location = useLocation();
   const selectedItems = location.state?.selectedItems || [];
@@ -20,8 +22,32 @@ const Checkout = () => {
   const [shippingMethod, setShippingMethod] = useState("Normal");
   const [paymentMethod, setPaymentMethod] = useState(null);
   const [modalData, setModalData] = useState(null);
-  const [vouchers, setVouchers] = useState([]); // State lưu danh sách voucher
+  const [vouchers, setVouchers] = useState([]);
   const [selectedVoucher, setSelectedVoucher] = useState(null);
+  const [totalCost, setTotalCost] = useState(0);
+  const [discount, setDiscount] = useState(0);
+  const [addresses, setAddresses] = useState([]);
+  const [selectedAddress, setSelectedAddress] = useState(null);
+  const [isModalAddressVisible, setIsModalAddressVisible] = useState(false);
+  const { user } = useAuth();
+  useEffect(() => {
+    if (user?.id) {
+      fetchAddresses(user.id);
+    }
+  }, [user]);
+  const fetchAddresses = async (userId) => {
+    try {
+      const response = await fetchAddressByUser(userId);
+      setAddresses(response || []);
+      const defaultAddress = response.find(addr => addr.default === true || addr.default === "true") || response[0];
+      setSelectedAddress(defaultAddress);
+    } catch (error) {
+      console.error("Error fetching addresses:", error);
+    }
+  };
+
+
+
   useEffect(() => {
     const fetchProductDetails = async () => {
       const details = await Promise.all(
@@ -36,6 +62,13 @@ const Checkout = () => {
 
     fetchProductDetails();
   }, [selectedItems]);
+
+
+  useEffect(() => {
+    const { totalCost, discount } = calculateTotalCost();
+    setTotalCost(totalCost);
+    setDiscount(discount);
+  }, [productDetails, selectedVoucher, shippingMethod]);
   const calculateTotalCost = () => {
     let subtotal = productDetails.reduce((total, product) => total + product.quantity * product.price, 0);
     let shippingCost = shippingMethod === "Express" ? 30000 : 0;
@@ -43,7 +76,7 @@ const Checkout = () => {
 
     if (selectedVoucher) {
       if (selectedVoucher.freeShipping) {
-        discount = shippingCost  // Áp dụng miễn phí vận chuyển
+        discount = shippingCost
       } else {
         if (selectedVoucher.discountType === "PERCENT") {
           discount = (selectedVoucher.discountValue / 100) * subtotal;
@@ -52,17 +85,9 @@ const Checkout = () => {
         }
       }
     }
-    // console.log("Calculated discount:", (selectedVoucher?.discountValue / 100) * subtotal);
-    // console.log(subtotal)
-    // console.log(shippingCost)
-    // console.log("GiảM GIÁ"+ discount)
 
-
-    return subtotal + shippingCost - discount;
+    return { totalCost: subtotal + shippingCost - discount, discount };
   };
-
-  // Cập nhật totalCost
-  const totalCost = calculateTotalCost();
 
   const shippingCost = shippingMethod === "Express" ? 30000 : 0
   useEffect(() => {
@@ -75,7 +100,7 @@ const Checkout = () => {
       }
     };
 
-    if (totalCost > 0) fetchVouchers(); // Gọi API nếu đơn hàng có giá trị
+    if (totalCost > 0) fetchVouchers();
   }, [totalCost]);
   const createOrder = async () => {
     if (!paymentMethod) {
@@ -92,10 +117,12 @@ const Checkout = () => {
       status: "Processing",
       total: totalCost,
       feeShip: shippingCost,
-      shippingAddress: `${infoUser.address.street}, ${infoUser.address.ward}, ${infoUser.address.district}, ${infoUser.address.city}`,
-      user: { userID: 1 },
+      shippingAddress: `${selectedAddress.street}, ${selectedAddress.ward}, ${selectedAddress.district}, ${selectedAddress.city}`,
+      user: { userID: user.id },
       code: orderCode,
       typePayment: paymentMethod === "VNPay" ? "VNPay" : "Cash on Delivery",
+      ...(selectedVoucher && { voucher: { voucherID: selectedVoucher.voucherID } }),
+      discount: discount
     };
 
     try {
@@ -131,7 +158,7 @@ const Checkout = () => {
         }
         // Set modal data
         setModalData({
-          email: infoUser.email,
+          // email: infoUser.email,
           transactionDate: new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" }),
           paymentMethod: paymentMethod === "VNPay" ? "VNPay" : "Cash on Delivery",
           shippingMethod: shippingMethod === "Express" ? "Express delivery (1-3 business days)" : "Normal delivery (3-5 business days)",
@@ -150,32 +177,27 @@ const Checkout = () => {
       });
     }
   };
-
-  const infoUser = {
-    fullname: "Tran Le Quoc Binh",
-    email: "binh@gmail.com",
-    phoneNumber: "012345678",
-    address: {
-      street: "440/45 Thong Nhat",
-      ward: "phuong 16",
-      district: "quan Go Vap",
-      city: "Ho Chi Minh",
-    }
-  }
-
-
+  const handleSelectAddress = (address) => {
+    setSelectedAddress(address);
+    setIsModalAddressVisible(false);
+  };
   const dataSource = [
     {
       key: '1',
       title: 'Contact',
-      content: `${infoUser.fullname}, ${infoUser.phoneNumber}`,
-      // action: <Button type="link">Change</Button>,
+      content: selectedAddress
+        ? `${selectedAddress.fullName} - ${selectedAddress.phone}`
+        : "No address selected",
+
     },
+
     {
       key: '2',
       title: 'Shipping address',
-      content: `${infoUser.address.street}, ${infoUser.address.ward}, ${infoUser.address.district}, ${infoUser.address.city}`,
-      action: <Button type="link">Change</Button>,
+      content: selectedAddress
+        ? `${selectedAddress.street}, ${selectedAddress.ward}, ${selectedAddress.district}, ${selectedAddress.city}`
+        : "No address selected",
+      action: <Button type="link" onClick={() => setIsModalAddressVisible(true)}>Change</Button>,
     },
     {
       key: '3',
@@ -287,11 +309,13 @@ const Checkout = () => {
           <Steps size="small" current={current} direction="vertical" onChange={setCurrent}>
             {steps.map((step, index) => (
               <Steps.Step
-                key={index}
+                key={`step-${index}`}
                 title={<span className="custom-step-title">{step.title}</span>}
                 description={step.content}
-                onClick={() => setCurrent(index)} />
+                onClick={() => setCurrent(index)}
+              />
             ))}
+
           </Steps>
         </div>
 
@@ -300,8 +324,8 @@ const Checkout = () => {
             <span >Order Summary</span>
           </div>
           <div className="scrollable">
-            {productDetails.map((product) => (
-              <div key={product.detail.productDetailID}>
+            {productDetails.map((product, index) => (
+              <div key={product.detail?.productDetailID || `product-${index}`}>
                 <div className="checkout-summary__item">
                   <Image src={product.image} className="checkout-summary__image" width={120} />
                   <div className="checkout-summary__details">
@@ -370,7 +394,7 @@ const Checkout = () => {
             <Card key={voucher.voucherID} className="voucher-card">
               <Radio value={voucher.voucherID}>
                 {voucher.code} - {voucher.freeShipping ? (
-                
+
                   <>
                     <CarOutlined style={{ color: "green" }} />  Freeship
                   </>
@@ -394,6 +418,34 @@ const Checkout = () => {
           </Button>
         </div>
       </Modal>
+      <Modal
+        open={isModalAddressVisible}
+        onCancel={() => setIsModalAddressVisible(false)}
+        centered
+        footer={null}
+      >
+        <h3>Select a Shipping Address</h3>
+        <Radio.Group
+          onChange={(e) => handleSelectAddress(addresses.find(addr => addr.addressID === e.target.value))}
+          value={selectedAddress?.addressID}
+        >
+          {addresses.map((address) => (
+            <Card key={address.addressID} className="address-card">
+              <Radio value={address.addressID}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <strong>{address.fullName}</strong>
+                  {address.default && <Tag color="blue">Default</Tag>}
+                </div>
+
+                <div>{address.phone}</div>
+                <div>{`${address.street}, ${address.ward}, ${address.district}, ${address.city}`}</div>
+              </Radio>
+            </Card>
+          ))}
+        </Radio.Group>
+      </Modal>
+
+
 
     </>
   );

@@ -5,6 +5,7 @@ import { fetchOrderByUser } from '../../../services/orderService';
 import { fetcPaymentByOrder } from '../../../services/paymentService';
 import { fetchOrderDetailByOrder } from '../../../services/orderDetailService';
 import { fetchProductByProductDetailId } from "../../../services/productService"
+import { useAuth } from "../../../context/AuthContext";
 const onChange = (key) => {
   // console.log(key);
 };
@@ -12,28 +13,23 @@ const onChange = (key) => {
 
 function MyOrder() {
   const [orders, setOrders] = useState([]);
+  const { user } = useAuth();
   useEffect(() => {
-    loadOrdersWithDetails(2)
-  }, []);
+    if (user?.id) {
+      loadOrdersWithDetails(user.id);
+    } else {
+      setOrders([]); 
+    }
+  }, [user]);
   const loadOrdersWithDetails = async (userId) => {
     try {
-      // Lấy danh sách đơn hàng
-      const fetchedOrders = await fetchOrderByUser(userId);
+      if (!userId) return; // Nếu không có userId thì thoát luôn
 
+      const fetchedOrders = await fetchOrderByUser(userId);
       const detailedOrders = await Promise.all(
         fetchedOrders.map(async (order) => {
           const details = await fetchOrderDetailByOrder(order.orderID);
           const payment = await fetcPaymentByOrder(order.orderID);
-          console.log(payment)
-          const formattedDetails = details.map((detail) => ({
-            id: detail.id,
-            price: detail.price,
-            quantity: detail.quantity,
-            size: detail.productDetail.size,
-            color: detail.productDetail.color,
-            stockQuantity: detail.productDetail.stockQuantity,
-          }));
-
           return {
             id: order.orderID,
             name: order.user.name,
@@ -43,10 +39,18 @@ function MyOrder() {
             paymentMethod: order.typePayment,
             shippingAddress: order.shippingAddress,
             total: order.total,
-            details: formattedDetails,
-            code:order.code,
-            paymentStatus:payment.status,
-            feeShip:order.feeShip
+            details: details.map(detail => ({
+              id: detail.id,
+              price: detail.price,
+              quantity: detail.quantity,
+              size: detail.productDetail.size,
+              color: detail.productDetail.color,
+              stockQuantity: detail.productDetail.stockQuantity,
+            })),
+            code: order.code,
+            paymentStatus: payment.status,
+            feeShip: order.feeShip,
+            discount: order.discount
           };
         })
       );

@@ -3,7 +3,7 @@ import { Card, Button, Modal, List, Tag, Typography, message } from "antd";
 import AddressAddForm from "./AddressAddForm ";
 import AddressEditForm from "./AddressEditForm"; // Import AddressEditForm
 import { fetchAddressByUser, deleteAddress } from "../../../services/addressService";
-
+import { useAuth } from "../../../context/AuthContext";
 const { Text } = Typography;
 const { confirm } = Modal;
 
@@ -11,10 +11,14 @@ const AddressManagement = () => {
   const [addresses, setAddresses] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editAddress, setEditAddress] = useState(null); // Địa chỉ đang chỉnh sửa
-
+  const { user } = useAuth();
   useEffect(() => {
-    loadAddressUser(1);
-  }, []);
+    if (user?.id) {
+      loadAddressUser(user.id);
+    } else {
+      setAddresses([]); 
+    }
+  }, [user]);
 
   const loadAddressUser = async (userId) => {
     try {
@@ -48,14 +52,14 @@ const AddressManagement = () => {
   };
 
   const handleAddAddress = (newAddress) => {
-    loadAddressUser(1)
+    loadAddressUser(useAuth.id)
     setAddresses([...addresses, { addressID: addresses.length + 1, ...newAddress }]);
 
     setIsModalVisible(false);
   };
 
   const handleEditAddress = (updatedAddress) => {
-    loadAddressUser(1)
+    loadAddressUser(useAuth.id)
     setAddresses(
       addresses.map((addr) =>
         addr.addressID === updatedAddress.addressID ? updatedAddress : addr
@@ -66,7 +70,7 @@ const AddressManagement = () => {
   };
 
   const openModal = (address = null) => {
-    setEditAddress(address); // Nếu address là null, nghĩa là chế độ thêm mới
+    setEditAddress(address); 
     setIsModalVisible(true);
   };
 

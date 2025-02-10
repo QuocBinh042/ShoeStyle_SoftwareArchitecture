@@ -7,7 +7,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface VoucherService{
-
+    Voucher getVoucherById(int id);
     public void deleteVoucher(int voucherID);
     public List<Voucher> getAllVouchers();
     public List<Voucher> searchVouchers(LocalDate startDate, LocalDate endDate);

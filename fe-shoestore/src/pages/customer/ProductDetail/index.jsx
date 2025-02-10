@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate,useLocation } from "react-router-dom";
 import { Row, Col, Button, Rate, InputNumber, Image, Tag, Input, Modal } from "antd";
 import "./ProductDetail.scss";
 import { ShoppingCartOutlined, ShoppingOutlined } from "@ant-design/icons";
@@ -9,6 +9,7 @@ import { fetchProductDetailByProductId } from "../../../services/productDetailSe
 import { fetchProductById, fetchProductByProductDetailId } from "../../../services/productService";
 import { addCartItem } from "../../../services/cartItemService";
 import { getDiscountByProduct } from "../../../services/promotionService";
+import { useAuth } from "../../../context/AuthContext";
 const ProductDetails = () => {
   const navigate = useNavigate();
   const { productID } = useParams();
@@ -22,7 +23,8 @@ const ProductDetails = () => {
   const [selectedStock, setSelectedStock] = useState(null);
 
   const [discountedPrice, setDiscountedPrice] = useState(null);
-
+  const { user } = useAuth();
+  const location = useLocation();
   useEffect(() => {
     const fetchProduct = async (productID) => {
       try {
@@ -57,6 +59,16 @@ const ProductDetails = () => {
 
 
   const handleBuyNow = () => {
+    if (!user) {
+      Modal.confirm({
+        title: "Please log in to continue shopping",
+        content: "You need to log in to proceed with your purchase.",
+        okText: "Login",
+        cancelText: "Cancel",
+        onOk: () => navigate("/login", { state: { from: location.pathname } }),
+      });
+      return;
+    }
     if (!selectedSize) {
       Modal.error({ content: "Please select color and size!" });
       return;
@@ -89,6 +101,7 @@ const ProductDetails = () => {
     const itemsToCheckout = [formattedItem];
     navigate("/cart/checkout", { state: { selectedItems: itemsToCheckout } });
   };
+
 
   const reviews = [
     {
@@ -140,14 +153,12 @@ const ProductDetails = () => {
 
     const cartItem = {
       id: {
-        cartId: 1,
+        cartId: user.id,
         productDetailId: selectedDetail.productDetailID,
       },
       quantity,
       subTotal: product?.price * quantity,
     };
-
-    console.log("Cart Item:", cartItem);
     try {
       addCartItem(cartItem)
       Modal.success({ content: "Added to cart successfully!" });
@@ -279,12 +290,12 @@ const ProductDetails = () => {
               <span>Price</span>
               <span>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(discountedPrice)}</span>
             </div>
-            <Row justify="space-between" className='cart-summary__promo'>
+            {/* <Row justify="space-between" className='cart-summary__promo'>
               <Input placeholder="Promocode" className='cart-summary__promo-input' />
               <Button className='cart-summary__promo-apply' type="primary">
                 Apply
               </Button>
-            </Row>
+            </Row> */}
             <div className="order-total">
               <span>Sub Total</span>
               <span>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(discountedPrice * quantity)}</span>

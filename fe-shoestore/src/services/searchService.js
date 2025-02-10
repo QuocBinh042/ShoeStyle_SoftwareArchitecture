@@ -4,7 +4,7 @@ export const fetchFilters = async () => {
   return data;
 };
 export const fetchAllProducts = async ({ page = 1, pageSize = 12 }) => {
-  const data = await fetchData(`all-products?page=${page}&pageSize=${pageSize}&forceReload=1`);
+  const data = await fetchData(`search/all-products?page=${page}&pageSize=${pageSize}&forceReload=1`);
   return data;
 };
 export const fetchFilteredProducts = async (params,page) => {
@@ -41,17 +41,22 @@ export const fetchFilteredProducts = async (params,page) => {
     if (queryString) queryString += '&';
     queryString += `sortBy=${params.sortBy}`;
   }
+  if (params.keyword) {
+    if (queryString) queryString += '&';
+    queryString += `keyword=${params.keyword}`;
+  }
   if (page) {
     if (queryString) queryString += '&';
     queryString += `page=${page}`;
   }
   // Full url request
   const fullUrl = `${baseUrl}?${queryString}`;  
+  console.log(fullUrl)
   try {
     const response = await fetchData(fullUrl);  
     if (!response || !response.products || response.products.length === 0) {
       console.error("No data found in response.");
-      return { products: [], total: 0 }; // Trả về đối tượng với products và total là 0
+      return { products: [], total: 0 }; 
     }
     return { products: response.products, total: response.total || 0 };
   } catch (error) {

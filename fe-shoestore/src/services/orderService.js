@@ -12,11 +12,9 @@ export const fetchOrderByUser = async (id) => {
 };
 export const countOrderByUser = async (id) => {
     const data = await fetchData(`order/count/${id}`);
-    console.log(data)
     return data;
 };
 export const sumAmount = async (id) => {
     const data = await fetchData(`order/total-spent/${id}`);
-    console.log(data)
     return data;
 };
