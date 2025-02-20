@@ -11,7 +11,7 @@ import logoVNPAY from '../../../assets/images/logos/vnpay_logo.png'
 import { addPayment, getVnPayUrl } from "../../../services/paymentService";
 import { fetchVoucherWithPrice } from "../../../services/voucherService";
 import { fetchAddressByUser, deleteAddress } from "../../../services/addressService";
-import { useAuth } from "../../../context/AuthContext";
+import { useAuthToken } from "../../../hooks/useAuthToken";
 const Checkout = () => {
   const location = useLocation();
   const selectedItems = location.state?.selectedItems || [];
@@ -29,7 +29,8 @@ const Checkout = () => {
   const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isModalAddressVisible, setIsModalAddressVisible] = useState(false);
-  const { user } = useAuth();
+  const user = useAuthToken();
+  console.log("User in Checkout:", selectedItems);
   useEffect(() => {
     if (user?.id) {
       fetchAddresses(user.id);
@@ -39,8 +40,19 @@ const Checkout = () => {
     try {
       const response = await fetchAddressByUser(userId);
       setAddresses(response || []);
-      const defaultAddress = response.find(addr => addr.default === true || addr.default === "true") || response[0];
-      setSelectedAddress(defaultAddress);
+
+      if (response.length === 0) {
+        Modal.info({
+          title: "No Address Found",
+          content: "You don't have any saved addresses. Please add a new address.",
+          onOk: () => {
+            window.location.href = '/account';
+          }
+        });
+      } else {
+        const defaultAddress = response.find(addr => addr.default === true || addr.default === "true") || response[0];
+        setSelectedAddress(defaultAddress);
+      }
     } catch (error) {
       console.error("Error fetching addresses:", error);
     }
@@ -158,7 +170,6 @@ const Checkout = () => {
         }
         // Set modal data
         setModalData({
-          // email: infoUser.email,
           transactionDate: new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" }),
           paymentMethod: paymentMethod === "VNPay" ? "VNPay" : "Cash on Delivery",
           shippingMethod: shippingMethod === "Express" ? "Express delivery (1-3 business days)" : "Normal delivery (3-5 business days)",
@@ -356,17 +367,20 @@ const Checkout = () => {
               <span>
                 {selectedVoucher ? (
                   selectedVoucher.freeShipping ? (
-                    `- ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(shippingCost)} (Ship)`
+                    `- ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(shippingCost)} (Freeship) `
                   ) : selectedVoucher.discountType === "PERCENT" ? (
-                    `- ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
+                    ` - ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
                       (selectedVoucher.discountValue / 100) * productDetails.reduce((total, product) => total + product.quantity * product.price, 0)
-                    )} (${selectedVoucher.discountValue}%)`
+                    )} (${selectedVoucher.discountValue}%) `
                   ) : (
-                    `- ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedVoucher.discountValue)}`
+                    ` (-${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedVoucher.discountValue)})`
                   )
                 ) : "0"}
               </span>
             </p>
+
+
+
             <Divider style={{ marginTop: 5, marginBottom: 10 }} ></Divider>
             <h4 className="checkout-summary__totals">Total <span>
               {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalCost)}

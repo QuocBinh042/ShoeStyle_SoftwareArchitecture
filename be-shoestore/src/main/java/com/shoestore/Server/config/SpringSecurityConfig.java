@@ -1,5 +1,6 @@
 package com.shoestore.Server.config;
 
+import com.shoestore.Server.sercurity.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -47,7 +48,9 @@ public class SpringSecurityConfig {
 		http
 				.cors().and().csrf().disable()
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/api/admin/**", "/api/user/profile").authenticated()
+						.requestMatchers("/api/auth/refresh-token").permitAll()
+						.requestMatchers("/api/admin/**").hasRole("ADMIN")
+						.requestMatchers("/api/user/**").authenticated()
 						.anyRequest().permitAll()
 				)
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -2,7 +2,7 @@ import { fetchData,postData } from './apiService'
 export const addPayment = async (payment) => {
     const data = await postData(`payment/add`, payment);
     if (data) {
-        console.log('Cart item added successfully:', data);
+        console.log('Payment added successfully:', data);
     }
     return data;
 };

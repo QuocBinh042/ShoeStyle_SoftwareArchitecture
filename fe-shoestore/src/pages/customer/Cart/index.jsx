@@ -4,10 +4,7 @@ import { Table, InputNumber, Button, Card, Checkbox, Row, Col, Select, Input, Mo
 import './Cart.scss'
 import { ArrowLeftOutlined, CheckCircleOutlined, DeleteOutlined, DownCircleFilled, EditOutlined } from "@ant-design/icons";
 import { fetchCartItemByCartId, updateCartItem, deleteCartItem } from "../../../services/cartItemService";
-import { fetchProductDetailById } from "../../../services/productDetailService";
-import { fetchProductByProductDetailId } from "../../../services/productService";
-import { getDiscountByProduct } from "../../../services/promotionService";
-import { useAuth } from "../../../context/AuthContext";
+import { useAuthToken } from "../../../hooks/useAuthToken";
 const Cart = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -17,42 +14,35 @@ const Cart = () => {
   const [pageSize, setPageSize] = useState(3);
   const [totalItems, setTotalItems] = useState(0);
   const [isChanged, setIsChanged] = useState(false);
-  const { user } = useAuth();
+  const user  = useAuthToken();
   const loadCartItemByUser = async (id, page = 1, size = 3) => {
     const data = await fetchCartItemByCartId(id, page, size);
-    if (data && Array.isArray(data.cartItems)) {
-      const productDetailIds = data.cartItems.map(item => item.id.productDetailId);
-      const productDetails = await Promise.all(
-        productDetailIds.map(id => fetchProductDetailById(id))
-      );
-      const products = await Promise.all(
-        productDetails.map((detail) =>
-          fetchProductByProductDetailId(detail.productDetailID)
-        )
-      );
-      const discountPrices = await Promise.all(
-        products.map(product => getDiscountByProduct(product.productID))
-      );
-      const enrichedCartItems = data.cartItems.map((cartItem, index) => ({
-        key: cartItem.id.productDetailId,
-        name: products[index].productName,
-        size: productDetails[index].size,
-        colors: productDetails[index].color,
-        quantity: cartItem.quantity,
-        initialQuantity: cartItem.quantity,
-        price: discountPrices[index] ,
-        image: products[index].imageURL,
-        stockQuantity: productDetails[index].stockQuantity,
-        isChecked: false,
-      }));
-
+    if (data && Array.isArray(data.items)) {
+      const enrichedCartItems = data.items.map((cartItem) => {
+        const productDetail = cartItem.productDetailDTO;  
+        const productName = cartItem.productName;        
+        return {
+          key: cartItem.cartItemDTO.productDetailId,
+          name: productName,                              
+          size: productDetail.size,                        
+          colors: productDetail.color,                    
+          quantity: cartItem.cartItemDTO.quantity,        
+          initialQuantity: cartItem.cartItemDTO.quantity,  
+          price: cartItem.productPrice,
+          image: productDetail.imageURL,                    
+          stockQuantity: productDetail.stockQuantity,       
+          isChecked: false,                              
+        };
+      });
 
       setCartItems(enrichedCartItems);
-      setTotalItems(data.total);
+      setTotalItems(data.totalElements);
     } else {
       console.log('No products received or invalid data format');
     }
-  };
+};
+
+
 
 
   useEffect(() => {
@@ -158,8 +148,8 @@ const Cart = () => {
     const cartId = user.id;
     const productDetailId = key;
     deleteCartItem(cartId, productDetailId)
-      .then((result) => {
-        if (result === "CarItem deleted") {
+      .then((response) => {
+        if (response === "Cart item deleted successfully") {
           loadCartItemByUser(cartId, currentPage, pageSize);
           Modal.success({
             content: 'Item removed successfully!',
@@ -176,7 +166,8 @@ const Cart = () => {
           content: 'Error removing item!',
         });
       });
-  };
+};
+
   const handleLeavePage = (e) => {
     if (isChanged && !isCheckout) {
       e.preventDefault();

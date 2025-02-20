@@ -1,25 +1,34 @@
 import axios from "axios";
+import { refreshToken } from "./authService";
+const API_BASE_URL = "http://localhost:8080/api";
 
-const API_BASE_URL = "http://localhost:8080/api"; // Đổi thành API của bạn
-
-// Hàm lấy token từ localStorage
-const getAuthToken = () => localStorage.getItem("token");
-
-// Hàm tạo instance của Axios với headers chứa token
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
 });
 
-// Thêm interceptor để tự động gắn token vào headers
-apiClient.interceptors.request.use((config) => {
-  const token = getAuthToken();
+apiClient.interceptors.request.use((config) => { 
+  const token = localStorage.getItem("accessToken");
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
-});
+}, (error) => Promise.reject(error));
 
-// Hàm gọi API
+apiClient.interceptors.response.use(  
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      const newAccessToken = await refreshToken();
+      if (newAccessToken) {
+        error.config.headers.Authorization = `Bearer ${newAccessToken}`;
+        return apiClient(error.config); 
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+
 export const fetchData = async (endpoint) => {
   try {
     const response = await apiClient.get(endpoint);

@@ -1,4 +1,4 @@
-package com.shoestore.Server.utils;
+package com.shoestore.Server.sercurity;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
@@ -11,7 +11,7 @@ import java.util.Date;
 import java.util.List;
 
 @Component
-public class JwtUtil {
+public class JwtUtils {
     private static final long EXPIRATION_TIME = 3600000L;
 
     @Value("${jwt.secret}")
@@ -39,6 +39,15 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+    }
+    public String generateRefreshToken(int userId, String username) {
+        return Jwts.builder()
+                .setSubject(username)
+                .claim("userId", userId)
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7)) //1 week
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .compact();
     }
 
     public int extractUserId(String token) {

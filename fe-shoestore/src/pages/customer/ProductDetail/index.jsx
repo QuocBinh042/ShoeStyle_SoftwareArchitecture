@@ -21,7 +21,7 @@ const ProductDetails = () => {
   const [availableColors, setAvailableColors] = useState([]);
   const [availableSizes, setAvailableSizes] = useState([]);
   const [selectedStock, setSelectedStock] = useState(null);
-
+  const [productDetails, setProductDetails] = useState([]);
   const [discountedPrice, setDiscountedPrice] = useState(null);
   const { user } = useAuth();
   const location = useLocation();
@@ -29,30 +29,34 @@ const ProductDetails = () => {
     const fetchProduct = async (productID) => {
       try {
         const details = await fetchProductDetailByProductId(productID);
-        const product = await fetchProductById(productID);
         const discount = await getDiscountByProduct(productID);
-
-        if (product && details && details.productDetails.length > 0) {
-          setProduct(product);
+  
+        if (details && details.productDetails.length > 0) {
+          setProduct({
+            productName: details.productName,
+            categoryName: details.categoryName,
+            brandName: details.brandName,
+            description: details.description,
+            imageURL: details.imageURL || [], 
+            price:details.price
+          });
+  
+          setProductDetails(details.productDetails);
           setAvailableColors([...new Set(details.productDetails.map(detail => detail.color))]);
           setAvailableSizes([...new Set(details.productDetails.map(detail => detail.size))]);
-
-          if (discount && discount !== null) {
-            // Nếu có discount, sử dụng giá discount
-            setDiscountedPrice(discount);
-          } else {
-            // Nếu không có discount, sử dụng giá gốc
-            setDiscountedPrice(product.price);
-          }
+  
+          setDiscountedPrice(discount ?? details.price);
         } else {
           setProduct(null);
+          setProductDetails([]);
         }
       } catch (error) {
         console.error("Error fetching product:", error);
         setProduct(null);
+        setProductDetails([]);
       }
     };
-
+  
     if (productID) fetchProduct(productID);
   }, [productID]);
 
@@ -74,7 +78,7 @@ const ProductDetails = () => {
       return;
     }
 
-    const selectedDetail = product?.productDetails?.find(
+    const selectedDetail = productDetails.find(
       detail => detail.size === selectedSize
     );
 
@@ -137,10 +141,9 @@ const ProductDetails = () => {
       return;
     }
 
-    const selectedDetail = product?.productDetails?.find(
+    const selectedDetail = productDetails.find(
       detail => detail.size === selectedSize
     );
-
     if (!selectedDetail) {
       Modal.error({ content: "Selected size combination is not available!" });
       return;
@@ -157,7 +160,7 @@ const ProductDetails = () => {
         productDetailId: selectedDetail.productDetailID,
       },
       quantity,
-      subTotal: product?.price * quantity,
+      subTotal: product.price * quantity,
     };
     try {
       addCartItem(cartItem)
@@ -203,10 +206,10 @@ const ProductDetails = () => {
               </Row>
             </Col>
             <Col span={13} className="product-info">
-              <h3>{product?.brand?.name || "Unknown Brand"} / {product?.category?.name || "Unknown Category"}</h3>
+              <h3>{product.brandName || "Unknown Brand"} / {product.categoryName || "Unknown Category"}</h3>
 
 
-              <h1>{product?.productName}</h1>
+              <h1>{product.productName}</h1>
               <div className="product-pricing">
                 {discountedPrice && discountedPrice < product.price ? (
                   <>

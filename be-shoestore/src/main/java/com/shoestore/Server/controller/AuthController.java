@@ -1,22 +1,21 @@
 package com.shoestore.Server.controller;
 
-import com.shoestore.Server.entities.AuthResponse;
-import com.shoestore.Server.entities.LoginRequest;
+import com.shoestore.Server.dto.request.LoginRequest;
+import com.shoestore.Server.dto.request.UserDTO;
+import com.shoestore.Server.dto.response.AuthResponse;
 import com.shoestore.Server.entities.User;
-import com.shoestore.Server.service.impl.CustomUserDetailsService;
+import com.shoestore.Server.sercurity.CustomUserDetailsService;
 import com.shoestore.Server.service.UserService;
-import com.shoestore.Server.utils.JwtUtil;
+import com.shoestore.Server.sercurity.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
+import org.springframework.security.core.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,7 +25,7 @@ import java.util.stream.Collectors;
 public class AuthController {
 
     @Autowired
-    private JwtUtil jwtUtil;
+    private JwtUtils jwtUtil;
 
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
@@ -45,18 +44,21 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(Collections.singletonMap("message", "Password is invalid"));
             }
-            User user = userService.findByEmail(loginRequest.getEmail());
+
+            UserDTO user = userService.findByEmail(loginRequest.getEmail());
             if (user == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(Collections.singletonMap("message", "Email does not exist"));
             }
+
             int userId = user.getUserID();
             List<String> authorities = userDetails.getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.toList());
-            String token = jwtUtil.generateToken(userId, userDetails.getUsername(), authorities);
 
-            return ResponseEntity.ok(new AuthResponse(token));
+            String accessToken = jwtUtil.generateToken(userId, userDetails.getUsername(), authorities);
+            String refreshToken = jwtUtil.generateRefreshToken(userId, userDetails.getUsername());
+            return ResponseEntity.ok(new AuthResponse(accessToken, refreshToken));
 
         } catch (UsernameNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -67,10 +69,11 @@ public class AuthController {
         }
     }
 
+
     @PostMapping("/sign-up")
-    public ResponseEntity<?> register(@RequestBody User user) {
+    public ResponseEntity<?> register(@RequestBody UserDTO user) {
         try {
-            User newUser = userService.addUserByRegister(user);
+            UserDTO newUser = userService.addUserByRegister(user);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(Collections.singletonMap("message", "User registered successfully."));
         } catch (ResponseStatusException e) {
@@ -81,5 +84,16 @@ public class AuthController {
                     .body(Collections.singletonMap("message", "An unexpected error occurred. Please try again."));
         }
     }
+    @PostMapping("/refresh-token")
+    public ResponseEntity<?> refreshToken(@RequestBody String refreshToken) {
+        String username = jwtUtil.extractUsername(refreshToken);
+        if (username == null || !jwtUtil.validateToken(refreshToken)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired refresh token.");
+        }
 
+        UserDTO user = userService.findByEmail(username);
+        String newAccessToken = jwtUtil.generateToken(user.getUserID(), user.getEmail(), List.of(user.getRole().getName()));
+
+        return ResponseEntity.ok(newAccessToken);
+    }
 }

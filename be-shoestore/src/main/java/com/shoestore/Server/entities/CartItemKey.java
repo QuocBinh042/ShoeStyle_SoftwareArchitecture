@@ -13,7 +13,7 @@ public class CartItemKey implements Serializable {
     private int cartId;
     private int productDetailId;
 
-    public CartItemKey(int cartId, int productDetailId) { // Đúng thứ tự
+    public CartItemKey(int cartId, int productDetailId) {
         this.cartId = cartId;
         this.productDetailId = productDetailId;
     }

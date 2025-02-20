@@ -26,9 +26,9 @@ public class Product {
     @Column(name = "productID")
     private int productID;
     @Column(name = "productName", nullable = false)
-    @NotBlank(message = "Tên sản phẩm không được để trống") // Không cho phép null hoặc chuỗi rỗng
-    @Size(max = 50, message = "Tên sản phẩm không được vượt quá 50 ký tự") // Giới hạn độ dài tối đa
-    @Pattern(regexp = "^[a-zA-Z0-9 ]*$", message = "Tên sản phẩm chỉ được chứa chữ, số và khoảng trắng") // Chỉ cho phép chữ, số và khoảng trắng
+    @NotBlank(message = "Tên sản phẩm không được để trống")
+    @Size(max = 50, message = "Tên sản phẩm không được vượt quá 50 ký tự")
+    @Pattern(regexp = "^[a-zA-Z0-9 ]*$", message = "Tên sản phẩm chỉ được chứa chữ, số và khoảng trắng")
     private String productName;
     @ElementCollection
     @CollectionTable(name = "Product_ImageURL", joinColumns = @JoinColumn(name = "productID"))

@@ -1,20 +1,17 @@
 package com.shoestore.Server.controller;
 
-import com.shoestore.Server.dto.DataResponse;
-import com.shoestore.Server.dto.PaymentDTO;
-import com.shoestore.Server.entities.Cart;
-import com.shoestore.Server.entities.Order;
-import com.shoestore.Server.entities.Payment;
-import com.shoestore.Server.entities.User;
+import com.shoestore.Server.dto.request.OrderDTO;
+import com.shoestore.Server.dto.request.OrderDetailDTO;
+import com.shoestore.Server.dto.request.PaymentDTO;
 import com.shoestore.Server.service.OrderService;
 import com.shoestore.Server.service.PaymentService;
-import com.shoestore.Server.utils.IpAddress;
+import com.shoestore.Server.utils.NetworkUtils;
 import com.shoestore.Server.utils.VnPayUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -26,30 +23,33 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/payment")
 public class PaymentController {
+
     @Autowired
     private PaymentService paymentService;
     @Autowired
     private OrderService orderService;
+
     @PostMapping("/add")
-    public ResponseEntity<Payment> addPayment(@RequestBody Payment payment) {
-        Order order=orderService.findById(payment.getOrder().getOrderID());
-        payment.setOrder(order);
-        Payment paymentAdd=paymentService.addPayment(payment);
-        return ResponseEntity.ok(paymentAdd);
+    public ResponseEntity<PaymentDTO> addPayment(@RequestBody PaymentDTO paymentDTO) {
+
+        try {
+            PaymentDTO savePaymentDTO = paymentService.addPayment(paymentDTO);
+            return ResponseEntity.ok(savePaymentDTO);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
     }
     @GetMapping("/by-order-id/{order-id}")
-    public ResponseEntity<Payment> getPaymentByOrderId(@PathVariable("order-id") int id) {
-        Payment payment=paymentService.getPaymentByOrderId(id);
-        return ResponseEntity.ok(payment);
+    public ResponseEntity<PaymentDTO> getPaymentByOrderId(@PathVariable("order-id") int id) {
+        PaymentDTO paymentDTO = paymentService.getPaymentByOrderId(id);
+        return paymentDTO != null ? ResponseEntity.ok(paymentDTO) : ResponseEntity.notFound().build();
     }
     @GetMapping("/get-all")
-    public ResponseEntity<Map<String,Object>> getAllPayment() {
-        List<Payment> payment=paymentService.getAll();
-        Map<String,Object> response= new HashMap<>();
-        response.put("payment",payment);
-        return ResponseEntity.ok(response);
-
+    public ResponseEntity<List<PaymentDTO>> getAllPayments() {
+        List<PaymentDTO> payments = paymentService.getAll();
+        return ResponseEntity.ok(payments);
     }
+
     @GetMapping("/vn-pay/create-info")
     public ResponseEntity<Map<String, String>> getPay(@RequestParam("price") long price,
                                                       @RequestParam("code") String code) throws UnsupportedEncodingException {
@@ -60,7 +60,7 @@ public class PaymentController {
         long amount = price * 100;
         String bankCode = "NCB";
 
-        String vnp_IpAddr = IpAddress.getIpAddress();
+        String vnp_IpAddr = NetworkUtils.getIpAddress();
         System.out.println(vnp_IpAddr);
         String vnp_TmnCode = VnPayUtils.vnp_TmnCode;
 
@@ -135,7 +135,7 @@ public class PaymentController {
         Map<String, String> response = new HashMap<>();
         System.out.println("Status: " + status);
         if ("00".equals(status)) {
-            Order order=orderService.findByCode(txnRef);
+            OrderDTO order=orderService.getOrderByCode(txnRef);
             paymentService.updateStatus(order.getOrderID(),"Completed");
             response.put("message", "Payment successful");
         } else {
@@ -174,5 +174,4 @@ public class PaymentController {
             return "Mã bảo mật không khớp!";
         }
     }
-
 }

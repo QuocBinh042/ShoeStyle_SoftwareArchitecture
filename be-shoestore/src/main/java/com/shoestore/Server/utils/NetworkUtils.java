@@ -3,7 +3,7 @@ package com.shoestore.Server.utils;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-public class IpAddress {
+public class NetworkUtils {
     public static String getIpAddress() {
         try {
             InetAddress ip = InetAddress.getLocalHost();

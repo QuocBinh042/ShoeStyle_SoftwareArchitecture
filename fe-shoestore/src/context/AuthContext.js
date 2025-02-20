@@ -2,36 +2,45 @@ import React, { createContext, useState, useEffect, useContext } from "react";
 import { getToken, logout } from "../services/authService";
 import { jwtDecode } from "jwt-decode";
 
-// Tạo context
 const AuthContext = createContext();
 
-// Provider bọc toàn bộ app
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const token = getToken();
-    if (token) {
+    const loadUser = async () => {
       try {
-        const decoded = jwtDecode(token);
-        setUser({
-          id: decoded.userId,
-          email: decoded.sub,
-          roles: decoded.roles,
-        });
+        const token = await getToken(); 
+        
+        if (token) {
+          const decoded = jwtDecode(token);
+          setUser({
+            id: decoded.userId,
+            email: decoded.sub,
+            roles: decoded.roles,
+          });
+        } else {
+          setUser(null);
+        }
       } catch (error) {
-        console.error("Invalid token", error);
-        logout();
+        console.error("Error loading user", error);
+        setUser(null);
       }
-    }
+    };
+
+    loadUser();
   }, []);
 
+  const handleLogout = () => {
+    logout();
+    setUser(null);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, setUser }}>
+    <AuthContext.Provider value={{ user, setUser, logout: handleLogout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Custom hook để lấy thông tin user
 export const useAuth = () => useContext(AuthContext);

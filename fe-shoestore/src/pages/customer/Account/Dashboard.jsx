@@ -4,7 +4,7 @@ import { ShoppingCartOutlined, DollarOutlined, UserOutlined, EditOutlined } from
 import { countOrderByUser, sumAmount, fetchOrderByUser } from "../../../services/orderService";
 import { fetchUserInfoById, updateUserInfo } from "../../../services/userService";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { useAuth } from "../../../context/AuthContext";
+import { useAuthToken } from "../../../hooks/useAuthToken";
 const { Title, Text } = Typography;
 
 const UserDashboard = () => {
@@ -15,8 +15,8 @@ const UserDashboard = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [user, setUser] = useState({});
     const [form] = Form.useForm();
-    const { user: authUser } = useAuth();
-
+    const  authUser= useAuthToken();
+    console.log(authUser.id)
     useEffect(() => {
         if (authUser) {
             fetchUserInfo(authUser.id);
@@ -141,16 +141,32 @@ const UserDashboard = () => {
                     <Form.Item
                         name="email"
                         label="Email"
-
+                        rules={[
+                            { required: true, message: "Please enter your email!" },
+                            { type: "email", message: "Please enter a valid email!" }
+                        ]}
                     >
                         <Input disabled />
                     </Form.Item>
+
+                    <Form.Item
+                        name="name"
+                        label="Full name"
+                        rules={[
+                            { required: true, message: "Please enter your full name!" },
+                            { pattern: /^[A-Za-z\s]+$/, message: "Full name must not contain numbers or special characters!" },
+                            { pattern: /^[A-Z]/, message: "Each word in the full name must start with a capital letter!" }
+                        ]}
+                    >
+                        <Input />
+                    </Form.Item>
+
                     <Form.Item
                         name="userName"
                         label="User name"
                         rules={[
                             { required: true, message: "Please enter your user name!" },
-                            { pattern: /^[A-Za-z].*/, message: "User name must start with a letter!" }
+                            { pattern: /^[A-Za-z][A-Za-z0-9]*$/, message: "User name must start with a letter and can contain numbers!" }
                         ]}
                     >
                         <Input />
@@ -177,6 +193,7 @@ const UserDashboard = () => {
                         <Input />
                     </Form.Item>
                 </Form>
+
             </Modal>
         </div>
     );

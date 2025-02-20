@@ -6,12 +6,12 @@ import {
   BookOutlined, ShoppingOutlined, 
   ProductFilled
 } from '@ant-design/icons';
-import { useAuth } from '../../context/AuthContext';
-export const getMenuCustomer = (navigate) => {
-  const isLoggedIn = localStorage.getItem('token');
-  // const { user} = useAuth();
+import { useAuthToken } from '../../hooks/useAuthToken';
+export const useMenuCustomer = (navigate) => {
+  const user = useAuthToken();
+
   const handleAccountClick = () => {
-    if (isLoggedIn) {
+    if (user) {
       navigate('/account'); 
     } else {
       Modal.confirm({

@@ -13,7 +13,7 @@ const LoginPage = () => {
     setLoading(true);
     try {
       const data = await login(values);
-      if (data?.token) {
+      if (data?.accessToken) {
         message.success("Login successful");
         const redirectTo = location.state?.from || "/";
         navigate(redirectTo, { replace: true });
@@ -26,6 +26,7 @@ const LoginPage = () => {
       setLoading(false);
     }
   };
+  
 
   return (
     <Row justify="center" align="middle" style={{ height: "80vh" }}>

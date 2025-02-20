@@ -22,47 +22,46 @@ export const routes = [
         path: "/",
         element: <Home />,
         breadcrumb: "Home",
-      },     
+      },
       {
         path: "search",
         element: <Search />,
-        breadcrumb: "Search", 
+        breadcrumb: "Search",
       },
       {
         path: "product-detail/:productID",
         element: <ProductDetail />,
         breadcrumb: "ProductDetail",
       },
-      
+
       {
         path: "cart",
         element: <Cart />,
-        breadcrumb: "Cart",  
+        breadcrumb: "Cart",
         children: [
-          {            
+          {
             path: "checkout",
-            element: (<Checkout />),
+            element: (
+              <PrivateRoutes>
+                <Checkout />
+              </PrivateRoutes>
+            ),
             breadcrumb: "Checkout",
           },
-        ],       
+        ],
       },
       {
         path: "payment",
         element: <PaymentResult />,
-        breadcrumb: "payment",         
+        breadcrumb: "payment",
       },
       {
         element: <PrivateRoutes />,
         children: [
-          // {
-          //   path: "cart/checkout",
-          //   element: <Checkout />,
-          //   breadcrumb: "Checkout",
-          // },
           {
             path: "account",
             element: <Account />,
-            breadcrumb: "Account", 
+            breadcrumb: "Account",
           },
         ]
       },
@@ -71,30 +70,7 @@ export const routes = [
         element: <OrderSuccess />,
         breadcrumb: "Order",
       },
-      
-      // {
-      //   path: "blog",
-      //   element: <Blog />,
-      //   children: [
-      //     {
-      //       index: true,
-      //       element: <BlogAll />
-      //     },
-      //     {
-      //       path: ":id",
-      //       element: <BlogDetail />
-      //     },
-      //     {
-      //       path: "news",
-      //       element: <BlogNews />
-      //     },
-      //     {
-      //       path: "related",
-      //       element: <BlogRelated />
-      //     }
-      //   ]
-      // },
-     
+
     ]
   },
   {

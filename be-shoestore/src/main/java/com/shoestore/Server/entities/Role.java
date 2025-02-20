@@ -23,6 +23,6 @@ public class Role {
     @ToString.Exclude
     private List<User> users;
     public List<SimpleGrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(name)); // Giả sử chỉ có một quyền
+        return List.of(new SimpleGrantedAuthority(name));
     }
 }
