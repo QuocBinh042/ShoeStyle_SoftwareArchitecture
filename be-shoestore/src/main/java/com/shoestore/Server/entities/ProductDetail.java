@@ -4,18 +4,17 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.List;
 
 @Table
 @Entity
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @ToString
-public class ProductDetail {
+public class ProductDetail extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "productDetailID")
@@ -37,18 +36,8 @@ public class ProductDetail {
     @OneToMany(mappedBy = "productDetail", cascade = CascadeType.ALL)
     @JsonBackReference
     private List<OrderDetail> orderDetails;
+    @OneToMany(mappedBy = "productDetail", cascade = CascadeType.ALL)
+    @JsonIgnore
+    private List<Review> reviews;
 
-    public ProductDetail(int productDetailID) {
-        this.productDetailID = productDetailID;
-    }
-
-    @Override
-    public String toString() {
-        return "ProductDetail{" +
-                "productDetailID=" + productDetailID +
-                ", color=" + color +
-                ", size=" + size +
-                ", stockQuantity=" + stockQuantity +
-                '}';
-    }
 }

@@ -5,7 +5,6 @@ import com.shoestore.Server.dto.response.CartItemResponse;
 import com.shoestore.Server.dto.response.PaginationResponse;
 import com.shoestore.Server.entities.Cart;
 import com.shoestore.Server.entities.CartItem;
-import com.shoestore.Server.entities.CartItemKey;
 import com.shoestore.Server.entities.ProductDetail;
 import com.shoestore.Server.mapper.CartItemMapper;
 import com.shoestore.Server.mapper.ProductDetailMapper;
@@ -15,11 +14,12 @@ import com.shoestore.Server.repositories.CartRepository;
 import com.shoestore.Server.repositories.ProductDetailRepository;
 import com.shoestore.Server.service.CartItemService;
 import com.shoestore.Server.service.PromotionService;
+import com.shoestore.Server.service.PaginationService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import com.shoestore.Server.service.PaginationService;
+
 import java.util.Optional;
 
 @Service
@@ -27,11 +27,12 @@ public class CartItemServiceImpl implements CartItemService {
     private final ProductDetailRepository productDetailRepository;
     private final CartItemRepository cartItemRepository;
     private final CartRepository cartRepository;
-    private final PaginationService paginationService ;
+    private final PaginationService paginationService;
     private final CartItemMapper cartItemMapper;
     private final ProductDetailMapper productDetailMapper;
     private final PromotionService promotionService;
     private final ProductMapper productMapper;
+
     public CartItemServiceImpl(ProductDetailRepository productDetailRepository, CartItemRepository cartItemRepository, CartRepository cartRepository, PaginationService paginationService, CartItemMapper cartItemMapper, ProductDetailMapper productDetailMapper, PromotionService promotionService, ProductMapper productMapper) {
         this.productDetailRepository = productDetailRepository;
         this.cartItemRepository = cartItemRepository;
@@ -42,6 +43,7 @@ public class CartItemServiceImpl implements CartItemService {
         this.promotionService = promotionService;
         this.productMapper = productMapper;
     }
+
     @Override
     public PaginationResponse<CartItemResponse> getCartItemsByCartId(int cartId, int page, int pageSize) {
         Pageable pageable = paginationService.createPageable(page, pageSize);
@@ -61,52 +63,43 @@ public class CartItemServiceImpl implements CartItemService {
     }
 
     @Override
-    public CartItemDTO addCartItem(CartItem cartItem) {
-        Cart cart = cartRepository.findById(cartItem.getId().getCartId())
+    public CartItemDTO addCartItem(CartItemDTO cartItemDTO) {
+        Cart cart = cartRepository.findById(cartItemDTO.getCart().getCartID())
                 .orElseThrow(() -> new IllegalArgumentException("Cart not found"));
-        ProductDetail productDetail = productDetailRepository.findById(cartItem.getId().getProductDetailId())
+        ProductDetail productDetail = productDetailRepository.findById(cartItemDTO.getProductDetail().getProductDetailID())
                 .orElseThrow(() -> new IllegalArgumentException("ProductDetail not found"));
 
-        CartItemKey cartItemKey = new CartItemKey(cart.getCartID(), productDetail.getProductDetailID());
-        cartItem.setId(cartItemKey);
-
+        CartItem cartItem = new CartItem();
         cartItem.setCart(cart);
         cartItem.setProductDetail(productDetail);
-        CartItem savedCartItem = cartItemRepository.save(cartItem);
-
-        return cartItemMapper.toCartItemDTO(savedCartItem);
+        cartItem.setQuantity(cartItemDTO.getQuantity());
+        cartItem.setSubTotal(cartItemDTO.getSubTotal());
+        return cartItemMapper.toCartItemDTO(cartItemRepository.save(cartItem));
     }
 
     @Override
-    public CartItemDTO getCartItemById(CartItemKey cartItemKey) {
-        CartItem cartItem = cartItemRepository.findById(cartItemKey).orElse(null);
-        return cartItem != null ? cartItemMapper.toCartItemDTO(cartItem) : null;
+    public CartItemDTO getCartItemById(int id) {
+        return cartItemRepository.findById(id)
+                .map(cartItemMapper::toCartItemDTO)
+                .orElseThrow(() -> new EntityNotFoundException("CartItem not found with id: " + id));
     }
 
     @Override
-    public CartItemDTO updateQuantity(CartItemKey id, CartItem cartItem) {
-        Optional<CartItem> existCartItem = cartItemRepository.findById(id);
-        if (existCartItem.isPresent()) {
-            CartItem entityCartItem = existCartItem.get();
+    public CartItemDTO updateQuantity(int id, CartItemDTO cartItemDTO) {
+        CartItem existCartItem = cartItemRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("CartItem not found with id: " + id));
 
-            entityCartItem.setQuantity(cartItem.getQuantity());
-            entityCartItem.setCart(cartItem.getCart());
-            entityCartItem.setProductDetail(cartItem.getProductDetail());
-            entityCartItem.setSubTotal(cartItem.getSubTotal());
+        existCartItem.setQuantity(cartItemDTO.getQuantity());
+        existCartItem.setSubTotal(cartItemDTO.getSubTotal());
 
-            CartItem savedCartItem = cartItemRepository.save(entityCartItem);
-            return cartItemMapper.toCartItemDTO(savedCartItem);
-        }
-        return null;
+        return cartItemMapper.toCartItemDTO(cartItemRepository.save(existCartItem));
     }
 
     @Override
-    public void deleteCartItem(CartItemKey id) {
-        Optional<CartItem> cartItem = cartItemRepository.findById(id);
-        if (cartItem.isPresent()) {
-            cartItemRepository.deleteById(id);
-        } else {
+    public void deleteCartItem(int id) {
+        if (!cartItemRepository.existsById(id)) {
             throw new EntityNotFoundException("Cart item not found with id: " + id);
         }
+        cartItemRepository.deleteById(id);
     }
 }

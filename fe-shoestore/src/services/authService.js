@@ -1,38 +1,29 @@
 import { postData } from "./apiService";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
+import Cookies from "js-cookie";
 export const login = async (credentials) => {
     try {
-        const data = await postData(`auth/login`, credentials);
-        if (data?.accessToken && data?.refreshToken) {
-            localStorage.setItem("accessToken", data.accessToken);
-            localStorage.setItem("refreshToken", data.refreshToken);
+        const response = await postData(`auth/login`, credentials);
+        if (response?.accessToken && response?.refreshToken) {
+            console.log("Logged in successfully");
         }
-        return data;
+        return response;
     } catch (error) {
         throw error;
     }
 };
-
 export const refreshToken = async () => {
     try {
-        const refreshToken = localStorage.getItem("refreshToken");
-        if (!refreshToken) {
-            throw new Error("Refresh token not exist");
-        }
-
-        const response = await postData(`auth/refresh-token`, { refreshToken });
+        const response = await postData(`auth/refresh-token`, {});
         if (response?.accessToken) {
-            localStorage.setItem("accessToken", response.accessToken);
-            localStorage.setItem("refreshToken", response.refreshToken);
+            console.log("Refreshed access token");
             return response.accessToken;
         }
     } catch (error) {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
+        logout();
         throw new Error("Cần đăng nhập lại");
     }
 };
-
 export const signUp = async (user) => {
     try {
         const data = await postData(`auth/sign-up`, user);
@@ -41,15 +32,20 @@ export const signUp = async (user) => {
         throw error;
     }
 };
-
-export const logout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-};
+export const logout = async () => {
+    try {
+        await postData(`auth/logout`, {}); 
+        Cookies.remove("accessToken"); 
+        Cookies.remove("refreshToken");
+        console.log("Logged out");
+    } catch (error) {
+        console.error("Logout failed: ", error);
+    }
+}
 
 export const getToken = async () => {
-    let accessToken = localStorage.getItem("accessToken");
-
+    let accessToken = Cookies.get("accessToken");
+    console.log(document.cookie);
     if (!accessToken) {
         throw new Error("Token is missing or invalid");
     }
@@ -61,7 +57,7 @@ export const getToken = async () => {
         if (decodedToken.exp < currentTime) {
             accessToken = await refreshToken();
             if (accessToken) {
-                localStorage.setItem("accessToken", accessToken); 
+                console.log("Token refreshed");
             } else {
                 logout();
                 throw new Error("Session expired, please log in again.");
@@ -75,3 +71,4 @@ export const getToken = async () => {
 
     return accessToken;
 };
+

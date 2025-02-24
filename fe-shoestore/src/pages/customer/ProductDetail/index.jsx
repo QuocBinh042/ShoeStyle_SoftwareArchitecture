@@ -30,7 +30,7 @@ const ProductDetails = () => {
       try {
         const details = await fetchProductDetailByProductId(productID);
         const discount = await getDiscountByProduct(productID);
-  
+        
         if (details && details.productDetails.length > 0) {
           setProduct({
             productName: details.productName,
@@ -107,17 +107,6 @@ const ProductDetails = () => {
   };
 
 
-  const reviews = [
-    {
-      author: "Renalda Aji",
-      date: "19 hours ago",
-      rating: 5,
-      text: "Very good, I like it!",
-      productInfo: "Brand: abc - Size: 44 - Color: Silver",
-      additionalText: "Highly recommend!",
-    },
-  ];
-
 
   const changeImage = (image) => {
     setMainImage(image);
@@ -125,7 +114,7 @@ const ProductDetails = () => {
 
   const handleSizeSelect = (size) => {
     setSelectedSize(size);
-    const sizeStock = product?.productDetails?.find(
+    const sizeStock = productDetails?.find(
       (detail) => detail.size === size
     )?.stockQuantity;
     setSelectedStock(sizeStock);
@@ -293,12 +282,6 @@ const ProductDetails = () => {
               <span>Price</span>
               <span>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(discountedPrice)}</span>
             </div>
-            {/* <Row justify="space-between" className='cart-summary__promo'>
-              <Input placeholder="Promocode" className='cart-summary__promo-input' />
-              <Button className='cart-summary__promo-apply' type="primary">
-                Apply
-              </Button>
-            </Row> */}
             <div className="order-total">
               <span>Sub Total</span>
               <span>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(discountedPrice * quantity)}</span>
@@ -311,7 +294,8 @@ const ProductDetails = () => {
           </div>
         </Col>
       </Row>
-      <Review reviews={reviews} />
+      <Review productID={productID} />
+
       <RelatedProducts />
     </div>
   );

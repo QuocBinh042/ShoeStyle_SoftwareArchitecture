@@ -5,8 +5,9 @@ import lombok.Data;
 
 @Data
 public class CartItemDTO {
-    private int cartId;
-    private int productDetailId;
+    private int cartItemID;
+    private CartDTO cart;
+    private ProductDetailDTO productDetail;
     private int quantity;
     private double subTotal;
 }

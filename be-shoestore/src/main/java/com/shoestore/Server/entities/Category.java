@@ -5,13 +5,16 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
 @Entity
 @Table
-@Data
-public class Category {
+@Getter
+@Setter
+public class Category extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "categoryID")
@@ -23,9 +26,4 @@ public class Category {
     @JsonBackReference("categoryReference")
     private List<Product> products;
 
-    public Category() {
-    }
-    public Category(int categoryID) {
-        this.categoryID = categoryID;
-    }
 }

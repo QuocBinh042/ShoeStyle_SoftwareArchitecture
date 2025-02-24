@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useMemo } from "react";
 import { Radio, Button, Image, Table, Steps, Divider, Modal, Card, Tag } from "antd";
 import { CarOutlined, TagOutlined } from "@ant-design/icons";
 import "./Checkout.scss";
@@ -10,9 +10,10 @@ import { addOrderDetails } from "../../../services/orderDetailService";
 import logoVNPAY from '../../../assets/images/logos/vnpay_logo.png'
 import { addPayment, getVnPayUrl } from "../../../services/paymentService";
 import { fetchVoucherWithPrice } from "../../../services/voucherService";
-import { fetchAddressByUser, deleteAddress } from "../../../services/addressService";
+import { fetchAddressByUser } from "../../../services/addressService";
 import { useAuthToken } from "../../../hooks/useAuthToken";
 const Checkout = () => {
+  console.count("Checkout component renders");
   const location = useLocation();
   const selectedItems = location.state?.selectedItems || [];
   const [current, setCurrent] = useState(0);
@@ -24,18 +25,16 @@ const Checkout = () => {
   const [modalData, setModalData] = useState(null);
   const [vouchers, setVouchers] = useState([]);
   const [selectedVoucher, setSelectedVoucher] = useState(null);
-  const [totalCost, setTotalCost] = useState(0);
-  const [discount, setDiscount] = useState(0);
   const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isModalAddressVisible, setIsModalAddressVisible] = useState(false);
   const user = useAuthToken();
-  console.log("User in Checkout:", selectedItems);
-  useEffect(() => {
-    if (user?.id) {
-      fetchAddresses(user.id);
-    }
-  }, [user]);
+  console.log(user)
+  // useEffect(() => {
+  //   if (user?.id && addresses.length === 0) {
+  //     fetchAddresses(user.id);
+  //   }
+  // }, [user, addresses.length]);
   const fetchAddresses = async (userId) => {
     try {
       const response = await fetchAddressByUser(userId);
@@ -61,45 +60,44 @@ const Checkout = () => {
 
 
   useEffect(() => {
-    const fetchProductDetails = async () => {
-      const details = await Promise.all(
-        selectedItems.map(async (item) => {
-          const productDetailId = item.key
-          const detail = await fetchProductDetailById(productDetailId);
-          return { ...item, detail };
-        })
-      );
-      setProductDetails(details);
-    };
+    if (productDetails.length === 0 && selectedItems.length > 0) {
+      const fetchProductDetails = async () => {
+        const details = await Promise.all(
+          selectedItems.map(async (item) => {
+            const productDetailId = item.key;
+            const detail = await fetchProductDetailById(productDetailId);
+            return { ...item, detail };
+          })
+        );
+        setProductDetails(details);
+      };
 
-    fetchProductDetails();
+      fetchProductDetails();
+    }
   }, [selectedItems]);
 
 
-  useEffect(() => {
-    const { totalCost, discount } = calculateTotalCost();
-    setTotalCost(totalCost);
-    setDiscount(discount);
-  }, [productDetails, selectedVoucher, shippingMethod]);
-  const calculateTotalCost = () => {
-    let subtotal = productDetails.reduce((total, product) => total + product.quantity * product.price, 0);
+  const { totalCost, discount } = useMemo(() => {
+    let subtotal = productDetails.reduce(
+      (total, product) => total + product.quantity * product.price,
+      0
+    );
+  
     let shippingCost = shippingMethod === "Express" ? 30000 : 0;
     let discount = 0;
-
+  
     if (selectedVoucher) {
       if (selectedVoucher.freeShipping) {
-        discount = shippingCost
-      } else {
-        if (selectedVoucher.discountType === "PERCENT") {
-          discount = (selectedVoucher.discountValue / 100) * subtotal;
-        } else if (selectedVoucher.discountType === "FIXED") {
-          discount = selectedVoucher.discountValue;
-        }
+        discount = shippingCost;
+      } else if (selectedVoucher.discountType === "PERCENT") {
+        discount = (selectedVoucher.discountValue / 100) * subtotal;
+      } else if (selectedVoucher.discountType === "FIXED") {
+        discount = selectedVoucher.discountValue;
       }
     }
-
+  
     return { totalCost: subtotal + shippingCost - discount, discount };
-  };
+  }, [productDetails, selectedVoucher, shippingMethod]);
 
   const shippingCost = shippingMethod === "Express" ? 30000 : 0
   useEffect(() => {

@@ -1,27 +1,23 @@
 package com.shoestore.Server.controller;
 
 import com.shoestore.Server.dto.request.ProductDTO;
+import com.shoestore.Server.dto.response.ApiStatusResponse;
 import com.shoestore.Server.dto.response.PaginationResponse;
-import com.shoestore.Server.entities.Product;
+import com.shoestore.Server.dto.response.RestResponse;
 import com.shoestore.Server.service.BrandService;
 import com.shoestore.Server.service.CategoryService;
 import com.shoestore.Server.service.ProductService;
 import com.shoestore.Server.service.SupplierService;
-import org.springframework.data.domain.Page;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/search")
 public class SearchController {
@@ -38,32 +34,38 @@ public class SearchController {
     }
 
     @GetMapping("/show-filtered")
-    public ResponseEntity<Map<String, Object>> getFiltered() {
-        Map<String, Object> response = new HashMap<>();
-        response.put("categories", categoryService.getAllCategory());
-        response.put("brands", brandService.getAllBrand());
-        response.put("suppliers", supplierService.getAllSupplier());
-        return ResponseEntity.ok(response);
+    public ResponseEntity<RestResponse<Map<String, Object>>> getFilterOptions() {
+        try {
+            log.info("Fetching filter options for products.");
+            Map<String, Object> response = new HashMap<>();
+            response.put("categories", categoryService.getAllCategory());
+            response.put("brands", brandService.getAllBrand());
+            response.put("suppliers", supplierService.getAllSupplier());
+            return ResponseEntity.ok(new RestResponse<>(ApiStatusResponse.SUCCESS, response));
+        } catch (Exception e) {
+            log.error("Error fetching filter options", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new RestResponse<>(ApiStatusResponse.INTERNAL_SERVER_ERROR, e.getMessage()));
+        }
     }
 
     @GetMapping("/all-products")
-    public ResponseEntity<Map<String, Object>> getAllProducts(
+    public ResponseEntity<RestResponse<PaginationResponse<ProductDTO>>> getAllProducts(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "12") int pageSize) {
-        PaginationResponse<ProductDTO> productPage = productService.getAllProduct(page, pageSize);
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("products", productPage.getItems());
-        response.put("total", productPage.getTotalElements());
-        response.put("totalPages", productPage.getTotalPages());
-        response.put("currentPage", page);
-        response.put("pageSize", pageSize);
-
-        return ResponseEntity.ok(response);
+        try {
+            log.info("Fetching all products, page: {}, pageSize: {}", page, pageSize);
+            PaginationResponse<ProductDTO> productPage = productService.getAllProduct(page, pageSize);
+            return ResponseEntity.ok(new RestResponse<>(ApiStatusResponse.SUCCESS, productPage));
+        } catch (Exception e) {
+            log.error("Error fetching all products", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new RestResponse<>(ApiStatusResponse.INTERNAL_SERVER_ERROR, e.getMessage()));
+        }
     }
 
     @GetMapping("/filtered")
-    public ResponseEntity<Map<String, Object>> getFilteredProducts(
+    public ResponseEntity<RestResponse<PaginationResponse<ProductDTO>>> getFilteredProducts(
             @RequestParam(required = false) List<Integer> categoryIds,
             @RequestParam(required = false) List<Integer> brandIds,
             @RequestParam(required = false) List<String> colors,
@@ -74,17 +76,18 @@ public class SearchController {
             @RequestParam(required = false) String sortBy,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "12") int pageSize) {
-        Page<ProductDTO> productPage = productService.getFilteredProducts(
-                categoryIds, brandIds, colors, sizes, keyword, minPrice, maxPrice, sortBy, page, pageSize);
+        try {
+            log.info("Fetching filtered products with filters: categoryIds={}, brandIds={}, colors={}, sizes={}, minPrice={}, maxPrice={}, keyword={}, sortBy={}, page={}, pageSize={}",
+                    categoryIds, brandIds, colors, sizes, minPrice, maxPrice, keyword, sortBy, page, pageSize);
 
-        Map<String, Object> response = new LinkedHashMap<>();
-        response.put("total", productPage.getTotalElements());
-        response.put("totalPages", productPage.getTotalPages());
-        response.put("products", productPage.getContent());
-        response.put("currentPage", page);
-        response.put("pageSize", pageSize);
+            PaginationResponse<ProductDTO> productPage = productService.getFilteredProducts(
+                    categoryIds, brandIds, colors, sizes, keyword, minPrice, maxPrice, sortBy, page, pageSize);
 
-        return ResponseEntity.ok(response);
+            return ResponseEntity.ok(new RestResponse<>(ApiStatusResponse.SUCCESS, productPage));
+        } catch (Exception e) {
+            log.error("Error fetching filtered products", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new RestResponse<>(ApiStatusResponse.INTERNAL_SERVER_ERROR, e.getMessage()));
+        }
     }
 }
-

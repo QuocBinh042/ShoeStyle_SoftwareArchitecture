@@ -11,14 +11,14 @@ import { logout } from '../../../services/authService';
 import MyOrder from './MyOrder';
 import Address from './Address';
 import DashBoard from './Dashboard';
-
+import { useAuth } from '../../../context/AuthContext';
 const { Content, Sider } = Layout;
 
 const Account = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [selectedKey, setSelectedKey] = useState('1');
   const navigate = useNavigate(); 
-
+  const { setUser } = useAuth();
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -32,6 +32,7 @@ const Account = () => {
       cancelText: 'Cancel',
       onOk: () => {
         logout(); 
+        setUser(null);
         navigate('/');
       },
     });

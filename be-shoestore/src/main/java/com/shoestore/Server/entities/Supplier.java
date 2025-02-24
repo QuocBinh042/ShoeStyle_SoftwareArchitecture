@@ -5,13 +5,16 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
 @Entity
 @Table
-@Data
-public class Supplier {
+@Getter
+@Setter
+public class Supplier extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "supplierID")
@@ -25,10 +28,4 @@ public class Supplier {
     @CollectionTable(name = "Supplier_PhoneNumber", joinColumns = @JoinColumn(name = "supplierID"))
     @Column(name = "phoneNumbers")
     private List<String> phoneNumbers;
-
-    public Supplier() {
-    }
-    public Supplier(int supplierID) {
-        this.supplierID = supplierID;
-    }
 }

@@ -11,7 +11,7 @@ const AddressManagement = () => {
   const [addresses, setAddresses] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editAddress, setEditAddress] = useState(null); 
-  const  user  = useAuthToken();
+  const { user, loading } = useAuthToken();
   useEffect(() => {
     if (user?.id) {
       loadAddressUser(user.id);

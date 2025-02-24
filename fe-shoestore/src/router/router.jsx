@@ -39,16 +39,12 @@ export const routes = [
         element: <Cart />,
         breadcrumb: "Cart",
         children: [
-          {
+          {            
             path: "checkout",
-            element: (
-              <PrivateRoutes>
-                <Checkout />
-              </PrivateRoutes>
-            ),
+            element: (<Checkout />),
             breadcrumb: "Checkout",
           },
-        ],
+        ],       
       },
       {
         path: "payment",

@@ -1,62 +1,37 @@
-import React, { useState } from "react";
-import { Rate, List, Avatar, Progress, Button, Dropdown, Tag, Space, Pagination } from "antd";
-import { DownOutlined } from "@ant-design/icons";
-const items = [
-  {
-    key: '1',
-    label: "Latest Reviews"
+import React, { useState, useEffect } from "react";
+import { Rate, List, Modal, Progress, Button } from "antd";
+import { fetchReviewByProduct } from "../../../services/reviewService";
 
-  },
-  {
-    key: '2',
-    label: "Highest Ratings"
-  },
-  {
-    key: '3',
-    label: "Lowest Ratings"
-  },
-];
-const ReviewSummary = () => (
+const ReviewSummary = ({ averageRating, totalReviews, ratingsCount }) => (
   <div style={{ borderRadius: "8px", padding: "10px" }}>
     <h2>Reviews</h2>
     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-      <span style={{ fontSize: "48px", fontWeight: "bold" }}>4.9</span>
-      <Rate disabled defaultValue={5} />
-      <span>999 reviews</span>
+      <span style={{ fontSize: "48px", fontWeight: "bold" }}>{averageRating.toFixed(1)}</span>
+      <Rate disabled value={averageRating} />
+      <span>{totalReviews} reviews</span>
     </div>
     <div>
       {[5, 4, 3, 2, 1].map((star) => (
         <div key={star} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <span>{star}</span>
-          <Progress percent={Math.random() * 100} showInfo={false} strokeColor="#1890ff" style={{ flex: 1 }} />
+          <Progress
+            percent={totalReviews ? (ratingsCount[star] / totalReviews) * 100 : 0}
+            showInfo={false}
+            strokeColor="#1890ff"
+            style={{ flex: 1 }}
+          />
         </div>
       ))}
     </div>
   </div>
 );
 
-const ReviewFilter = ({ filter, setFilter }) => (
+const ReviewList = ({ reviews }) => {
+  if (reviews.length === 0) {
+    return <p>No reviews for this product</p>;
+  }
 
-  <div style={{ display: "flex", justifyContent: 'space-between', gap: "10px", marginBottom: "10px" }}>
-    <div style={{ display: 'flex' }}>
-      <Button type={filter === "All" ? "primary" : "default"} onClick={() => setFilter("All")}>All</Button>
-      {[1, 2, 3, 4, 5].map((star) => (
-        <Button key={star}>
-          <Tag key={star} onClick={() => setFilter(`${star} Star`)} bordered={false}>{star} ★</Tag>
-        </Button>
-      ))}
-    </div>
-
-    <Dropdown menu={{ items, }}>
-      <a onClick={(e) => e.preventDefault()}>
-        <Space> Sort by <DownOutlined /> </Space>
-      </a>
-    </Dropdown>
-  </div>
-);
-
-const ReviewList = ({ reviews }) => (
-  <>
+  return (
     <List
       itemLayout="vertical"
       dataSource={reviews}
@@ -64,47 +39,94 @@ const ReviewList = ({ reviews }) => (
         <List.Item style={{ border: "1px solid #ccc", borderRadius: "8px", padding: "16px", marginBottom: "16px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-              <Avatar size={48}>{item.author[0]}</Avatar>
               <div>
-                <h4 style={{ margin: 0 }}>{item.author}</h4>
-                <Rate disabled defaultValue={item.rating} style={{ fontSize: "16px" }} />
+                <h4 style={{ margin: 0 }}>{item.user.name}</h4>
+                <p style={{ margin: 0, color: "#888" }}>
+                  Color: {item.productDetail.color} / Size: {item.productDetail.size.replace('SIZE_', '')}
+                </p>
+                <Rate disabled value={item.rating} style={{ fontSize: "16px" }} />
               </div>
             </div>
-            <p style={{ margin: 0, color: "#888" }}>{item.date}</p>
+            <p style={{ margin: 0, color: "#888" }}>
+              {item.createdAt.split("T")[0]}
+            </p>
           </div>
           <div style={{ marginTop: "12px" }}>
-            <p style={{ fontWeight: "bold", margin: 0 }}>{item.text}</p>
-            <p style={{ margin: "8px 0 0", fontStyle: "italic", color: "#666" }}>{item.productInfo}</p>
-            <p style={{ marginTop: "8px", color: "#333" }}>{item.additionalText}</p>
+            <p style={{ fontWeight: "bold", margin: 0 }}>{item.comment}</p>
           </div>
         </List.Item>
       )}
     />
-    <Pagination align="end" defaultCurrent={1} total={50} />
-  </>
-);
+  );
+};
 
-const Review = ({reviews}) => {
-  const [filter, setFilter] = useState("All"); 
+const Review = ({ productID }) => {
+  const [reviews, setReviews] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [averageRating, setAverageRating] = useState(0);
+  const [totalReviews, setTotalReviews] = useState(0);
+  const [ratingsCount, setRatingsCount] = useState({ 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 });
+
+  useEffect(() => {
+    const getReviews = async () => {
+      if (productID) {
+        try {
+          const response = await fetchReviewByProduct(productID);
+          setReviews(response);
+          calculateSummary(response);
+        } catch (error) {
+          console.error("Lỗi khi lấy đánh giá:", error);
+        }
+      }
+    };
+
+    getReviews();
+  }, [productID]);
+
+  const calculateSummary = (reviews) => {
+    if (reviews.length > 0) {
+      const total = reviews.length;
+      const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
+      setAverageRating(sum / total);
+      setTotalReviews(total);
+
+      const count = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+      reviews.forEach(review => {
+        count[review.rating]++;
+      });
+      setRatingsCount(count);
+    } else {
+      setAverageRating(0);
+      setTotalReviews(0);
+      setRatingsCount({ 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 });
+    }
+  };
 
   return (
     <div className="review-tab">
-      <div style={{
-        display: "flex", gap: "20px",
-        padding: '1rem',
-        borderRadius: '0.5rem', marginTop: 20, background: 'white'
-      }}>
+      <div style={{ display: "flex", gap: "20px", padding: '1rem', borderRadius: '0.5rem', marginTop: 20, background: 'white' }}>
         <div>
-          <ReviewSummary />
+          <ReviewSummary averageRating={averageRating} totalReviews={totalReviews} ratingsCount={ratingsCount} />
         </div>
-
         <div style={{ flex: 2 }}>
-          <div>
-            <ReviewFilter filter={filter} setFilter={setFilter} />
-            <ReviewList reviews={reviews} />
-          </div>
+          <ReviewList reviews={reviews.slice(0, 2)} />
+          {totalReviews > 0 && (
+            <Button type="link" onClick={() => setModalVisible(true)}>
+              See all reviews
+            </Button>
+          )}
         </div>
       </div>
+
+      <Modal
+        title="All reviews"
+        visible={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        footer={null}
+        width={800}
+      >
+        <ReviewList reviews={reviews} />
+      </Modal>
     </div>
   );
 };

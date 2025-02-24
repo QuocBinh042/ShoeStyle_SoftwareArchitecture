@@ -31,7 +31,6 @@ public class PaymentController {
 
     @PostMapping("/add")
     public ResponseEntity<PaymentDTO> addPayment(@RequestBody PaymentDTO paymentDTO) {
-
         try {
             PaymentDTO savePaymentDTO = paymentService.addPayment(paymentDTO);
             return ResponseEntity.ok(savePaymentDTO);

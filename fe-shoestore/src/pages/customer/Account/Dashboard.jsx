@@ -13,18 +13,12 @@ const UserDashboard = () => {
     const [orderData, setOrderData] = useState([]);
     const [filteredOrders, setFilteredOrders] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [user, setUser] = useState({});
     const [form] = Form.useForm();
     const  authUser= useAuthToken();
-    console.log(authUser.id)
-    useEffect(() => {
-        if (authUser) {
-            fetchUserInfo(authUser.id);
-            fetchQuantityOrder(authUser.id);
-            fetchtotalAmount(authUser.id);
-            fetchOrders(authUser.id);
-        }
-    }, [authUser]);
+    console.log(authUser)
+    
     const fetchQuantityOrder = async (userId) => {
         const count = await countOrderByUser(userId);
         setQuantityOrder(count);
@@ -45,7 +39,26 @@ const UserDashboard = () => {
         const userInfo = await fetchUserInfoById(userId);
         setUser(userInfo);
     };
-
+    useEffect(() => {
+        const fetchData = async () => {
+            if (authUser && authUser.user && authUser.user.id) { 
+                try {
+                    await fetchUserInfo(authUser.user.id); 
+                    await fetchQuantityOrder(authUser.user.id); 
+                    await fetchtotalAmount(authUser.user.id);
+                    await fetchOrders(authUser.user.id); 
+                } catch (error) {
+                    console.error("Error fetching data: ", error);
+                } finally {
+                    setLoading(false); 
+                }
+            } else {
+                setLoading(false); 
+            }
+        };
+    
+        fetchData();
+    }, [authUser.user.id]); 
     const processMonthlyData = (orders) => {
         const monthlyData = Array.from({ length: 12 }, (_, index) => ({
             month: `${index + 1}`,
@@ -85,7 +98,9 @@ const UserDashboard = () => {
         { title: "Total", dataIndex: "total", key: "total", render: (text) => `${text} đ` },
         { title: "Status", dataIndex: "status", key: "status" },
     ];
-
+    if (loading) {
+        return <div>Loading...</div>; 
+    }
     return (
         <div style={{ padding: 20 }}>
             {/* User Info */}

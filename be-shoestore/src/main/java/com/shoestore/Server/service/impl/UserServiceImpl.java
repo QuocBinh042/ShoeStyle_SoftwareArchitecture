@@ -56,28 +56,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO updateUser(int id, UserDTO updatedUserDTO) {
+    public UserDTO updateUserInformationByUser(int id, UserDTO updatedUserDTO) {
         User existingUser = userRepository.findById(id).orElse(null);
-
         if (existingUser == null) {
             return null;
         }
-
-        User updatedUser = userMapper.toEntity(updatedUserDTO);
-
-        existingUser.setName(updatedUser.getName());
-        existingUser.setUserName(updatedUser.getUserName());
-        existingUser.setPassword(updatedUser.getPassword());
-        existingUser.setPhoneNumber(updatedUser.getPhoneNumber());
-        existingUser.setEmail(updatedUser.getEmail());
-        existingUser.setStatus(updatedUser.getStatus());
-        existingUser.setCI(updatedUser.getCI());
-        if (updatedUser.getRole() != null) {
-            Role role = roleRepository.findById(updatedUser.getRole().getRoleID()).orElse(null);
-            if (role != null) {
-                existingUser.setRole(role);
-            }
-        }
+        existingUser.setName(updatedUserDTO.getName());
+        existingUser.setUserName(updatedUserDTO.getUserName());
+        existingUser.setPhoneNumber(updatedUserDTO.getPhoneNumber());
+        existingUser.setEmail(updatedUserDTO.getEmail());
+        existingUser.setCI(updatedUserDTO.getCI());
         existingUser = userRepository.save(existingUser);
         return userMapper.toDto(existingUser);
     }

@@ -15,6 +15,7 @@ const Cart = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [isChanged, setIsChanged] = useState(false);
   const user  = useAuthToken();
+  console.log(user)
   const loadCartItemByUser = async (id, page = 1, size = 3) => {
     const data = await fetchCartItemByCartId(id, page, size);
     if (data && Array.isArray(data.items)) {
@@ -45,13 +46,13 @@ const Cart = () => {
 
 
 
-  useEffect(() => {
-    if (user?.id) {
-      loadCartItemByUser(user.id);
-    } else {
-      setCartItems([]); 
-    }
-  }, [user]);
+  // useEffect(() => {
+  //   if (user?.id) {
+  //     loadCartItemByUser(user.id);
+  //   } else {
+  //     setCartItems([]); 
+  //   }
+  // }, [user]);
   //To checkout form
   const handleCheckout = () => {
 

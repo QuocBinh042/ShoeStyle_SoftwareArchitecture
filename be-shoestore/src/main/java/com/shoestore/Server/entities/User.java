@@ -5,13 +5,16 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
-@Data
 @Entity
 @Table(name = "Users")
-public class User {
+@Getter
+@Setter
+public class User extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "userID")
@@ -43,17 +46,4 @@ public class User {
     @JsonBackReference
     private List<Review> reviews;
 
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "userID=" + userID +
-                ", name='" + name + '\'' +
-                ", email='" + email + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
-                ", userName='" + userName + '\'' +
-                ", status='" + status + '\'' +
-                ", CI='" + CI + '\'' +
-                '}';
-    }
 }

@@ -7,6 +7,7 @@ import com.shoestore.Server.entities.User;
 import com.shoestore.Server.entities.Voucher;
 import com.shoestore.Server.mapper.OrderMapper;
 import com.shoestore.Server.repositories.OrderRepository;
+import com.shoestore.Server.repositories.UserRepository;
 import com.shoestore.Server.repositories.VoucherRepository;
 import com.shoestore.Server.service.OrderService;
 import org.springframework.stereotype.Service;
@@ -21,10 +22,12 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
     private final VoucherRepository voucherRepository;
-    public OrderServiceImpl(OrderRepository orderRepository, OrderMapper orderMapper, VoucherRepository voucherRepository) {
+    private final UserRepository userRepository;
+    public OrderServiceImpl(OrderRepository orderRepository, OrderMapper orderMapper, VoucherRepository voucherRepository, UserRepository userRepository) {
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
         this.voucherRepository = voucherRepository;
+        this.userRepository = userRepository;
     }
     @Override
     public List<OrderDTO> getAll() {
@@ -53,14 +56,20 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderDTO addOrder(OrderDTO orderDTO) {
-        Voucher voucher=voucherRepository.findById(orderDTO.getVoucher().getVoucherID())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
         Order order = orderMapper.toEntity(orderDTO);
-        order.setVoucher(voucher);
+        if (orderDTO.getVoucher() != null) {
+            Voucher voucher = voucherRepository.findById(orderDTO.getVoucher().getVoucherID())
+                    .orElseThrow(() -> new IllegalArgumentException("Voucher not found"));
+            order.setVoucher(voucher);
+        }
+        User user = userRepository.findById(orderDTO.getUser().getUserID())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        order.setUser(user);
+
         Order savedOrder = orderRepository.save(order);
         return orderMapper.toDto(savedOrder);
     }
+
 
     @Override
     public List<OrderDTO> getOrderByByUser(int userId) {

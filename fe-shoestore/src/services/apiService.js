@@ -1,32 +1,10 @@
 import axios from "axios";
-import { refreshToken } from "./authService";
 const API_BASE_URL = "http://localhost:8080/api";
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true,
 });
-
-apiClient.interceptors.request.use((config) => { 
-  const token = localStorage.getItem("accessToken");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-}, (error) => Promise.reject(error));
-
-apiClient.interceptors.response.use(  
-  (response) => response,
-  async (error) => {
-    if (error.response?.status === 401) {
-      const newAccessToken = await refreshToken();
-      if (newAccessToken) {
-        error.config.headers.Authorization = `Bearer ${newAccessToken}`;
-        return apiClient(error.config); 
-      }
-    }
-    return Promise.reject(error);
-  }
-);
 
 
 export const fetchData = async (endpoint) => {

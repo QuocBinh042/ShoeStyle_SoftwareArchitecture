@@ -20,7 +20,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 
-public class Product {
+public class Product extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "productID")
@@ -60,38 +60,10 @@ public class Product {
     @JsonManagedReference("productDetailsReference")
     private List<ProductDetail> productDetails;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    @JsonIgnore
-    private List<Review> reviews;
-
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime createDate;
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "promotionID", nullable = true)
     @JsonIgnore
     private Promotion promotion;
 
-    public Product(int productID, String productName, List<String> imageURL, String description, double price, String status, Brand brand, Supplier supplier, Category category, Promotion promotion, LocalDateTime createDate) {
-        this.productID = productID;
-        this.productName = productName;
-        this.imageURL = imageURL;
-        this.description = description;
-        this.price = price;
-        this.status = status;
-        this.brand = brand;
-        this.supplier = supplier;
-        this.category = category;
-        this.promotion = promotion;
-        this.createDate = createDate;
-    }
 
-    @Override
-    public String toString() {
-        return "Product{" +
-                "productID=" + productID +
-                ", productName='" + productName + '\'' +
-                ", price=" + price +
-                ", status='" + status + '\'' +
-                '}';
-    }
 }

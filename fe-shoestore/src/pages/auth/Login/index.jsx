@@ -3,30 +3,37 @@ import { Form, Input, Button, Typography, Row, Col, Card, message } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { login } from "../../../services/authService";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
+import { jwtDecode } from "jwt-decode";
 const { Title, Text } = Typography;
 
 const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { setUser } = useAuth();
   const onFinish = async (values) => {
-    setLoading(true);
     try {
       const data = await login(values);
       if (data?.accessToken) {
         message.success("Login successful");
+        const decoded = jwtDecode(data.accessToken);
+        setUser({
+          id: decoded.userId,
+          email: decoded.sub,
+          roles: decoded.roles,
+        });
+
         const redirectTo = location.state?.from || "/";
         navigate(redirectTo, { replace: true });
       } else {
         message.error("Login failed");
       }
     } catch (error) {
-      message.error(error.response?.data?.message || "Đã có lỗi xảy ra!");
-    } finally {
-      setLoading(false);
+      message.error("Đã có lỗi xảy ra!");
     }
   };
-  
+
 
   return (
     <Row justify="center" align="middle" style={{ height: "80vh" }}>

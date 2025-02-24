@@ -52,7 +52,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Page<ProductDTO> getFilteredProducts(List<Integer> categoryIds, List<Integer> brandIds, List<String> colors, List<String> sizes,
+    public PaginationResponse<ProductDTO> getFilteredProducts(List<Integer> categoryIds, List<Integer> brandIds, List<String> colors, List<String> sizes,
                                                 String keyword, Double minPrice, Double maxPrice, String sortBy, int page, int pageSize) {
         Specification<Product> spec = Specification.where(null);
 
@@ -100,8 +100,10 @@ public class ProductServiceImpl implements ProductService {
             }
         }
 
-        Page<Product> productPage = productRepository.findAll(spec, pageable);
-        return productPage.map(productMapper::toDto);
+        List<Product> products = productRepository.findAll(spec);
+        PaginationResponse<Product> paginatedProducts = paginationService.paginate(products, page, pageSize);
+        List<ProductDTO> productDTOs = productMapper.toDto(paginatedProducts.getItems());
+        return new PaginationResponse<>(productDTOs, paginatedProducts.getTotalElements(), paginatedProducts.getTotalPages(), paginatedProducts.getCurrentPage(), paginatedProducts.getPageSize());
     }
 
 }

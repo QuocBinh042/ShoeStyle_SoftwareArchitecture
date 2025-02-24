@@ -15,6 +15,6 @@ public interface ProductService {
     ProductDTO getProductById(int id);
 
     //Search
-    Page<ProductDTO> getFilteredProducts(List<Integer> categoryIds, List<Integer> brandIds, List<String> colors, List<String> sizes,
+    PaginationResponse<ProductDTO> getFilteredProducts(List<Integer> categoryIds, List<Integer> brandIds, List<String> colors, List<String> sizes,
                                          String keyword, Double minPrice, Double maxPrice, String sortBy, int page, int pageSize);
 }

@@ -12,7 +12,7 @@ public interface UserService {
 
     List<UserDTO> getAllUsers();
 
-    UserDTO updateUser(int id, UserDTO updatedUserDTO);
+    UserDTO updateUserInformationByUser(int id, UserDTO updatedUserDTO);
 
     UserDTO getUserById(int id);
 }
