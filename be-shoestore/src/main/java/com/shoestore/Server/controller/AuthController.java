@@ -3,14 +3,19 @@ package com.shoestore.Server.controller;
 import com.shoestore.Server.dto.request.LoginRequest;
 import com.shoestore.Server.dto.request.UserDTO;
 import com.shoestore.Server.dto.response.AuthResponse;
-import com.shoestore.Server.entities.User;
-import com.shoestore.Server.sercurity.CustomUserDetailsService;
+import com.shoestore.Server.dto.response.LoginResponse;
+import com.shoestore.Server.exception.UserNotActiveException;
+import com.shoestore.Server.security.CustomUserDetailsService;
 import com.shoestore.Server.service.UserService;
-import com.shoestore.Server.sercurity.JwtUtils;
+import com.shoestore.Server.security.JwtUtils;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,6 +25,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.core.*;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -37,7 +43,11 @@ public class AuthController {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Value("${jwt.expiration}")
+    private long accessExpirationMs;
 
+    @Value("${jwt.refreshExpiration}")
+    private long refreshExpirationMs;
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
         try {
@@ -47,44 +57,40 @@ public class AuthController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(Collections.singletonMap("message", "Password is invalid"));
             }
-            UserDTO user = userService.findByEmail(loginRequest.getEmail());
-            System.out.println(user);
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Collections.singletonMap("message", "Email does not exist"));
+            UserDTO  userDB= userService.findByEmail(loginRequest.getEmail());
+            LoginResponse loginResponse = new LoginResponse();
+            if (userDB != null && userDB.getStatus().equals("Active")) {
+                LoginResponse.UserLogin user = new LoginResponse.UserLogin(
+                        userDB.getUserID(),
+                        userDB.getEmail(),
+                        userDB.getPhoneNumber(),
+                        userDB.getName(),
+                        userDB.getRole()
+                );
+                loginResponse.setUser(user);
+            } else {
+                throw new UserNotActiveException("User is not activated");
             }
 
-            int userId = user.getUserID();
-            List<String> authorities = userDetails.getAuthorities().stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .collect(Collectors.toList());
+            String accessToken = jwtUtil.createAccessToken(loginResponse.getUser().getEmail(),loginResponse);
+            loginResponse.setAccessToken(accessToken);
+            String refreshToken = jwtUtil.createRefreshToken(loginResponse.getUser().getEmail(), loginResponse);
 
-            String accessToken = jwtUtil.generateToken(userId, userDetails.getUsername(), authorities);
-            String refreshToken = jwtUtil.generateRefreshToken(userId, userDetails.getUsername());
+            userService.updateRefreshToken(loginRequest.getEmail(), refreshToken);
 
-            Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
-            accessTokenCookie.setHttpOnly(true);
-            accessTokenCookie.setSecure(false);
-            accessTokenCookie.setPath("/");
-            accessTokenCookie.setMaxAge(60 * 60);
-
-            Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
-            refreshTokenCookie.setHttpOnly(true);
-            accessTokenCookie.setSecure(false);
-            refreshTokenCookie.setPath("/");
-            refreshTokenCookie.setMaxAge(60 * 60 * 24);
-
-            response.addCookie(accessTokenCookie);
-            response.addCookie(refreshTokenCookie);
-
-            return ResponseEntity.ok(new AuthResponse(accessToken, refreshToken));
+            ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
+                    .httpOnly(true).path("/")
+                    .secure(true)
+                    .maxAge(refreshExpirationMs)
+                    .build();
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                    .body(loginResponse);
 
         } catch (UsernameNotFoundException e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Collections.singletonMap("message", "Email does not exist"));
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Collections.singletonMap("message", "Password or email is invalid"));
         }
@@ -124,15 +130,48 @@ public class AuthController {
         return ResponseEntity.ok(Collections.singletonMap("message", "Logged out successfully"));
     }
     @PostMapping("/refresh-token")
-    public ResponseEntity<?> refreshToken(@CookieValue(value = "refreshToken", defaultValue = "") String refreshToken) {
-        String username = jwtUtil.extractUsername(refreshToken);
-        if (username == null || !jwtUtil.validateToken(refreshToken)) {
+    public ResponseEntity<?> refreshToken(@CookieValue(value = "refresh_token", defaultValue = "") String refreshToken) throws UserNotActiveException {
+        if (refreshToken.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Missing refresh token.");
+        }
+System.out.println("Nhana: "+refreshToken);
+        Optional<Claims> claimsOpt = jwtUtil.checkValidJWTRefreshToken(refreshToken);
+        if (claimsOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid or expired refresh token.");
         }
 
-        UserDTO user = userService.findByEmail(username);
-        String newAccessToken = jwtUtil.generateToken(user.getUserID(), user.getEmail(), List.of(user.getRole().getName()));
+        String email = claimsOpt.get().getSubject();
+        UserDTO  userDB= userService.findByEmail(email);
+        LoginResponse loginResponse = new LoginResponse();
+        if (userDB != null && userDB.getStatus().equals("Active")) {
+            LoginResponse.UserLogin user = new LoginResponse.UserLogin(
+                    userDB.getUserID(),
+                    userDB.getEmail(),
+                    userDB.getPhoneNumber(),
+                    userDB.getName(),
+                    userDB.getRole()
+            );
+            loginResponse.setUser(user);
+        } else {
+            throw new UserNotActiveException("User is not activated");
+        }
 
-        return ResponseEntity.ok(newAccessToken);
+        String accessToken = jwtUtil.createAccessToken(loginResponse.getUser().getEmail(),loginResponse);
+        loginResponse.setAccessToken(accessToken);
+        String newRefreshToken = jwtUtil.createRefreshToken(loginResponse.getUser().getEmail(), loginResponse);
+
+        userService.updateRefreshToken(userDB.getEmail(), newRefreshToken);
+
+        ResponseCookie cookie = ResponseCookie.from("refresh_token", newRefreshToken)
+                .httpOnly(true).path("/")
+                .secure(true)
+                .maxAge(refreshExpirationMs)
+                .build();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(loginResponse);
+
+
     }
+
 }

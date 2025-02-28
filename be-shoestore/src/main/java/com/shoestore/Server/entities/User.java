@@ -45,5 +45,6 @@ public class User extends BaseEntity{
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     @JsonBackReference
     private List<Review> reviews;
-
+    @Column(length = 500)
+    private String refreshToken;
 }

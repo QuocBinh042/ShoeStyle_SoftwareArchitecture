@@ -173,80 +173,27 @@ VALUES
 ('Casual street sneakers.', 950000, 'Adidas Superstar', 'Available', 4, 4, NULL, 4,GETDATE(),GETDATE()),
 ('Italian leather dress shoes.', 2500000, 'Santoni Double Monk', 'Available', 5, 5, NULL, 5,GETDATE(),GETDATE());
 
-INSERT INTO ProductDetail (color, size, stockQuantity, productID,createdAt,updatedAt)
+INSERT INTO ProductDetail (color, size, stockQuantity, productID, createdAt, updatedAt)
 VALUES
-('RED', 'SIZE_36', 50, 1),
-('RED', 'SIZE_37', 40, 1),
-('RED', 'SIZE_38', 30, 1),
-('BLUE', 'SIZE_39', 30, 2),
-('BLUE', 'SIZE_40', 50, 2),
-('GREEN', 'SIZE_41', 20, 3),
-('GREEN', 'SIZE_42', 40, 3),
-('GREEN', 'SIZE_43', 35, 3),
-('YELLOW', 'SIZE_36', 50, 4),
-('YELLOW', 'SIZE_37', 20, 4),
-('YELLOW', 'SIZE_38', 30, 4),
-('BLACK', 'SIZE_39', 45, 5),
-('BLACK', 'SIZE_40', 35, 5),
-('WHITE', 'SIZE_41', 25, 6),
-('WHITE', 'SIZE_42', 50, 6),
-('PINK', 'SIZE_43', 60, 7),
-('PINK', 'SIZE_44', 50, 7),
-('RED', 'SIZE_36', 45, 8),
-('RED', 'SIZE_37', 55, 8),
-('BLUE', 'SIZE_38', 50, 9),
-('BLUE', 'SIZE_39', 30, 9),
-('GREEN', 'SIZE_40', 20, 10),
-('GREEN', 'SIZE_41', 25, 10),
-('YELLOW', 'SIZE_42', 40, 11),
-('YELLOW', 'SIZE_43', 35, 11),
-('BLACK', 'SIZE_44', 25, 12),
-('BLACK', 'SIZE_36', 50, 12),
-('WHITE', 'SIZE_37', 60, 13),
-('WHITE', 'SIZE_38', 30, 13),
-('PINK', 'SIZE_39', 45, 14),
-('PINK', 'SIZE_40', 50, 14),
-('RED', 'SIZE_41', 35, 15),
-('RED', 'SIZE_42', 25, 15),
-('BLUE', 'SIZE_43', 50, 16),
-('BLUE', 'SIZE_44', 60, 16),
-('GREEN', 'SIZE_36', 30, 17),
-('GREEN', 'SIZE_37', 45, 17),
-('YELLOW', 'SIZE_38', 30, 18),
-('BLACK', 'SIZE_39', 40, 19),
-('BLACK', 'SIZE_40', 50, 19),
-('WHITE', 'SIZE_41', 55, 20),
-('WHITE', 'SIZE_42', 35, 20),
-('PINK', 'SIZE_43', 60, 21),
-('PINK', 'SIZE_44', 50, 21),
-('RED', 'SIZE_36', 50, 22),
-('RED', 'SIZE_37', 40, 22),
-('BLUE', 'SIZE_38', 30, 23),
-('BLUE', 'SIZE_39', 45, 23),
-('GREEN', 'SIZE_40', 50, 24),
-('YELLOW', 'SIZE_41', 45, 25),
-('BLACK', 'SIZE_42', 40, 26),
-('BLACK', 'SIZE_43', 55, 27),
-('WHITE', 'SIZE_44', 50, 28),
-('PINK', 'SIZE_36', 30, 29),
-('PINK', 'SIZE_37', 35, 29),
-('RED', 'SIZE_38', 45, 30),
-('BLUE', 'SIZE_39', 25, 31),
-('GREEN', 'SIZE_40', 50, 32),
-('YELLOW', 'SIZE_41', 30, 33),
-('BLACK', 'SIZE_42', 60, 34),
-('WHITE', 'SIZE_43', 40, 35),
-('PINK', 'SIZE_44', 25, 36),
-('RED', 'SIZE_36', 50, 37),
-('RED', 'SIZE_37', 40, 38),
-('BLUE', 'SIZE_38', 45, 39),
-('BLUE', 'SIZE_39', 35, 40),
-('GREEN', 'SIZE_40', 30, 41),
-('GREEN', 'SIZE_41', 50, 42),
-('YELLOW', 'SIZE_42', 40, 43),
-('BLACK', 'SIZE_43', 45, 44),
-('WHITE', 'SIZE_44', 35, 45),
-('PINK', 'SIZE_36', 60, 46);
+('RED', 'SIZE_36', 50, 1, GETDATE(), GETDATE()),
+('RED', 'SIZE_37', 40, 1, GETDATE(), GETDATE()),
+('RED', 'SIZE_38', 30, 1, GETDATE(), GETDATE()),
+('BLUE', 'SIZE_39', 30, 2, GETDATE(), GETDATE()),
+('BLUE', 'SIZE_40', 50, 2, GETDATE(), GETDATE()),
+('GREEN', 'SIZE_41', 20, 3, GETDATE(), GETDATE()),
+('GREEN', 'SIZE_42', 40, 3, GETDATE(), GETDATE()),
+('GREEN', 'SIZE_43', 35, 3, GETDATE(), GETDATE()),
+('YELLOW', 'SIZE_36', 50, 4, GETDATE(), GETDATE()),
+('YELLOW', 'SIZE_37', 20, 4, GETDATE(), GETDATE()),
+('YELLOW', 'SIZE_38', 30, 4, GETDATE(), GETDATE()),
+('BLACK', 'SIZE_39', 45, 5, GETDATE(), GETDATE()),
+('BLACK', 'SIZE_40', 35, 5, GETDATE(), GETDATE()),
+('WHITE', 'SIZE_41', 25, 6, GETDATE(), GETDATE()),
+('WHITE', 'SIZE_42', 50, 6, GETDATE(), GETDATE()),
+('PINK', 'SIZE_43', 60, 7, GETDATE(), GETDATE()),
+('PINK', 'SIZE_44', 50, 7, GETDATE(), GETDATE());
+
+
 
 
 INSERT INTO Product_ImageURL (productID, imageURL)
@@ -518,28 +465,29 @@ VALUES
 
 
 
-INSERT INTO Cart (updatedAt,createdAt, userID)
+INSERT INTO Cart (createdAt, updatedAt, userID)
 VALUES 
-('2024-11-01 08:30:00', 1),
-('2024-11-02 09:45:00', 2),
-('2024-11-03 10:15:00', 3),
-('2024-11-04 11:20:00', 4),
-('2024-11-05 12:30:00', 5),
-('2024-11-06 13:45:00', 6),
-('2024-11-07 14:50:00', 7),
-('2024-11-08 15:10:00', 8),
-('2024-11-09 16:30:00', 9),
-('2024-11-10 17:00:00', 10),
-('2024-11-11 18:15:00', 11),
-('2024-11-12 19:20:00', 12),
-('2024-11-13 20:25:00', 13),
-('2024-11-14 21:30:00', 14),
-('2024-11-15 22:45:00', 15),
-('2024-11-16 23:50:00', 16),
-('2024-11-17 08:00:00', 17),
-('2024-11-18 09:10:00', 18),
-('2024-11-19 10:20:00', 19),
-('2024-11-20 11:30:00', 20);
+('2024-11-01 08:30:00', '2024-11-01 08:30:00', 1),
+('2024-11-02 09:45:00', '2024-11-02 09:45:00', 2),
+('2024-11-03 10:15:00', '2024-11-03 10:15:00', 3),
+('2024-11-04 11:20:00', '2024-11-04 11:20:00', 4),
+('2024-11-05 12:30:00', '2024-11-05 12:30:00', 5),
+('2024-11-06 13:45:00', '2024-11-06 13:45:00', 6),
+('2024-11-07 14:50:00', '2024-11-07 14:50:00', 7),
+('2024-11-08 15:10:00', '2024-11-08 15:10:00', 8),
+('2024-11-09 16:30:00', '2024-11-09 16:30:00', 9),
+('2024-11-10 17:00:00', '2024-11-10 17:00:00', 10),
+('2024-11-11 18:15:00', '2024-11-11 18:15:00', 11),
+('2024-11-12 19:20:00', '2024-11-12 19:20:00', 12),
+('2024-11-13 20:25:00', '2024-11-13 20:25:00', 13),
+('2024-11-14 21:30:00', '2024-11-14 21:30:00', 14),
+('2024-11-15 22:45:00', '2024-11-15 22:45:00', 15),
+('2024-11-16 23:50:00', '2024-11-16 23:50:00', 16),
+('2024-11-17 08:00:00', '2024-11-17 08:00:00', 17),
+('2024-11-18 09:10:00', '2024-11-18 09:10:00', 18),
+('2024-11-19 10:20:00', '2024-11-19 10:20:00', 19),
+('2024-11-20 11:30:00', '2024-11-20 11:30:00', 20);
+
 
 INSERT INTO CartItem (quantity, subTotal, cartID, productDetailID, createdAt, updatedAt)
 VALUES
@@ -597,12 +545,13 @@ VALUES
 
 
 
-INSERT INTO Orders (orderDate, status, total, feeShip, code, voucherID, shippingAddress, typePayment, discount, userID) VALUES
-(GETDATE(), 'Processing', 159.97, 10.00, 'CODE001', NULL, '123 Main St, City, Country', 'Credit Card', 0.00, 1),  -- Order 1
-(GETDATE(), 'Shipped', 69.99, 5.00, 'CODE002', NULL, '456 Oak Ave, City, Country', 'PayPal', 0.00, 2),        -- Order 2
-(GETDATE(), 'Delivered', 149.98, 15.00, 'CODE003', NULL, '789 Pine Rd, City, Country', 'Bank Transfer', 5.00, 3),  -- Order 3
-(GETDATE(), 'Processing', 119.98, 8.00, 'CODE004', NULL, '321 Birch Blvd, City, Country', 'Credit Card', 0.00, 4),  -- Order 4
-(GETDATE(), 'Shipped', 89.99, 12.00, 'CODE005', NULL, '654 Cedar Ct, City, Country', 'Cash on Delivery', 0.00, 5);  -- Order 5
+INSERT INTO Orders (orderDate, status, total, feeShip, code, voucherID, shippingAddress, typePayment, discount, userID, createdAt, updatedAt) 
+VALUES
+(GETDATE(), 'Processing', 159.97, 10.00, 'CODE001', NULL, '123 Main St, City, Country', 'Credit Card', 0.00, 1, GETDATE(), GETDATE()),  -- Order 1
+(GETDATE(), 'Shipped', 69.99, 5.00, 'CODE002', NULL, '456 Oak Ave, City, Country', 'PayPal', 0.00, 2, GETDATE(), GETDATE()),        -- Order 2
+(GETDATE(), 'Delivered', 149.98, 15.00, 'CODE003', NULL, '789 Pine Rd, City, Country', 'Bank Transfer', 5.00, 3, GETDATE(), GETDATE()),  -- Order 3
+(GETDATE(), 'Processing', 119.98, 8.00, 'CODE004', NULL, '321 Birch Blvd, City, Country', 'Credit Card', 0.00, 4, GETDATE(), GETDATE()),  -- Order 4
+(GETDATE(), 'Shipped', 89.99, 12.00, 'CODE005', NULL, '654 Cedar Ct, City, Country', 'Cash on Delivery', 0.00, 5, GETDATE(), GETDATE());  -- Order 5
 
 
 

@@ -16,12 +16,12 @@ import com.shoestore.Server.service.CartItemService;
 import com.shoestore.Server.service.PromotionService;
 import com.shoestore.Server.service.PaginationService;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
+@Slf4j
 @Service
 public class CartItemServiceImpl implements CartItemService {
     private final ProductDetailRepository productDetailRepository;
@@ -46,11 +46,10 @@ public class CartItemServiceImpl implements CartItemService {
 
     @Override
     public PaginationResponse<CartItemResponse> getCartItemsByCartId(int cartId, int page, int pageSize) {
+        log.info("Fetching cart items for cart id: {}", cartId);
         Pageable pageable = paginationService.createPageable(page, pageSize);
-
         Page<CartItem> cartItemsPage = cartItemRepository.findCartItemsByCartId(cartId, pageable);
-
-        Page<CartItemResponse> cartItemResponses = cartItemsPage.map(cartItem -> {
+        return paginationService.paginate(cartItemsPage.map(cartItem -> {
             ProductDetail productDetail = cartItem.getProductDetail();
             CartItemResponse cartItemResponse = new CartItemResponse();
             cartItemResponse.setCartItemDTO(cartItemMapper.toCartItemDTO(cartItem));
@@ -58,12 +57,12 @@ public class CartItemServiceImpl implements CartItemService {
             cartItemResponse.setProductDetailDTO(productDetailMapper.toDto(productDetail));
             cartItemResponse.setProductPrice(promotionService.getDiscountedPrice(productMapper.toDto(productDetail.getProduct())));
             return cartItemResponse;
-        });
-        return paginationService.paginate(cartItemResponses);
+        }));
     }
 
     @Override
     public CartItemDTO addCartItem(CartItemDTO cartItemDTO) {
+        log.info("Adding new cart item: {}", cartItemDTO);
         Cart cart = cartRepository.findById(cartItemDTO.getCart().getCartID())
                 .orElseThrow(() -> new IllegalArgumentException("Cart not found"));
         ProductDetail productDetail = productDetailRepository.findById(cartItemDTO.getProductDetail().getProductDetailID())
@@ -74,32 +73,43 @@ public class CartItemServiceImpl implements CartItemService {
         cartItem.setProductDetail(productDetail);
         cartItem.setQuantity(cartItemDTO.getQuantity());
         cartItem.setSubTotal(cartItemDTO.getSubTotal());
+
+        log.info("Cart item saved successfully: {}", cartItem);
         return cartItemMapper.toCartItemDTO(cartItemRepository.save(cartItem));
     }
 
     @Override
     public CartItemDTO getCartItemById(int id) {
+        log.info("Fetching cart item by id: {}", id);
         return cartItemRepository.findById(id)
                 .map(cartItemMapper::toCartItemDTO)
-                .orElseThrow(() -> new EntityNotFoundException("CartItem not found with id: " + id));
+                .orElseThrow(() -> {
+                    log.warn("CartItem not found with id: {}", id);
+                    return new EntityNotFoundException("CartItem not found with id: " + id);
+                });
     }
 
     @Override
     public CartItemDTO updateQuantity(int id, CartItemDTO cartItemDTO) {
+        log.info("Updating cart item id: {} with new quantity: {}", id, cartItemDTO.getQuantity());
         CartItem existCartItem = cartItemRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("CartItem not found with id: " + id));
 
         existCartItem.setQuantity(cartItemDTO.getQuantity());
         existCartItem.setSubTotal(cartItemDTO.getSubTotal());
 
+        log.info("Cart item updated successfully: {}", existCartItem);
         return cartItemMapper.toCartItemDTO(cartItemRepository.save(existCartItem));
     }
 
     @Override
     public void deleteCartItem(int id) {
+        log.info("Deleting cart item with id: {}", id);
         if (!cartItemRepository.existsById(id)) {
+            log.warn("Cart item not found with id: {}", id);
             throw new EntityNotFoundException("Cart item not found with id: " + id);
         }
         cartItemRepository.deleteById(id);
+        log.info("Cart item deleted successfully: {}", id);
     }
 }

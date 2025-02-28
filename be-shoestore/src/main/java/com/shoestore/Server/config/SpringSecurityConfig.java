@@ -1,6 +1,7 @@
 package com.shoestore.Server.config;
 
-import com.shoestore.Server.sercurity.JwtAuthenticationFilter;
+import com.shoestore.Server.security.JwtAuthenticationFilter;
+import com.shoestore.Server.security.CustomAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,48 +19,55 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 public class SpringSecurityConfig {
+
+	private final JwtAuthenticationFilter jwtAuthenticationFilter;
+	private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+	private final UserDetailsService userDetailsService;
+
+	public SpringSecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+								CustomAuthenticationEntryPoint customAuthenticationEntryPoint,
+								UserDetailsService userDetailsService) {
+		this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+		this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
+		this.userDetailsService = userDetailsService;
+	}
+
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
+
 	@Bean
-	public JwtAuthenticationFilter jwtAuthenticationFilter() {
-		return new JwtAuthenticationFilter();
-	}
-	@Bean
-	public DaoAuthenticationProvider authenticationProvider(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+	public DaoAuthenticationProvider authenticationProvider() {
 		DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
 		authProvider.setUserDetailsService(userDetailsService);
-		authProvider.setPasswordEncoder(passwordEncoder);
+		authProvider.setPasswordEncoder(passwordEncoder());
 		return authProvider;
 	}
 
 	@Bean
-	public AuthenticationManager authenticationManager(HttpSecurity http, UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) throws Exception {
+	public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
 		AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
 		authenticationManagerBuilder
 				.userDetailsService(userDetailsService)
-				.passwordEncoder(passwordEncoder);
+				.passwordEncoder(passwordEncoder());
 		return authenticationManagerBuilder.build();
 	}
 
 	@Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http, UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) throws Exception {
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
 				.cors().and().csrf().disable()
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/api/auth/refresh-token").permitAll()
 						.requestMatchers("/api/admin/**").hasRole("ADMIN")
 						.requestMatchers("/api/user/**").authenticated()
 						.anyRequest().permitAll()
 				)
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.authenticationProvider(authenticationProvider(userDetailsService, passwordEncoder))
-				.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+				.authenticationProvider(authenticationProvider())
+				.exceptionHandling(ex -> ex.authenticationEntryPoint(customAuthenticationEntryPoint))
+				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
 	}
-
-
-
 }

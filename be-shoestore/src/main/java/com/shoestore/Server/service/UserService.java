@@ -15,4 +15,5 @@ public interface UserService {
     UserDTO updateUserInformationByUser(int id, UserDTO updatedUserDTO);
 
     UserDTO getUserById(int id);
+    void updateRefreshToken(String email, String refreshToken);
 }

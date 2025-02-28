@@ -7,12 +7,13 @@ import com.shoestore.Server.mapper.AddressMapper;
 import com.shoestore.Server.repositories.AddressRepository;
 import com.shoestore.Server.repositories.UserRepository;
 import com.shoestore.Server.service.AddressService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
+@Slf4j
 @Service
 public class AddressServiceImpl implements AddressService {
     private final AddressRepository addressRepository;
@@ -34,13 +35,21 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public AddressDTO getById(int id) {
-        Address address = addressRepository.findById(id).orElse(null);
-        return address != null ? addressMapper.toDto(address) : null;
+        log.info("Fetching address with ID: {}", id);
+        Optional<Address> addressOpt = addressRepository.findById(id);
+        if (addressOpt.isPresent()) {
+            log.info("Found address with ID: {}", id);
+            return addressMapper.toDto(addressOpt.get());
+        } else {
+            log.warn("Address with ID {} not found", id);
+            return null;
+        }
     }
 
     @Override
     public void deleteById(int id) {
         addressRepository.deleteById(id);
+        log.info("Deleted address with ID: {}", id);
     }
 
     @Override
@@ -64,12 +73,13 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public AddressDTO addAddress(AddressDTO addressDTO) {
-
-        User user=userRepository.findById(addressDTO.getUser().getUserID())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));;
+        log.info("Adding new address for user ID: {}", addressDTO.getUser().getUserID());
+        User user = userRepository.findById(addressDTO.getUser().getUserID())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
         Address address = addressMapper.toEntity(addressDTO);
         address.setUser(user);
         Address savedAddress = addressRepository.save(address);
+        log.info("Added new address with ID: {}", savedAddress.getAddressID());
         return addressMapper.toDto(savedAddress);
     }
 }

@@ -29,5 +29,12 @@ public class GlobalExceptionHandler {
         res.setError("Entity Not Found");
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
     }
-
+    @ExceptionHandler(UserNotActiveException.class)
+    public ResponseEntity<RestResponse<Object>> handleAccountNotActiveException(UserNotActiveException ex) {
+        RestResponse<Object> res = new RestResponse<Object>();
+        res.setStatusCode(HttpStatus.FORBIDDEN.value());
+        res.setMessage(ex.getMessage());
+        res.setError("Account Not Activated");
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(res);
+    }
 }

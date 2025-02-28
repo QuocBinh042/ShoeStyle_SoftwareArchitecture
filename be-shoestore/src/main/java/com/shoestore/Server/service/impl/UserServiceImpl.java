@@ -7,6 +7,7 @@ import com.shoestore.Server.mapper.UserMapper;
 import com.shoestore.Server.repositories.RoleRepository;
 import com.shoestore.Server.repositories.UserRepository;
 import com.shoestore.Server.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,7 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
+@Slf4j
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -77,6 +78,20 @@ public class UserServiceImpl implements UserService {
             return null;
         }
         return userMapper.toDto(user);
+    }
+
+    @Override
+    public void updateRefreshToken(String email, String refreshToken) {
+        User user=userRepository.findByEmail(email);
+        System.out.println(user.getUserID());
+        if(user==null){
+            log.info("User not found");
+        }
+        user.setRefreshToken(refreshToken);
+        log.info("User updated successfully");
+        userRepository.save(user);
+
+
     }
 
     @Override

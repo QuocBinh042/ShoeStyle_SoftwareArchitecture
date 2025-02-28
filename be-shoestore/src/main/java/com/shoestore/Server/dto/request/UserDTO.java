@@ -13,4 +13,5 @@ public class UserDTO {
     private String status;
     private String CI;
     private RoleDTO role;
+    private String refreshToken;
 }

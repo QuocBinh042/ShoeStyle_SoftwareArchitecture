@@ -12,7 +12,7 @@ import java.util.Map;
 public interface OrderService {
     List<OrderDTO> getAll();
 
-    void updateOrderStatus(int orderId, String status);
+    OrderDTO updateOrderStatus(int orderId, String status);
 
     OrderDTO getOrderById(int orderID);
 
