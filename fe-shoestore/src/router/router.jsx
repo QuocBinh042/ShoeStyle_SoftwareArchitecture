@@ -11,7 +11,20 @@ import PaymentResult from "../pages/customer/Payment"
 import Login from "../pages/auth/Login";
 import SignUp from "../pages/auth/SignUp";
 import ProductDetail from "../pages/customer/ProductDetail";
-
+import AdminLayout from "../layouts/AdminLayout";
+import Dashboard from "../pages/admin/Dashboard";
+import ProductManager from "../pages/admin/Product";
+import OrderManager from "../pages/admin/Order";
+import OrderDetail from "../pages/admin/Order/OrderDetail";
+import ShipmentManager from "../pages/admin/Shipment";
+import PromotionManager from "../pages/admin/Promotion";
+import PromotionForm from "../pages/admin/Promotion/PromotionForm";
+import PromotionDetail from "../pages/admin/Promotion/PromotionDetail";
+import PromotionAnalytics from "../pages/admin/Promotion/PromotionAnalytics";
+import CouponGenerator from "../pages/admin/Promotion/CouponGenerator";
+import MarketingIntegration from "../pages/admin/Promotion/MarketingIntegration";
+import CustomerManager from "../pages/admin/Customer";
+import CustomerDetail from "../pages/admin/Customer/CustomerDetails";
 export const routes = [
   {
     path: "/",
@@ -96,6 +109,72 @@ export const routes = [
       // },
      
     ]
+  },
+  {
+    path: "/admin",
+    element: <AdminLayout />,
+    children: [
+      {
+        path: "dashboard",
+        element: <Dashboard />,
+      },
+      {
+        path: "products",
+        element: <ProductManager />,
+      },
+      {
+        path: "orders",
+        element: <OrderManager />,
+        children: [
+          {
+            path: ":id",
+            element: <OrderDetail />,
+          },
+        ],
+      },
+      {
+        path: "shipment",
+        element: <ShipmentManager />,
+      },
+      {
+        path: "promotions",
+        element: <PromotionManager />,
+      },
+      {
+        path: "promotions/create",
+        element: <PromotionForm />,
+      },
+      {
+        path: "promotions/:id",
+        element: <PromotionDetail />,
+      },
+      {
+        path: "promotions/:id/edit",
+        element: <PromotionForm />,
+      },
+      {
+        path: "promotions/analytics",
+        element: <PromotionAnalytics />,
+      },
+      {
+        path: "promotions/coupons",
+        element: <CouponGenerator />,
+      },
+      {
+        path: "promotions/marketing",
+        element: <MarketingIntegration />,
+      },
+      {
+        path: "customers",
+        element: <CustomerManager />,
+        children: [
+          {
+            path: ":id",
+            element: <CustomerDetail />,
+          },
+        ],
+      },
+    ],
   },
   {
     path: "*",
