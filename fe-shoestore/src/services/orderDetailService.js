@@ -10,5 +10,5 @@ export const addOrderDetails = async (orderDetail) => {
 };
 export const fetchOrderDetailByOrder = async (id) => {
     const data = await fetchData(`order-details/by-order-id/${id}`);
-    return data;
+    return data.data;
 };

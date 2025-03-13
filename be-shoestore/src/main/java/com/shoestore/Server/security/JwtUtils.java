@@ -1,6 +1,8 @@
 package com.shoestore.Server.security;
 
 import com.shoestore.Server.dto.response.LoginResponse;
+import com.shoestore.Server.dto.response.UserInsideTokenResponse;
+import com.shoestore.Server.dto.response.UserLoginResponse;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
@@ -31,13 +33,17 @@ public class JwtUtils {
     private long refreshExpirationMs;//2 weeks
 
     private Key getSigningKey() {
+        if (secretKey == null || secretKey.isEmpty()) {
+            throw new IllegalStateException("JWT Secret Key is not configured");
+        }
         return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String createAccessToken(String identifier, LoginResponse resLoginDTO) {
-        LoginResponse.UserLogin user = resLoginDTO.getUser();
 
-        LoginResponse.UserInsideToken userInsideToken = new LoginResponse.UserInsideToken(
+    public String createAccessToken(String identifier, LoginResponse resLoginDTO) {
+        UserLoginResponse user = resLoginDTO.getUser();
+
+        UserInsideTokenResponse userInsideToken = new UserInsideTokenResponse(
                 user.getId(),
                 user.getEmail(),
                 user.getPhoneNumber(),
@@ -59,10 +65,9 @@ public class JwtUtils {
                 .compact();
     }
 
-    public String createRefreshToken(String identifier, LoginResponse resLoginDTO) {
-        LoginResponse.UserLogin user = resLoginDTO.getUser();
-
-        LoginResponse.UserInsideToken userInsideToken = new LoginResponse.UserInsideToken(
+    public String createRefreshToken(String identifier, LoginResponse resLoginDTO, Instant originalExpiration) {
+        UserLoginResponse user = resLoginDTO.getUser();
+        UserInsideTokenResponse userInsideToken = new UserInsideTokenResponse(
                 user.getId(),
                 user.getEmail(),
                 user.getPhoneNumber(),
@@ -70,18 +75,20 @@ public class JwtUtils {
         );
 
         Instant now = Instant.now();
-        Instant validity = now.plus(refreshExpirationMs, ChronoUnit.MILLIS);
+        Instant validity = (originalExpiration == null) ? now.plus(refreshExpirationMs, ChronoUnit.MILLIS) : originalExpiration;
 
         String subject = identifier.contains("@") ? user.getEmail() : user.getPhoneNumber();
 
         return Jwts.builder()
                 .setSubject(subject)
                 .claim("user", userInsideToken)
+                .claim("refresh_exp", validity.getEpochSecond())
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(validity))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS512)
                 .compact();
     }
+
 
     public static Optional<String> getCurrentUserLogin() {
         SecurityContext securityContext = SecurityContextHolder.getContext();
@@ -111,19 +118,25 @@ public class JwtUtils {
                             .getBody()
             );
         } catch (ExpiredJwtException e) {
-            log.warn(">>> Refresh Token Expired: " + e.getMessage());
+            log.warn(">>> Refresh Token Expired: {}", e.getMessage());
+            throw new JwtException("Refresh Token has expired", e);
         } catch (MalformedJwtException e) {
-            log.warn(">>> Invalid Refresh Token: " + e.getMessage());
+            log.warn(">>> Invalid Refresh Token: {}", e.getMessage());
+            throw new JwtException("Invalid Refresh Token", e);
         } catch (Exception e) {
-            log.error(">>> Refresh Token Error: " + e.getMessage());
+            log.error(">>> Refresh Token Error: {}", e.getMessage());
+            throw new JwtException("Unknown Refresh Token Error", e);
         }
-        return Optional.empty();
     }
+
     public String extractUsername(String token) {
         return parseClaims(token).map(Claims::getSubject).orElse(null);
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {
+        if (token == null || userDetails == null) {
+            return false;
+        }
         return extractUsername(token).equals(userDetails.getUsername()) && !isTokenExpired(token);
     }
 
@@ -133,7 +146,7 @@ public class JwtUtils {
                 .orElse(true);
     }
 
-    private Optional<Claims> parseClaims(String token) {
+    public Optional<Claims> parseClaims(String token) {
         try {
             return Optional.of(
                     Jwts.parser()

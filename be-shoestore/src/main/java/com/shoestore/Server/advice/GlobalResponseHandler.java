@@ -1,4 +1,4 @@
-package com.shoestore.Server.utils;
+package com.shoestore.Server.advice;
 
 import com.shoestore.Server.dto.response.RestResponse;
 import com.shoestore.Server.utils.annotation.ApiMessage;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 @ControllerAdvice
-public class FormatResponse implements ResponseBodyAdvice {
+public class GlobalResponseHandler implements ResponseBodyAdvice {
     @Override
     public boolean supports(MethodParameter returnType, Class converterType) {
         return true;

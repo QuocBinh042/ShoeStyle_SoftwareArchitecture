@@ -1,9 +1,9 @@
-import React, { useState, useEffect,useMemo } from "react";
-import { Radio, Button, Image, Table, Steps, Divider, Modal, Card, Tag } from "antd";
+import React, { useState, useEffect, useMemo } from "react";
+import { Radio, Button, Image, Table, Steps, Divider, Modal, Card, Tag ,Drawer } from "antd";
 import { CarOutlined, TagOutlined } from "@ant-design/icons";
 import "./Checkout.scss";
 import OrderSuccess from "../Order";
-import { useLocation } from "react-router-dom";
+import { useLocation,useNavigate  } from "react-router-dom";
 import { fetchProductDetailById } from "../../../services/productDetailService";
 import { addOrder } from "../../../services/orderService";
 import { addOrderDetails } from "../../../services/orderDetailService";
@@ -11,11 +11,12 @@ import logoVNPAY from '../../../assets/images/logos/vnpay_logo.png'
 import { addPayment, getVnPayUrl } from "../../../services/paymentService";
 import { fetchVoucherWithPrice } from "../../../services/voucherService";
 import { fetchAddressByUser } from "../../../services/addressService";
-import { useAuthToken } from "../../../hooks/useAuthToken";
+import { useSelector } from "react-redux";
 const Checkout = () => {
   console.count("Checkout component renders");
   const location = useLocation();
   const selectedItems = location.state?.selectedItems || [];
+  const navigate = useNavigate();
   const [current, setCurrent] = useState(0);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isModalVoucherVisible, setisModalVoucherVisible] = useState(false);
@@ -28,13 +29,13 @@ const Checkout = () => {
   const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
   const [isModalAddressVisible, setIsModalAddressVisible] = useState(false);
-  const user = useAuthToken();
+  const user = useSelector((state) => state.account.user);
   console.log(user)
-  // useEffect(() => {
-  //   if (user?.id && addresses.length === 0) {
-  //     fetchAddresses(user.id);
-  //   }
-  // }, [user, addresses.length]);
+  useEffect(() => {
+    if (user?.userID) {
+      fetchAddresses(user.userID);
+    }
+  }, [user?.userID]);
   const fetchAddresses = async (userId) => {
     try {
       const response = await fetchAddressByUser(userId);
@@ -82,10 +83,10 @@ const Checkout = () => {
       (total, product) => total + product.quantity * product.price,
       0
     );
-  
+
     let shippingCost = shippingMethod === "Express" ? 30000 : 0;
     let discount = 0;
-  
+
     if (selectedVoucher) {
       if (selectedVoucher.freeShipping) {
         discount = shippingCost;
@@ -95,7 +96,7 @@ const Checkout = () => {
         discount = selectedVoucher.discountValue;
       }
     }
-  
+
     return { totalCost: subtotal + shippingCost - discount, discount };
   }, [productDetails, selectedVoucher, shippingMethod]);
 
@@ -128,7 +129,7 @@ const Checkout = () => {
       total: totalCost,
       feeShip: shippingCost,
       shippingAddress: `${selectedAddress.street}, ${selectedAddress.ward}, ${selectedAddress.district}, ${selectedAddress.city}`,
-      user: { userID: user.id },
+      user: { userID: user.userID },
       code: orderCode,
       typePayment: paymentMethod === "VNPay" ? "VNPay" : "Cash on Delivery",
       ...(selectedVoucher && { voucher: { voucherID: selectedVoucher.voucherID } }),
@@ -136,55 +137,59 @@ const Checkout = () => {
     };
 
     try {
-      const response = await addOrder(order);
-      if (response && response.orderID) {
-        const orderID = response.orderID;
+      // const response = await addOrder(order);
+      // if (response && response.data.orderID) {
+      //   const orderID = response.data.orderID;
 
-        // Add order details
-        await Promise.all(
-          productDetails.map(async (product) => {
-            const productDetail = await fetchProductDetailById(product.detail.productDetailID)
-            const orderDetail = {
-              quantity: product.quantity,
-              price: product.price,
-              productDetail: productDetail,
-              order: { orderID },
-            };
-            await addOrderDetails(orderDetail);
-          })
-        );
+      //   // Add order details
+      //   await Promise.all(
+      //     productDetails.map(async (product) => {
+      //       const productDetail = await fetchProductDetailById(product.detail.productDetailID)
+      //       const orderDetail = {
+      //         quantity: product.quantity,
+      //         price: product.price,
+      //         productDetail: productDetail,
+      //         order: { orderID },
+      //       };
+      //       await addOrderDetails(orderDetail);
+      //     })
+      //   );
 
-        // Add payment
-        const payment = {
-          paymentDate: new Date().toISOString(),
-          status: "Pending",
-          order: { orderID },
-        };
-        await addPayment(payment);
-        let vnPayUrl = null;
-        if (paymentMethod === "VNPay") {
-          const vnPayResponse = await getVnPayUrl(totalCost, orderCode);
-          vnPayUrl = vnPayResponse.paymentUrl;
-        }
-        // Set modal data
-        setModalData({
-          transactionDate: new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" }),
-          paymentMethod: paymentMethod === "VNPay" ? "VNPay" : "Cash on Delivery",
-          shippingMethod: shippingMethod === "Express" ? "Express delivery (1-3 business days)" : "Normal delivery (3-5 business days)",
-          products: productDetails,
-          subtotal: productDetails.reduce((total, product) => total + product.quantity * product.price, 0),
-          shippingCost: shippingCost,
-          total: totalCost,
-          vnPayUrl,
-        });
-        setIsModalVisible(true)
+      //   // Add payment
+      //   const payment = {
+      //     paymentDate: new Date().toISOString(),
+      //     status: "Pending",
+      //     order: { orderID },
+      //   };
+      //   await addPayment(payment);
+      let vnPayUrl = null;
+      if (paymentMethod === "VNPay") {
+        const vnPayResponse = await getVnPayUrl(totalCost, orderCode);
+        vnPayUrl = vnPayResponse.paymentUrl;
       }
+      // Set modal data
+      setModalData({
+        transactionDate: new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" }),
+        paymentMethod: paymentMethod === "VNPay" ? "VNPay" : "Cash on Delivery",
+        shippingMethod: shippingMethod === "Express" ? "Express delivery (1-3 business days)" : "Normal delivery (3-5 business days)",
+        products: productDetails,
+        subtotal: productDetails.reduce((total, product) => total + product.quantity * product.price, 0),
+        shippingCost: shippingCost,
+        total: totalCost,
+        vnPayUrl,
+      });
+      setIsModalVisible(true)
+      // }
     } catch (error) {
       console.error("Error creating order, order details, or payment:", error);
       Modal.error({
         content: "Failed to place the order. Please try again.",
       });
     }
+  };
+  const handleCloseSuccesDrawe = () => {
+    setIsModalVisible(false);
+    navigate("/"); // Chuyển hướng về trang chủ
   };
   const handleSelectAddress = (address) => {
     setSelectedAddress(address);
@@ -386,14 +391,14 @@ const Checkout = () => {
           </div>
         </div>
       </div>
-      <Modal
+      <Drawer
         open={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
-        centered
-        footer={false}
+        onClose={handleCloseSuccesDrawe}
+        placement="right" 
+        width={400} 
       >
         <OrderSuccess data={modalData} />
-      </Modal>
+      </Drawer>
       <Modal
         open={isModalVoucherVisible}
         onCancel={() => setisModalVoucherVisible(false)}

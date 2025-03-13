@@ -10,7 +10,7 @@ public interface CartItemService {
   PaginationResponse<CartItemResponse> getCartItemsByCartId(int cartId, int page, int pageSize);
   CartItemDTO addCartItem(CartItemDTO cartItemDTO);
   CartItemDTO getCartItemById(int id);
-  CartItemDTO updateQuantity(int id,CartItemDTO cartItemDTO);
+  CartItemDTO updateQuantity(int id,int quantityUpdate);
   void deleteCartItem(int id);
 }
 

@@ -13,7 +13,7 @@ import java.util.Random;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-public class VnPayUtils {
+public class VnPayHelper {
     public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
     public static String vnp_ReturnUrl = "http://localhost:3000/payment";;
     public static String vnp_TmnCode = "9MHC1J5K";

@@ -1,74 +1,54 @@
-import { postData } from "./apiService";
-import { jwtDecode } from "jwt-decode";
-import Cookies from "js-cookie";
-export const login = async (credentials) => {
-    try {
-        const response = await postData(`auth/login`, credentials);
-        if (response?.accessToken && response?.refreshToken) {
-            console.log("Logged in successfully");
-        }
-        return response;
-    } catch (error) {
-        throw error;
-    }
-};
-export const refreshToken = async () => {
-    try {
-        const response = await postData(`auth/refresh-token`, {});
-        if (response?.accessToken) {
-            console.log("Refreshed access token");
-            return response.accessToken;
-        }
-    } catch (error) {
-        logout();
-        throw new Error("Cần đăng nhập lại");
-    }
-};
-export const signUp = async (user) => {
-    try {
-        const data = await postData(`auth/sign-up`, user);
-        return data;
-    } catch (error) {
-        throw error;
-    }
-};
-export const logout = async () => {
-    try {
-        await postData(`auth/logout`, {}); 
-        Cookies.remove("accessToken"); 
-        Cookies.remove("refreshToken");
-        console.log("Logged out");
-    } catch (error) {
-        console.error("Logout failed: ", error);
-    }
-}
+import { postData, apiClient } from "./apiService";
+import { doLogoutAction } from "../redux/accountSlice";
+import store from "../redux/store";
 
-export const getToken = async () => {
-    let accessToken = Cookies.get("accessToken");
-    console.log(document.cookie);
-    if (!accessToken) {
-        throw new Error("Token is missing or invalid");
-    }
+const ACCESS_TOKEN_KEY = "accessToken";
 
-    try {
-        const decodedToken = jwtDecode(accessToken);
-        const currentTime = Date.now() / 1000;
-
-        if (decodedToken.exp < currentTime) {
-            accessToken = await refreshToken();
-            if (accessToken) {
-                console.log("Token refreshed");
-            } else {
-                logout();
-                throw new Error("Session expired, please log in again.");
-            }
-        }
-    } catch (error) {
-        console.error("Error while processing token: ", error);
-        logout();
-        throw new Error("Authentication error, please log in again.");
-    }
-
-    return accessToken;
+const saveAccessToken = (token) => {
+  localStorage.setItem(ACCESS_TOKEN_KEY, token);
 };
 
+const clearAccessToken = () => {
+  localStorage.removeItem(ACCESS_TOKEN_KEY);
+};
+
+const login = async (values) => {
+  try {
+    const data = await postData("/auth/login", values);
+    if (data.statusCode === 200) {
+      saveAccessToken(data.data.access_token);
+    }
+    return data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const logout = async () => {
+  try {
+    await apiClient.post("/auth/logout");
+  } catch (error) {
+    console.error("Lỗi khi gọi API logout:", error);
+  }
+  clearAccessToken();
+  store.dispatch(doLogoutAction());
+};
+
+const refreshAccessToken = async () => {
+  try {
+    const response = await apiClient.post("/auth/refresh-token", null, {
+      withCredentials: true,
+      validateStatus: () => true,
+    });
+    return response;
+  } catch (error) {
+    console.error("Lỗi khi gọi refresh token API:", error);
+    throw error;
+  }
+};
+
+export const authService = {
+  login,
+  logout,
+  refreshAccessToken,
+};

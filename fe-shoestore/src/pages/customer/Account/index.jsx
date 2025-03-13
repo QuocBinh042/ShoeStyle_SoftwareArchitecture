@@ -7,18 +7,19 @@ import {
   LogoutOutlined,
   UserOutlined,
 } from '@ant-design/icons';
-import { logout } from '../../../services/authService'; 
 import MyOrder from './MyOrder';
 import Address from './Address';
 import DashBoard from './Dashboard';
-import { useAuth } from '../../../context/AuthContext';
+import { authService } from '../../../services/authService';
+import { useDispatch } from "react-redux";
+import { doLogoutAction } from '../../../redux/accountSlice';
 const { Content, Sider } = Layout;
 
 const Account = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [selectedKey, setSelectedKey] = useState('1');
   const navigate = useNavigate(); 
-  const { setUser } = useAuth();
+  const dispatch = useDispatch();
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -30,13 +31,18 @@ const Account = () => {
       content: 'You will be redirected to the home page after logging out.',
       okText: 'Log out',
       cancelText: 'Cancel',
-      onOk: () => {
-        logout(); 
-        setUser(null);
+      onOk: async () => {
+        try {
+          await authService.logout();
+        } catch (error) {
+          console.error("Error during logout:", error);
+        }
+        dispatch(doLogoutAction()); 
         navigate('/');
       },
     });
   };
+  
 
   // Menu items
   const items = [
@@ -49,8 +55,8 @@ const Account = () => {
     switch (selectedKey) {
       case '1':
         return <DashBoard />;
-      case '2':
-        return <MyOrder />;
+        case '2':
+          return <MyOrder />;
       case '3':
         return <Address />;
     }

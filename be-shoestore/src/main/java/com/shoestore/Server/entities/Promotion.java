@@ -21,7 +21,6 @@ public class Promotion extends BaseEntity{
     private String name;
     @Column(name = "description", nullable = false, columnDefinition = "NVARCHAR(255)")
     private String description;
-    private String discountType;
     private BigDecimal discountValue;
     private LocalDateTime startDate;
     private LocalDateTime endDate;

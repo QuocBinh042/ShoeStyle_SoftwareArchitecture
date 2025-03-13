@@ -42,14 +42,10 @@ public class PromotionServiceImpl implements PromotionService {
 
         double discountPrice = product.getPrice();
         double discountValue = promotion.getDiscountValue().doubleValue();
+        System.out.println("Discount Value: " + discountValue);
 
-        if ("percent".equalsIgnoreCase(promotion.getDiscountType())) {
-            discountPrice -= discountPrice * (discountValue / 100.0);
-            log.info("Applied percentage discount: {}%, New price: {}", discountValue, discountPrice);
-        } else if ("fixed".equalsIgnoreCase(promotion.getDiscountType())) {
-            discountPrice -= discountValue;
-            log.info("Applied fixed discount: {}, New price: {}", discountValue, discountPrice);
-        }
+        discountPrice -= discountPrice * (discountValue / 100.0);
+        log.info("Applied percentage discount: {}%, New price: {}", discountValue, discountPrice);
 
         double finalPrice = Math.max(discountPrice, 0.0);
         log.info("Final discounted price for Product ID {}: {}", product.getProductID(), finalPrice);

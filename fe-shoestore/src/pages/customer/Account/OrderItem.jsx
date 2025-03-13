@@ -1,16 +1,14 @@
 import { Button, Card, Image, Tag } from "antd";
 import React, { useState } from "react";
-import OrderDetailModal from "./OrderDetailModal";
+import OrderDetailDrawer from "./OrderDetailDrawer";
 
 function OrderItem({ order }) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const showModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
   return (
     <>
       <Card
         title={`Order: #${order.code}`}
-        extra={<Button onClick={showModal}>View Detail</Button>}
+        extra={<Button onClick={() => setIsDrawerOpen(true)}>View Detail</Button>}
       >
         <div style={styles.row}>
           <div style={styles.rightColumn}>
@@ -22,26 +20,11 @@ function OrderItem({ order }) {
             <p><strong>Payment Method:</strong> {order.paymentMethod}</p>
             <p><strong>Shipping Address:</strong> {order.shippingAddress}</p>
           </div>
-
-          {/* <div style={styles.leftColumn}>
-            <Image src={order.details.image} width={150} style={styles.image} />
-            <div style={styles.details}>
-              <h3 style={styles.name}>{order.details.name}</h3>
-              <div style={styles.tags}>
-                <Tag color="black">{order.details.color}</Tag>
-                <Tag color="blue">{order.details.size}</Tag>
-              </div>
-              <div style={styles.info}>
-                <span>Quantity: {order.quantity}</span>
-                <span>Total: {order.total}</span>
-              </div>
-            </div>
-          </div> */}
           
         </div>
       </Card>
 
-      <OrderDetailModal isOpen={isModalOpen} onClose={closeModal} order={order} />
+      <OrderDetailDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} order={order} />
     </>
   );
 }

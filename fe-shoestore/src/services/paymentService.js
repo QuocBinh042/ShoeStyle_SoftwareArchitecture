@@ -9,9 +9,9 @@ export const addPayment = async (payment) => {
 export const getVnPayUrl = async (price,code) => {
     console.log("price:"+price)
     const data = await fetchData(`payment/vn-pay/create-info?price=${price}&code=${code}`);
-    return data
+    return data.data
 };
 export const fetcPaymentByOrder = async (id) => {
     const data = await fetchData(`payment/by-order-id/${id}`);
-    return data;
+    return data.data;
 };

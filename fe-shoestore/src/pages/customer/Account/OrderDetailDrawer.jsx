@@ -1,7 +1,7 @@
-import { Modal, Button, Rate, Tag, Image, Steps, Divider } from "antd";
+import { Modal, Button, Rate, Tag, Image, Steps, Divider, Drawer } from "antd";
 import React, { useState, useEffect } from "react";
 
-function OrderDetailModal({ isOpen, onClose, order }) {
+function OrderDetailDrawer({ isOpen, onClose, order }) {
   const [isReviewModalVisible, setIsReviewModalVisible] = useState(false);
   console.log(order)
   if (!order) return null;
@@ -17,17 +17,13 @@ function OrderDetailModal({ isOpen, onClose, order }) {
     setIsReviewModalVisible(false);
   };
   return (
-    <Modal
+    <Drawer
       title={`Order #${order.code}`}
       open={isOpen}
-      onCancel={onClose}
-      footer={null}
-      width={750}
-      centered
+      onClose={onClose}
+      width={500}
     >
-      <div style={{ padding: "20px" }}>
-        <Divider />
-
+      <div style={{}}>
         <div style={{ marginBottom: 30 }}>
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <div>
@@ -104,7 +100,7 @@ function OrderDetailModal({ isOpen, onClose, order }) {
             </Button>
           </div>
         )}
-         <Modal
+        <Modal
           title="Write a Review"
           open={isReviewModalVisible}
           onCancel={() => setIsReviewModalVisible(false)}
@@ -118,7 +114,7 @@ function OrderDetailModal({ isOpen, onClose, order }) {
             <div style={{ marginTop: 10 }}>
               <h4>Comment:</h4>
               <textarea
-                style={{ width: "100%", height: "100px",padding:"5px" ,borderRadius:"5px"}}
+                style={{ width: "100%", height: "100px", padding: "5px", borderRadius: "5px" }}
                 placeholder="Enter your review here..."
               />
             </div>
@@ -132,8 +128,8 @@ function OrderDetailModal({ isOpen, onClose, order }) {
           </div>
         </Modal>
       </div>
-    </Modal>
+    </Drawer>
   );
 }
 
-export default OrderDetailModal;
+export default OrderDetailDrawer;

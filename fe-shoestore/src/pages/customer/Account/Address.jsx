@@ -3,7 +3,7 @@ import { Card, Button, Modal, List, Tag, Typography, message } from "antd";
 import AddressAddForm from "./AddressAddForm ";
 import AddressEditForm from "./AddressEditForm";
 import { fetchAddressByUser, deleteAddress } from "../../../services/addressService";
-import { useAuthToken } from "../../../hooks/useAuthToken";
+import { useSelector } from "react-redux";
 const { Text } = Typography;
 const { confirm } = Modal;
 
@@ -11,10 +11,10 @@ const AddressManagement = () => {
   const [addresses, setAddresses] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editAddress, setEditAddress] = useState(null); 
-  const { user, loading } = useAuthToken();
+  const user = useSelector((state) => state.account.user);
   useEffect(() => {
-    if (user?.id) {
-      loadAddressUser(user.id);
+    if (user?.userID) {
+      loadAddressUser(user.userID);
     } else {
       setAddresses([]);
     }
@@ -52,14 +52,14 @@ const AddressManagement = () => {
   };
 
   const handleAddAddress = (newAddress) => {
-    loadAddressUser(user.id)
+    loadAddressUser(user.userID)
     setAddresses([...addresses, { addressID: addresses.length + 1, ...newAddress }]);
 
     setIsModalVisible(false);
   };
 
   const handleEditAddress = (updatedAddress) => {
-    loadAddressUser(user.id)
+    loadAddressUser(user.userID)
     setAddresses(
       addresses.map((addr) =>
         addr.addressID === updatedAddress.addressID ? updatedAddress : addr

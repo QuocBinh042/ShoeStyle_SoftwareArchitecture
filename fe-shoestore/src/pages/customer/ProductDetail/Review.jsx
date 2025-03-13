@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Rate, List, Modal, Progress, Button } from "antd";
+import { Rate, List, Drawer, Progress, Button } from "antd";
 import { fetchReviewByProduct } from "../../../services/reviewService";
 
 const ReviewSummary = ({ averageRating, totalReviews, ratingsCount }) => (
@@ -62,7 +62,7 @@ const ReviewList = ({ reviews }) => {
 
 const Review = ({ productID }) => {
   const [reviews, setReviews] = useState([]);
-  const [modalVisible, setModalVisible] = useState(false);
+  const [drawer, setDrawerVisible] = useState(false);
   const [averageRating, setAverageRating] = useState(0);
   const [totalReviews, setTotalReviews] = useState(0);
   const [ratingsCount, setRatingsCount] = useState({ 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 });
@@ -111,22 +111,22 @@ const Review = ({ productID }) => {
         <div style={{ flex: 2 }}>
           <ReviewList reviews={reviews.slice(0, 2)} />
           {totalReviews > 0 && (
-            <Button type="link" onClick={() => setModalVisible(true)}>
+            <Button type="link" onClick={() => setDrawerVisible(true)}>
               See all reviews
             </Button>
           )}
         </div>
       </div>
 
-      <Modal
+      <Drawer
         title="All reviews"
-        visible={modalVisible}
-        onCancel={() => setModalVisible(false)}
-        footer={null}
-        width={800}
+        placement="right"
+        onClose={() => setDrawerVisible(false)}
+        open={drawer}
+        width={500} // Điều chỉnh độ rộng theo nhu cầu
       >
         <ReviewList reviews={reviews} />
-      </Modal>
+      </Drawer>
     </div>
   );
 };

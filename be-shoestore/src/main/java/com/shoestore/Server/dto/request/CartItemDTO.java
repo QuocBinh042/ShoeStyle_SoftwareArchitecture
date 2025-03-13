@@ -9,5 +9,4 @@ public class CartItemDTO {
     private CartDTO cart;
     private ProductDetailDTO productDetail;
     private int quantity;
-    private double subTotal;
 }

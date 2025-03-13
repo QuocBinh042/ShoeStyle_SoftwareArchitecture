@@ -10,7 +10,6 @@ public class PromotionDTO {
     private int promotionID;
     private String name;
     private String description;
-    private String discountType;
     private BigDecimal discountValue;
     private LocalDateTime startDate;
     private LocalDateTime endDate;

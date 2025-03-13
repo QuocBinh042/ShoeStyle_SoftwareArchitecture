@@ -1,29 +1,40 @@
 import React, { useState } from "react";
 import { Form, Input, Button, Typography, Row, Col, Card, message } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
-import { login } from "../../../services/authService";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../../../context/AuthContext";
+import { useDispatch } from "react-redux";
+import store from "../../../redux/store";
 import { jwtDecode } from "jwt-decode";
+import { authService } from "../../../services/authService";
+import { setUser } from "../../../redux/accountSlice";
+
 const { Title, Text } = Typography;
 
 const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { setUser } = useAuth();
+  const dispatch = useDispatch();
+
   const onFinish = async (values) => {
     try {
-      const data = await login(values);
-      if (data?.accessToken) {
+      setLoading(true);
+      const response = await authService.login(values);
+  
+      if (response?.statusCode === 200 && response?.data?.access_token) {
         message.success("Login successful");
-        const decoded = jwtDecode(data.accessToken);
-        setUser({
-          id: decoded.userId,
-          email: decoded.sub,
-          roles: decoded.roles,
-        });
-
+  
+        const {user } = response.data;
+        dispatch(setUser({
+          userID: user.id,
+          email: user.email,
+          name: user.name,
+          phoneNumber: user.phoneNumber,
+          roles: user.role,
+        }));
+        setTimeout(() => {
+          console.log("Redux State:", store.getState().account);
+        }, 500);
         const redirectTo = location.state?.from || "/";
         navigate(redirectTo, { replace: true });
       } else {
@@ -31,10 +42,10 @@ const LoginPage = () => {
       }
     } catch (error) {
       message.error("Đã có lỗi xảy ra!");
+    } finally {
+      setLoading(false);
     }
   };
-
-
   return (
     <Row justify="center" align="middle" style={{ height: "80vh" }}>
       <Col xs={24} sm={18} md={12} lg={8}>

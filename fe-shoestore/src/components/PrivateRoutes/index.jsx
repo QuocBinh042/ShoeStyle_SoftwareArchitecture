@@ -1,11 +1,41 @@
-import { Navigate, Outlet } from "react-router-dom";
-import { useAuthToken } from "../../hooks/useAuthToken";
+import { useSelector } from "react-redux";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Modal, Spin } from "antd";
+import LoginRequiredModal from "../../pages/auth/LoginRequiredModal";
+const PrivateRoute = ({ children }) => {
+    const isAuthenticated = useSelector((state) => state.account.isAuthenticated);
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [checkingAuth, setCheckingAuth] = useState(true);
 
-function PrivateRoutes() {
-  const { user, loading } = useAuthToken();
-  if (loading) return <div>Loading...</div>;
+    useEffect(() => {
+        if (!isAuthenticated) {
+            setIsModalOpen(true);
+        }
+        setCheckingAuth(false);
+    }, [isAuthenticated]);
 
-  return user ? <Outlet /> : <Navigate to="/login" />;
-}
+    const handleOk = () => {
+        setIsModalOpen(false);
+        navigate("/login", { state: { from: location }, replace: true });
+    };
 
-export default PrivateRoutes;
+    if (checkingAuth) {
+        return (
+            <div style={{ display: "flex", justifyContent: "center", marginTop: "20%" }}>
+                <Spin size="large" />
+            </div>
+        );
+    }
+
+    return isAuthenticated ? (
+        children
+    ) : (
+        <LoginRequiredModal isOpen={isModalOpen} onConfirm={handleOk} />
+
+    );
+};
+
+export default PrivateRoute;

@@ -56,12 +56,29 @@ public class SpringSecurityConfig {
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		String[] whiteList = {
+				"/api/auth/login",
+				"/api/auth/logout",
+				"/api/auth/sign-up",
+				"/api/auth/refresh-token",
+				"/api/promotion/**",
+				"/api/search/**",
+				"/api/order-details/**",
+				"/api/review/**",
+				"/api/product-details/**",
+				"/api/products/**",
+				"/api/cart-item/**",
+				"/api/cart/**",
+				"/swagger-ui/**",
+				"/swagger-ui.html",
+				"/",
+		};
 		http
-				.cors().and().csrf().disable()
+				.csrf(csrf -> csrf.disable())
 				.authorizeHttpRequests(auth -> auth
+						.requestMatchers(whiteList).permitAll()
 						.requestMatchers("/api/admin/**").hasRole("ADMIN")
-						.requestMatchers("/api/user/**").authenticated()
-						.anyRequest().permitAll()
+						.anyRequest().authenticated()
 				)
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authenticationProvider(authenticationProvider())

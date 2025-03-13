@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate,useLocation } from "react-router-dom";
-import { Row, Col, Button, Rate, InputNumber, Image, Tag, Input, Modal } from "antd";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { Row, Col, Button, Rate, InputNumber, Image, Tag, Spin, Modal } from "antd";
 import "./ProductDetail.scss";
 import { ShoppingCartOutlined, ShoppingOutlined } from "@ant-design/icons";
 import RelatedProducts from "./RelatedProducts";
 import Review from "./Review";
+import { useSelector } from "react-redux";
 import { fetchProductDetailByProductId } from "../../../services/productDetailService";
-import { fetchProductById, fetchProductByProductDetailId } from "../../../services/productService";
 import { addCartItem } from "../../../services/cartItemService";
 import { getDiscountByProduct } from "../../../services/promotionService";
-import { useAuth } from "../../../context/AuthContext";
 const ProductDetails = () => {
   const navigate = useNavigate();
   const { productID } = useParams();
@@ -18,47 +17,50 @@ const ProductDetails = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
+
+  const [filteredSizes, setFilteredSizes] = useState([]);
+
   const [availableColors, setAvailableColors] = useState([]);
-  const [availableSizes, setAvailableSizes] = useState([]);
   const [selectedStock, setSelectedStock] = useState(null);
   const [productDetails, setProductDetails] = useState([]);
   const [discountedPrice, setDiscountedPrice] = useState(null);
-  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
+  const user = useSelector((state) => state.account.user);
   const location = useLocation();
   useEffect(() => {
-    const fetchProduct = async (productID) => {
+    const fetchProduct = async () => {
+      setIsLoading(true);
       try {
         const details = await fetchProductDetailByProductId(productID);
         const discount = await getDiscountByProduct(productID);
-        
-        if (details && details.productDetails.length > 0) {
+
+        if (details) {
           setProduct({
-            productName: details.productName,
-            categoryName: details.categoryName,
-            brandName: details.brandName,
-            description: details.description,
-            imageURL: details.imageURL || [], 
-            price:details.price
+            productName: details.productName || "No name",
+            categoryName: details.categoryName || "No category",
+            brandName: details.brandName || "No brand",
+            description: details.description || "No description",
+            imageURL: details.imageURL || [],
+            price: details.price || 0,
           });
-  
-          setProductDetails(details.productDetails);
-          setAvailableColors([...new Set(details.productDetails.map(detail => detail.color))]);
-          setAvailableSizes([...new Set(details.productDetails.map(detail => detail.size))]);
-  
+
+          setProductDetails(details.productDetails || []);
+          setAvailableColors([...new Set(details.productDetails?.map(d => d.color))] || []);
           setDiscountedPrice(discount ?? details.price);
         } else {
           setProduct(null);
-          setProductDetails([]);
         }
       } catch (error) {
         console.error("Error fetching product:", error);
         setProduct(null);
-        setProductDetails([]);
+      } finally {
+        setIsLoading(false);
       }
     };
-  
-    if (productID) fetchProduct(productID);
+
+    if (productID) fetchProduct();
   }, [productID]);
+
 
 
 
@@ -74,20 +76,24 @@ const ProductDetails = () => {
       return;
     }
     if (!selectedSize) {
-      Modal.error({ content: "Please select color and size!" });
+      Modal.error({ content: "Please select size!" });
       return;
     }
-
+    if (!selectedColor) {
+      Modal.error({ content: "Please select color!" });
+      return;
+    }
     const selectedDetail = productDetails.find(
-      detail => detail.size === selectedSize
+      detail => detail.size === selectedSize && detail.color === selectedColor
     );
 
-    if (quantity > selectedStock) {
-      Modal.error({ content: `Cannot buy more than ${selectedStock} items.` });
-      return;
-    }
     if (!selectedDetail) {
       Modal.error({ content: "Selected size and color combination is not available!" });
+      return;
+    }
+
+    if (quantity > selectedDetail.stockQuantity) {
+      Modal.error({ content: `Cannot buy more than ${selectedDetail.stockQuantity} items.` });
       return;
     }
 
@@ -103,7 +109,7 @@ const ProductDetails = () => {
     };
 
     const itemsToCheckout = [formattedItem];
-    navigate("/cart/checkout", { state: { selectedItems: itemsToCheckout } });
+    navigate("/checkout", { state: { selectedItems: itemsToCheckout } });
   };
 
 
@@ -114,24 +120,37 @@ const ProductDetails = () => {
 
   const handleSizeSelect = (size) => {
     setSelectedSize(size);
-    const sizeStock = productDetails?.find(
-      (detail) => detail.size === size
+    const stock = productDetails.find(
+      (detail) => detail.color === selectedColor && detail.size === size
     )?.stockQuantity;
-    setSelectedStock(sizeStock);
+
+    setSelectedStock(stock ?? 0);
   };
+
 
   const handleColorSelect = (color) => {
     setSelectedColor(color);
+
+    const sizesForColor = productDetails
+      .filter((detail) => detail.color === color && detail.stockQuantity > 0)
+      .map((detail) => detail.size);
+
+    setFilteredSizes([...new Set(sizesForColor)]);
+    setSelectedSize(null);
   };
+
 
   const handleAddToCart = () => {
     if (!selectedSize) {
-      Modal.error({ content: "Please select both size!" });
+      Modal.error({ content: "Please select size!" });
       return;
     }
-
+    if (!selectedColor) {
+      Modal.error({ content: "Please select color!" });
+      return;
+    }
     const selectedDetail = productDetails.find(
-      detail => detail.size === selectedSize
+      detail => detail.size === selectedSize && detail.color === selectedColor
     );
     if (!selectedDetail) {
       Modal.error({ content: "Selected size combination is not available!" });
@@ -144,12 +163,9 @@ const ProductDetails = () => {
     }
 
     const cartItem = {
-      id: {
-        cartId: user.id,
-        productDetailId: selectedDetail.productDetailID,
-      },
+      cart: { cartID: user.userID },
+      productDetail: { productDetailID: selectedDetail.productDetailID },
       quantity,
-      subTotal: product.price * quantity,
     };
     try {
       addCartItem(cartItem)
@@ -165,14 +181,21 @@ const ProductDetails = () => {
   const handleQuantityChange = (value) => {
     if (value > selectedStock) {
       Modal.warning({
-        content: `Only ${selectedStock} items are available in stock.`,
+        content: `Chỉ còn ${selectedStock} sản phẩm trong kho.`,
       });
-      setQuantity(1);
+      setQuantity(selectedStock);
     } else {
       setQuantity(value);
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="loading-container">
+        <Spin size="large" tip="Loading product details..." />
+      </div>
+    );
+  }
   return (
     <div className="product-details-container">
       <Row gutter={24} className="product-details">
@@ -195,10 +218,10 @@ const ProductDetails = () => {
               </Row>
             </Col>
             <Col span={13} className="product-info">
-              <h3>{product.brandName || "Unknown Brand"} / {product.categoryName || "Unknown Category"}</h3>
+              <h3>{product?.brandName || "Unknown Brand"} / {product?.categoryName || "Unknown Category"}</h3>
 
 
-              <h1>{product.productName}</h1>
+              <h1>{product?.productName}</h1>
               <div className="product-pricing">
                 {discountedPrice && discountedPrice < product.price ? (
                   <>
@@ -226,8 +249,12 @@ const ProductDetails = () => {
                       className={`box ${selectedColor === color ? "active" : ""}`}
                       onClick={() => handleColorSelect(color)}
                     >
-                      <span style={{ display: 'flex', alignItems: "center", gap: "8px", }} >
-                        <span style={{ width: "16px", height: "16px", backgroundColor: color.toLowerCase(), borderRadius: "20%", border: "1px solid #ddd" }} />
+                      <span style={{ display: 'flex', alignItems: "center", gap: "8px" }}>
+                        <span style={{
+                          width: "16px", height: "16px",
+                          backgroundColor: color.toLowerCase(),
+                          borderRadius: "20%", border: "1px solid #ddd"
+                        }} />
                         {color}
                       </span>
                     </Button>
@@ -236,18 +263,31 @@ const ProductDetails = () => {
               </Row>
 
               <h3>SIZE</h3>
-              <Row gutter={10} className="options">
-                {availableSizes.map((size, index) => (
-                  <Col key={index}>
-                    <Button
-                      className={`box ${selectedSize === size ? "active" : ""}`}
-                      onClick={() => handleSizeSelect(size)}
-                    >
-                      {size.replace("SIZE_", "")}
-                    </Button>
-                  </Col>
-                ))}
-              </Row>
+              {selectedColor ? (
+                filteredSizes.length > 0 ? (
+                  <Row gutter={10} className="options">
+                    {filteredSizes.map((size, index) => {
+                      const stock = productDetails.find(
+                        (detail) => detail.color === selectedColor && detail.size === size
+                      )?.stockQuantity;
+
+                      return (
+                        <Col key={index}>
+                          <Button
+                            className={`box ${selectedSize === size ? "active" : ""}`}
+                            onClick={() => handleSizeSelect(size)}
+                            disabled={stock === 0}
+                          >
+                            {size.replace("SIZE_", "")}
+                          </Button>
+                        </Col>
+                      );
+                    })}
+                  </Row>
+                ) : <p>There are no sizes available for this color.</p>
+              ) : <p>Please select color first.</p>}
+
+
               {selectedSize && (
                 <div style={{ marginTop: '10px' }}>
                   <span>Stock for size {selectedSize.replace("SIZE_", "")}: </span>

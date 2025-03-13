@@ -8,7 +8,7 @@ export const addAddress = async (address) => {
 };
 export const fetchAddressByUser = async (id) => {
     const data = await fetchData(`address/by-user-id/${id}`);
-    return data;
+    return data.data;
 };
 export const deleteAddress = async (id) => {
     

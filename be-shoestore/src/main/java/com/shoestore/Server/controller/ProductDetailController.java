@@ -39,9 +39,9 @@ public class ProductDetailController {
         ProductDetailResponse response = new ProductDetailResponse(
                 productDetails,
                 productDTO.getProductName(),
+                categoryService.getCategory(productDTO.getCategoryID()).getName(),
                 brandService.getBrandById(productDTO.getBrandID()).getName(),
                 productDTO.getDescription(),
-                categoryService.getCategory(productDTO.getCategoryID()).getName(),
                 productDTO.getPrice(),
                 productDTO.getImageURL()
         );

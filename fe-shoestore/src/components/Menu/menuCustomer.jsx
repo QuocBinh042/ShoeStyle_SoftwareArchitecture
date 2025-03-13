@@ -6,24 +6,23 @@ import {
   BookOutlined, ShoppingOutlined, 
   ProductFilled
 } from '@ant-design/icons';
-import { useAuthToken } from '../../hooks/useAuthToken';
+import { useSelector } from "react-redux";
 export const useMenuCustomer = (navigate) => {
-  const user = useAuthToken();
-
-  const handleAccountClick = () => {
-    if (user) {
-      navigate('/account'); 
-    } else {
-      Modal.confirm({
-        title: 'You are not logged in',
-        content: 'Do you want to login?',
-        okText: 'Login',
-        cancelText: 'Cancel',
-        onOk: () => navigate('/login'),
-        onCancel: () => {},
-      });
-    }
-  };
+  const user = useSelector((state) => state.account.user);
+  // const handleAccountClick = () => {
+  //   if (user) {
+  //     navigate('/account'); 
+  //   } else {
+  //     Modal.confirm({
+  //       title: 'You are not logged in',
+  //       content: 'Do you want to login?',
+  //       okText: 'Login',
+  //       cancelText: 'Cancel',
+  //       onOk: () => navigate('/login'),
+  //       onCancel: () => {},
+  //     });
+  //   }
+  // };
  
 
   return [
@@ -58,8 +57,8 @@ export const useMenuCustomer = (navigate) => {
     },
     {
       key: '6',
-      label: <span onClick={handleAccountClick} style={{ cursor: 'pointer' }}><UserOutlined /></span>,
-      icon: null,
+      label: <NavLink to="/account">Account</NavLink>,
+      icon: <UserOutlined />,
     },
   ];
 };

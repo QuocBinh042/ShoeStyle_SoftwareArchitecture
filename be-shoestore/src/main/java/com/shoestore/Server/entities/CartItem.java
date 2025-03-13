@@ -15,7 +15,6 @@ import java.io.Serializable;
 @Getter
 @Setter
 @NoArgsConstructor
-@ToString
 public class CartItem extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,6 +30,5 @@ public class CartItem extends BaseEntity{
     private ProductDetail productDetail;
 
     private int quantity;
-    private double subTotal;
 
 }

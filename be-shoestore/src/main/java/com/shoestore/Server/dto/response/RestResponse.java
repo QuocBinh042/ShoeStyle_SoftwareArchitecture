@@ -12,17 +12,4 @@ public class RestResponse<T> {
     private Object message;
     private String error;
     private T data;
-    public RestResponse(ApiStatusResponse status, T data) {
-        this.statusCode = status.getCode();
-        this.message = status.getMessage();
-        this.error = null;
-        this.data = data;
-    }
-
-    public RestResponse(ApiStatusResponse status, String errorMessage) {
-        this.statusCode = status.getCode();
-        this.message = status.getMessage();
-        this.error = errorMessage;
-        this.data = null;
-    }
 }

@@ -53,7 +53,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public PaginationResponse<ProductDTO> getFilteredProducts(List<Integer> categoryIds, List<Integer> brandIds, List<String> colors, List<String> sizes,
-                                                String keyword, Double minPrice, Double maxPrice, String sortBy, int page, int pageSize) {
+                                                              String keyword, Double minPrice, Double maxPrice, String sortBy, int page, int pageSize) {
         Specification<Product> spec = Specification.where(null);
 
         if (categoryIds != null && !categoryIds.isEmpty()) {
@@ -84,26 +84,38 @@ public class ProductServiceImpl implements ProductService {
             spec = spec.and(ProductSpecification.hasName(keyword));
         }
 
-        Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Order.asc("productID")));
+        Sort sort = Sort.unsorted();
 
         if (sortBy != null) {
             switch (sortBy) {
                 case "Price: High-Low":
-                    pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Order.desc("price")));
+                    sort = Sort.by(Sort.Order.desc("price"));
                     break;
                 case "Price: Low-High":
-                    pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Order.asc("price")));
+                    sort = Sort.by(Sort.Order.asc("price"));
                     break;
                 case "Newest":
-                    pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Order.desc("createDate")));
+                    sort = Sort.by(Sort.Order.desc("createDate"));
                     break;
             }
+            System.out.println("Sắp xếp: " + sortBy);
         }
 
-        List<Product> products = productRepository.findAll(spec);
-        PaginationResponse<Product> paginatedProducts = paginationService.paginate(products, page, pageSize);
-        List<ProductDTO> productDTOs = productMapper.toDto(paginatedProducts.getItems());
-        return new PaginationResponse<>(productDTOs, paginatedProducts.getTotalElements(), paginatedProducts.getTotalPages(), paginatedProducts.getCurrentPage(), paginatedProducts.getPageSize());
+        Pageable pageable = PageRequest.of(page - 1, pageSize, sort);
+
+        Page<Product> pagedProducts = productRepository.findAll(spec, pageable);
+
+        List<ProductDTO> productDTOs = productMapper.toDto(pagedProducts.getContent());
+
+
+        return new PaginationResponse<>(
+                productDTOs,
+                pagedProducts.getTotalElements(),
+                pagedProducts.getTotalPages(),
+                pagedProducts.getNumber() + 1,
+                pagedProducts.getSize()
+        );
     }
+
 
 }

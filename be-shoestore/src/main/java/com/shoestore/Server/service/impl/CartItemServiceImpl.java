@@ -72,7 +72,6 @@ public class CartItemServiceImpl implements CartItemService {
         cartItem.setCart(cart);
         cartItem.setProductDetail(productDetail);
         cartItem.setQuantity(cartItemDTO.getQuantity());
-        cartItem.setSubTotal(cartItemDTO.getSubTotal());
 
         log.info("Cart item saved successfully: {}", cartItem);
         return cartItemMapper.toCartItemDTO(cartItemRepository.save(cartItem));
@@ -90,13 +89,12 @@ public class CartItemServiceImpl implements CartItemService {
     }
 
     @Override
-    public CartItemDTO updateQuantity(int id, CartItemDTO cartItemDTO) {
-        log.info("Updating cart item id: {} with new quantity: {}", id, cartItemDTO.getQuantity());
+    public CartItemDTO updateQuantity(int id, int quantity) {
+        log.info("Updating cart item id: {} with new quantity: {}", id, quantity);
         CartItem existCartItem = cartItemRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("CartItem not found with id: " + id));
 
-        existCartItem.setQuantity(cartItemDTO.getQuantity());
-        existCartItem.setSubTotal(cartItemDTO.getSubTotal());
+        existCartItem.setQuantity(quantity);
 
         log.info("Cart item updated successfully: {}", existCartItem);
         return cartItemMapper.toCartItemDTO(cartItemRepository.save(existCartItem));

@@ -2,11 +2,13 @@ package com.shoestore.Server.controller;
 
 import com.shoestore.Server.dto.request.CartDTO;
 import com.shoestore.Server.dto.request.CartItemDTO;
+import com.shoestore.Server.dto.request.ProductDetailDTO;
 import com.shoestore.Server.dto.response.PaginationResponse;
 import com.shoestore.Server.dto.response.CartItemResponse;
 import com.shoestore.Server.service.CartItemService;
 import com.shoestore.Server.service.CartService;
 
+import com.shoestore.Server.service.ProductDetailService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,10 +18,11 @@ import org.springframework.web.bind.annotation.*;
 public class CartController {
   private final CartItemService cartItemService;
   private final CartService cartService;
-
-  public CartController(CartItemService cartItemService, CartService cartService) {
+  private final ProductDetailService productDetailService;
+  public CartController(CartItemService cartItemService, CartService cartService, ProductDetailService productDetailService) {
     this.cartItemService = cartItemService;
     this.cartService = cartService;
+      this.productDetailService = productDetailService;
   }
 
   @GetMapping("/cart/{id}")
@@ -40,12 +43,13 @@ public class CartController {
     return ResponseEntity.ok(cartItemService.getCartItemById(id));
   }
 
-  @PutMapping("/cart-item/{id}")
-  public ResponseEntity<CartItemDTO> updateCartItem(@PathVariable int id, @RequestBody CartItemDTO cartItemDTO) {
-    return ResponseEntity.ok(cartItemService.updateQuantity(id, cartItemDTO));
+  @PutMapping("/cart-item/update-quantity/{id}/{quantity}")
+  public ResponseEntity<CartItemDTO> updateCartItem(@PathVariable int id, @PathVariable("quantity") int quantity) {
+    System.out.println("Được goi");
+    return ResponseEntity.ok(cartItemService.updateQuantity(id, quantity));
   }
 
-  @DeleteMapping("/cart-item/{id}")
+  @DeleteMapping("/cart-item/delete/{id}")
   public ResponseEntity<Void> deleteCartItem(@PathVariable int id) {
     cartItemService.deleteCartItem(id);
     return ResponseEntity.ok().build();

@@ -6,80 +6,46 @@ import OrderSuccess from "../pages/customer/Order";
 import Checkout from "../pages/customer/Checkout";
 import Search from "../pages/customer/Search";
 import Error from "../pages/error";
-import PrivateRoutes from "../components/PrivateRoutes";
-import PaymentResult from "../pages/customer/Payment"
+import PaymentResult from "../pages/customer/Payment";
 import Login from "../pages/auth/Login";
 import SignUp from "../pages/auth/SignUp";
 import ProductDetail from "../pages/customer/ProductDetail";
-
+import PrivateRoute from "../components/PrivateRoutes";
 export const routes = [
   {
     path: "/",
     element: <CustomerLayout />,
     breadcrumb: "Home",
     children: [
-      {
-        path: "/",
-        element: <Home />,
-        breadcrumb: "Home",
-      },
-      {
-        path: "search",
-        element: <Search />,
-        breadcrumb: "Search",
-      },
-      {
-        path: "product-detail/:productID",
-        element: <ProductDetail />,
-        breadcrumb: "ProductDetail",
-      },
+      { path: "/", element: <Home />, breadcrumb: "Home" },
+      { path: "search", element: <Search />, breadcrumb: "Search" },
+      { path: "product-detail/:productID", element: <ProductDetail />, breadcrumb: "ProductDetail" },
+      { path: "cart", element: <Cart />, breadcrumb: "Cart" },
+      { path: "payment", element: <PaymentResult />, breadcrumb: "Payment" },
+      { path: "order", element: <OrderSuccess />, breadcrumb: "Order" },
 
+      // 🔒 Bảo vệ các trang yêu cầu đăng nhập
       {
-        path: "cart",
-        element: <Cart />,
-        breadcrumb: "Cart",
-        children: [
-          {            
-            path: "checkout",
-            element: (<Checkout />),
-            breadcrumb: "Checkout",
-          },
-        ],       
+        path: "checkout",
+        element: (
+          <PrivateRoute>
+            <Checkout />
+          </PrivateRoute>
+        ),
+        breadcrumb: "Checkout",
       },
       {
-        path: "payment",
-        element: <PaymentResult />,
-        breadcrumb: "payment",
+        path: "account",
+        element: (
+          <PrivateRoute>
+            <Account />
+          </PrivateRoute>
+        ),
+        breadcrumb: "Account",
       },
-      {
-        element: <PrivateRoutes />,
-        children: [
-          {
-            path: "account",
-            element: <Account />,
-            breadcrumb: "Account",
-          },
-        ]
-      },
-      {
-        path: "order",
-        element: <OrderSuccess />,
-        breadcrumb: "Order",
-      },
-
-    ]
+    ],
   },
-  {
-    path: "*",
-    element: <Error />,
-    breadcrumb: "Not Found"
-  },
-  {
-    path: "/login",
-    element: <Login />,
-  },
-  {
-    path: "/sign-up",
-    element: <SignUp />,
-  },
-]
+  { path: "*", element: <Error />, breadcrumb: "Not Found" },
+  { path: "/login", element: <Login /> },
+  { path: "/sign-up", element: <SignUp /> },
+];

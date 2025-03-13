@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Form, Input, Button, Typography, Row, Col, Card, message } from "antd";
 import { UserOutlined, MailOutlined, LockOutlined, PhoneOutlined, IdcardOutlined } from "@ant-design/icons";
-import { signUp } from "../../../services/authService";
+// import { signUp } from "../../../services/authService";
 import { useNavigate } from "react-router-dom"; 
 
 const { Title, Text } = Typography;
@@ -13,8 +13,8 @@ const SignUpPage = () => {
   const onFinish = async (values) => {
     setLoading(true);
     try {
-        const response = await signUp(values);
-        message.success(response.message || "Your account has been successfully registered. You can log in now!");
+        // const response = await signUp(values);
+        // message.success(response.message || "Your account has been successfully registered. You can log in now!");
         setTimeout(() => navigate("/login"), 1500);
     } catch (error) {
         const errorMessage = error.response.data.message || "An error occurred. Please try again.";

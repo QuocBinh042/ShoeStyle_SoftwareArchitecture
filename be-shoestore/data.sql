@@ -113,12 +113,12 @@ VALUES
     (7, '0914444454'), 
     (8, '0915554564'),
     (9, '0916666846');
-INSERT INTO Promotion (name, description, discountType, discountValue, startDate, endDate, status,createdAt,updatedAt) VALUES
-('Sale 10%', '10% off promotion for products', 'percent', 10, '2025-02-01 00:00:00', '2025-02-28 23:59:59', 1,GETDATE(),GETDATE()),
-('Sale 20%', '20% off promotion for products', 'percent', 20, '2025-02-01 00:00:00', '2025-02-28 23:59:59', 1,GETDATE(),GETDATE()),
-('Sale 50K', '50,000 VND off promotion', 'fixed', 50000, '2025-02-01 00:00:00', '2025-02-28 23:59:59', 1,GETDATE(),GETDATE()),
-('Sale 100K', '100,000 VND off promotion', 'fixed', 100000, '2025-02-01 00:00:00', '2025-02-28 23:59:59', 1,GETDATE(),GETDATE()),
-('Sale 5%', '5% off promotion for products', 'percent', 5, '2025-02-01 00:00:00', '2025-02-28 23:59:59', 1,GETDATE(),GETDATE());
+INSERT INTO Promotion (name, description, discountValue, startDate, endDate, status,createdAt,updatedAt) VALUES
+('Sale 10%', '10% off promotion for products',  10, '2025-02-01 00:00:00', '2025-07-28 23:59:59', 1,GETDATE(),GETDATE()),
+('Sale 20%', '20% off promotion for products',  20, '2025-02-01 00:00:00', '2025-07-28 23:59:59', 1,GETDATE(),GETDATE()),
+('Sale 50%', '50,000 VND off promotion',  50, '2025-02-01 00:00:00', '2025-07-28 23:59:59', 1,GETDATE(),GETDATE()),
+('Sale 70%', '100,000 VND off promotion', 70, '2025-02-01 00:00:00', '2025-07-28 23:59:59', 1,GETDATE(),GETDATE()),
+('Sale 5%', '5% off promotion for products', 5, '2025-02-01 00:00:00', '2025-07-28 23:59:59', 1,GETDATE(),GETDATE());
 
 INSERT INTO Product (description, price, productName, status, brandID, categoryID, promotionID, supplierID,createdAt,updatedAt)
 VALUES
@@ -175,23 +175,26 @@ VALUES
 
 INSERT INTO ProductDetail (color, size, stockQuantity, productID, createdAt, updatedAt)
 VALUES
-('RED', 'SIZE_36', 50, 1, GETDATE(), GETDATE()),
-('RED', 'SIZE_37', 40, 1, GETDATE(), GETDATE()),
-('RED', 'SIZE_38', 30, 1, GETDATE(), GETDATE()),
-('BLUE', 'SIZE_39', 30, 2, GETDATE(), GETDATE()),
-('BLUE', 'SIZE_40', 50, 2, GETDATE(), GETDATE()),
-('GREEN', 'SIZE_41', 20, 3, GETDATE(), GETDATE()),
-('GREEN', 'SIZE_42', 40, 3, GETDATE(), GETDATE()),
-('GREEN', 'SIZE_43', 35, 3, GETDATE(), GETDATE()),
-('YELLOW', 'SIZE_36', 50, 4, GETDATE(), GETDATE()),
-('YELLOW', 'SIZE_37', 20, 4, GETDATE(), GETDATE()),
-('YELLOW', 'SIZE_38', 30, 4, GETDATE(), GETDATE()),
-('BLACK', 'SIZE_39', 45, 5, GETDATE(), GETDATE()),
-('BLACK', 'SIZE_40', 35, 5, GETDATE(), GETDATE()),
-('WHITE', 'SIZE_41', 25, 6, GETDATE(), GETDATE()),
-('WHITE', 'SIZE_42', 50, 6, GETDATE(), GETDATE()),
-('PINK', 'SIZE_43', 60, 7, GETDATE(), GETDATE()),
-('PINK', 'SIZE_44', 50, 7, GETDATE(), GETDATE());
+('RED', 'SIZE_40', 50, 1, GETDATE(), GETDATE()),
+('BLUE', 'SIZE_41', 30, 1, GETDATE(), GETDATE()),
+('BLACK', 'SIZE_42', 25, 2, GETDATE(), GETDATE()),
+('WHITE', 'SIZE_43', 40, 2, GETDATE(), GETDATE()),
+('WHITE', 'SIZE_44', 20, 3, GETDATE(), GETDATE()),
+('PINK', 'SIZE_40', 15, 3, GETDATE(), GETDATE()),
+('YELLOW', 'SIZE_41', 35, 4, GETDATE(), GETDATE()),
+('WHITE', 'SIZE_42', 18, 5, GETDATE(), GETDATE()),
+('GREEN', 'SIZE_43', 22, 6, GETDATE(), GETDATE()),
+('YELLOW', 'SIZE_44', 28, 7, GETDATE(), GETDATE()),
+('BLACK', 'SIZE_40', 10, 8, GETDATE(), GETDATE()),
+('WHITE', 'SIZE_41', 14, 9, GETDATE(), GETDATE()),
+('BLUE', 'SIZE_42', 33, 10, GETDATE(), GETDATE()),
+('RED', 'SIZE_43', 27, 11, GETDATE(), GETDATE()),
+('PINK', 'SIZE_44', 12, 12, GETDATE(), GETDATE()),
+('PINK', 'SIZE_40', 31, 13, GETDATE(), GETDATE()),
+('GREEN', 'SIZE_41', 19, 14, GETDATE(), GETDATE()),
+('YELLOW', 'SIZE_42', 21, 15, GETDATE(), GETDATE()),
+('GREEN', 'SIZE_43', 26, 16, GETDATE(), GETDATE()),
+('YELLOW', 'SIZE_44', 17, 17, GETDATE(), GETDATE());
 
 
 
@@ -467,118 +470,89 @@ VALUES
 
 INSERT INTO Cart (createdAt, updatedAt, userID)
 VALUES 
-('2024-11-01 08:30:00', '2024-11-01 08:30:00', 1),
-('2024-11-02 09:45:00', '2024-11-02 09:45:00', 2),
-('2024-11-03 10:15:00', '2024-11-03 10:15:00', 3),
-('2024-11-04 11:20:00', '2024-11-04 11:20:00', 4),
-('2024-11-05 12:30:00', '2024-11-05 12:30:00', 5),
-('2024-11-06 13:45:00', '2024-11-06 13:45:00', 6),
-('2024-11-07 14:50:00', '2024-11-07 14:50:00', 7),
-('2024-11-08 15:10:00', '2024-11-08 15:10:00', 8),
-('2024-11-09 16:30:00', '2024-11-09 16:30:00', 9),
-('2024-11-10 17:00:00', '2024-11-10 17:00:00', 10),
-('2024-11-11 18:15:00', '2024-11-11 18:15:00', 11),
-('2024-11-12 19:20:00', '2024-11-12 19:20:00', 12),
-('2024-11-13 20:25:00', '2024-11-13 20:25:00', 13),
-('2024-11-14 21:30:00', '2024-11-14 21:30:00', 14),
-('2024-11-15 22:45:00', '2024-11-15 22:45:00', 15),
-('2024-11-16 23:50:00', '2024-11-16 23:50:00', 16),
-('2024-11-17 08:00:00', '2024-11-17 08:00:00', 17),
-('2024-11-18 09:10:00', '2024-11-18 09:10:00', 18),
-('2024-11-19 10:20:00', '2024-11-19 10:20:00', 19),
-('2024-11-20 11:30:00', '2024-11-20 11:30:00', 20);
+(GETDATE(), GETDATE(), 1),
+(GETDATE(), GETDATE(), 2),
+(GETDATE(), GETDATE(), 3),
+(GETDATE(), GETDATE(), 4),
+(GETDATE(), GETDATE(), 5),
+(GETDATE(), GETDATE(), 6),
+(GETDATE(), GETDATE(), 7),
+(GETDATE(), GETDATE(), 8),
+(GETDATE(), GETDATE(), 9),
+(GETDATE(), GETDATE(), 10),
+(GETDATE(), GETDATE(), 11),
+(GETDATE(),GETDATE(), 12),
+(GETDATE(), GETDATE(), 13),
+(GETDATE(), GETDATE(), 14),
+(GETDATE(), GETDATE(), 15),
+(GETDATE(), GETDATE(), 16),
+(GETDATE(), GETDATE(), 17),
+(GETDATE(),GETDATE(), 18),
+(GETDATE(), GETDATE(), 19),
+(GETDATE(), GETDATE(), 20)
 
 
 INSERT INTO CartItem (quantity, subTotal, cartID, productDetailID, createdAt, updatedAt)
 VALUES
-(2, 180.00, 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(1, 120.00, 2, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(3, 450.00, 3, 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(4, 320.00, 4, 4, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(2, 200.00, 5, 5, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(1, 110.00, 6, 6, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(5, 375.00, 7, 7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(3, 285.00, 8, 8, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(1, 50.00, 9, 9, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(2, 400.00, 10, 10, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(4, 340.00, 11, 11, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(1, 120.00, 12, 12, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(2, 260.00, 13, 13, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(5, 500.00, 14, 14, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(3, 270.00, 15, 15, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(1, 75.00, 16, 16, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(2, 110.00, 17, 17, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(3, 330.00, 18, 18, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(1, 60.00, 19, 19, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(4, 1000.00, 20, 20, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(2, 140.00, 1, 21, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(3, 420.00, 2, 22, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(5, 800.00, 3, 23, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(1, 75.00, 4, 24, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(2, 260.00, 5, 25, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(4, 460.00, 6, 26, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(1, 90.00, 7, 27, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(3, 375.00, 8, 28, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(2, 90.00, 9, 29, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(1, 220.00, 10, 30, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(2, 200.00, 11, 31, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(5, 750.00, 12, 32, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(1, 180.00, 13, 33, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(3, 210.00, 14, 34, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(4, 760.00, 15, 35, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(2, 260.00, 16, 36, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(3, 225.00, 17, 37, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(5, 700.00, 18, 38, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(2, 100.00, 19, 39, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(4, 3200.00, 20, 40, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(1, 60.00, 1, 41, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(3, 390.00, 2, 42, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(5, 850.00, 3, 43, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(2, 190.00, 4, 44, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(4, 1000.00, 5, 45, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(1, 90.00, 6, 46, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(3, 330.00, 7, 47, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(2, 300.00, 8, 48, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(4, 640.00, 9, 49, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP), 
-(5, 500.00, 10, 50, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(2, 2000000, 1, 1, GETDATE(), GETDATE()),
+(1, 1000000, 1, 2, GETDATE(), GETDATE()),
+(3, 3600000, 2, 3, GETDATE(), GETDATE()),
+(1, 1200000, 2, 4, GETDATE(), GETDATE()),
+(2, 3000000, 3, 5, GETDATE(), GETDATE()),
+(1, 1500000, 3, 6, GETDATE(), GETDATE()),
+(2, 1600000, 4, 7, GETDATE(), GETDATE()),
+(1, 800000, 4, 8, GETDATE(), GETDATE()),
+(3, 3300000, 5, 9, GETDATE(), GETDATE()),
+(2, 1500000, 5, 10, GETDATE(), GETDATE()),
+(1, 950000, 6, 11, GETDATE(), GETDATE()),
+(2, 1000000, 6, 12, GETDATE(), GETDATE()),
+(1, 2000000, 7, 13, GETDATE(), GETDATE()),
+(3, 2550000, 7, 14, GETDATE(), GETDATE()),
+(1, 850000, 8, 15, GETDATE(), GETDATE()),
+(2, 2000000, 8, 16, GETDATE(), GETDATE()),
+(1, 900000, 9, 17, GETDATE(), GETDATE()),
+(2, 1500000, 9, 18, GETDATE(), GETDATE()),
+(3, 2250000, 10, 19, GETDATE(), GETDATE()),
+(1, 600000, 10, 20, GETDATE(), GETDATE());
 
 
 
 
 INSERT INTO Orders (orderDate, status, total, feeShip, code, voucherID, shippingAddress, typePayment, discount, userID, createdAt, updatedAt) 
 VALUES
-(GETDATE(), 'Processing', 159.97, 10.00, 'CODE001', NULL, '123 Main St, City, Country', 'Credit Card', 0.00, 1, GETDATE(), GETDATE()),  -- Order 1
-(GETDATE(), 'Shipped', 69.99, 5.00, 'CODE002', NULL, '456 Oak Ave, City, Country', 'PayPal', 0.00, 2, GETDATE(), GETDATE()),        -- Order 2
-(GETDATE(), 'Delivered', 149.98, 15.00, 'CODE003', NULL, '789 Pine Rd, City, Country', 'Bank Transfer', 5.00, 3, GETDATE(), GETDATE()),  -- Order 3
-(GETDATE(), 'Processing', 119.98, 8.00, 'CODE004', NULL, '321 Birch Blvd, City, Country', 'Credit Card', 0.00, 4, GETDATE(), GETDATE()),  -- Order 4
-(GETDATE(), 'Shipped', 89.99, 12.00, 'CODE005', NULL, '654 Cedar Ct, City, Country', 'Cash on Delivery', 0.00, 5, GETDATE(), GETDATE());  -- Order 5
+(GETDATE(), 'Processing', 3200000, 50000, 'CODE001', NULL, '123 Main St, City, Country', 'Credit Card', 0, 1, GETDATE(), GETDATE()),  
+(GETDATE(), 'Shipped', 2200000, 30000, 'CODE002', NULL, '456 Oak Ave, City, Country', 'PayPal', 0, 2, GETDATE(), GETDATE()),        
+(GETDATE(), 'Delivered', 4300000, 70000, 'CODE003', NULL, '789 Pine Rd, City, Country', 'Bank Transfer', 100000, 3, GETDATE(), GETDATE()),  
+(GETDATE(), 'Processing', 2800000, 40000, 'CODE004', NULL, '321 Birch Blvd, City, Country', 'Credit Card', 0, 4, GETDATE(), GETDATE()),  
+(GETDATE(), 'Shipped', 1900000, 50000, 'CODE005', NULL, '654 Cedar Ct, City, Country', 'Cash on Delivery', 0, 5, GETDATE(), GETDATE());  
 
 
 
 
 
-INSERT INTO OrderDetail (orderID, productDetailID, quantity, price) VALUES
-(1, 1, 2, 49.99),   -- Order 1, Product 1
-(1, 2, 1, 59.99),   -- Order 1, Product 2
-(2, 1, 3, 49.99),   -- Order 2, Product 1
-(2, 3, 1, 69.99),   -- Order 2, Product 3
-(3, 2, 2, 59.99),   -- Order 3, Product 2
-(3, 4, 1, 79.99),   -- Order 3, Product 4
-(4, 1, 1, 49.99),   -- Order 4, Product 1
-(4, 3, 2, 69.99),   -- Order 4, Product 3
-(5, 2, 1, 59.99),   -- Order 5, Product 2
-(5, 5, 1, 89.99);   -- Order 5, Product 5
+INSERT INTO OrderDetail (orderID, productDetailID, quantity, price, createdAt, updatedAt) 
+VALUES
+(1, 1, 2, 1000000, GETDATE(), GETDATE()),   -- Order 1, ProductDetail 1
+(1, 2, 1, 1200000, GETDATE(), GETDATE()),   -- Order 1, ProductDetail 2
+(2, 1, 3, 1000000, GETDATE(), GETDATE()),   -- Order 2, ProductDetail 1
+(2, 3, 1, 1500000, GETDATE(), GETDATE()),   -- Order 2, ProductDetail 3
+(3, 2, 2, 1200000, GETDATE(), GETDATE()),   -- Order 3, ProductDetail 2
+(3, 4, 1, 800000, GETDATE(), GETDATE()),   -- Order 3, ProductDetail 4
+(4, 1, 1, 1000000, GETDATE(), GETDATE()),   -- Order 4, ProductDetail 1
+(4, 3, 2, 1500000, GETDATE(), GETDATE()),   -- Order 4, ProductDetail 3
+(5, 2, 1, 1200000, GETDATE(), GETDATE()),   -- Order 5, ProductDetail 2
+(5, 5, 1, 1000000, GETDATE(), GETDATE());   -- Order 5, ProductDetail 5
 
 
-INSERT INTO Payment (orderID, paymentDate, status) VALUES
-(1, GETDATE(), 'Completed'),    
-(2, GETDATE(), 'Pending'),      
-(3, GETDATE(), 'Completed'),     
-(4, GETDATE(), 'Pending'),      
-(5, GETDATE(), 'Completed');   
+INSERT INTO Payment (orderID, paymentDate, status,createdAt,updatedAt) VALUES
+(1, GETDATE(), 'Completed',GETDATE(),GETDATE()),    
+(2, GETDATE(), 'Pending',GETDATE(),GETDATE()),      
+(3, GETDATE(), 'Completed',GETDATE(),GETDATE()),     
+(4, GETDATE(), 'Pending',GETDATE(),GETDATE()),      
+(5, GETDATE(), 'Completed',GETDATE(),GETDATE());   
 
 
-
+/*
 INSERT INTO Receipt (receiptDate, total, paymentID)
 VALUES
 ('2024-11-01', 180.00, 1),
@@ -610,7 +584,7 @@ VALUES
 ('2024-11-27', 390.00, 27),
 ('2024-11-28', 300.00, 28),
 ('2024-11-29', 250.00, 29),
-('2024-11-30', 520.00, 30);
+('2024-11-30', 520.00, 30);*/
 
 INSERT INTO Review (userID, productDetailID, orderID, rating, comment, createdAt, updatedAt)
 VALUES 

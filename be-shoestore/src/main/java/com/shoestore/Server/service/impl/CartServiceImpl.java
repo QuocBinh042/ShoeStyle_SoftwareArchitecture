@@ -28,4 +28,9 @@ public class CartServiceImpl implements CartService {
         }
         return cartMapper.toDto(cart);
     }
+
+    @Override
+    public CartDTO getCartById(int id) {
+        return cartMapper.toDto(cartRepository.findById(id).orElseThrow());
+    }
 }

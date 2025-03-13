@@ -1,12 +1,11 @@
 package com.shoestore.Server.controller;
 
 import com.shoestore.Server.dto.request.OrderDTO;
-import com.shoestore.Server.dto.request.OrderDetailDTO;
 import com.shoestore.Server.dto.request.PaymentDTO;
 import com.shoestore.Server.service.OrderService;
 import com.shoestore.Server.service.PaymentService;
 import com.shoestore.Server.utils.NetworkUtils;
-import com.shoestore.Server.utils.VnPayUtils;
+import com.shoestore.Server.utils.VnPayHelper;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -61,7 +60,7 @@ public class PaymentController {
 
         String vnp_IpAddr = NetworkUtils.getIpAddress();
         System.out.println(vnp_IpAddr);
-        String vnp_TmnCode = VnPayUtils.vnp_TmnCode;
+        String vnp_TmnCode = VnPayHelper.vnp_TmnCode;
 
         Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnp_Version);
@@ -79,8 +78,8 @@ public class PaymentController {
 //        String returnUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
 //                .path(VnPayUtils.vnp_ReturnUrl)
 //                .toUriString();
-        vnp_Params.put("vnp_ReturnUrl", VnPayUtils.vnp_ReturnUrl);
-        System.out.println(VnPayUtils.vnp_ReturnUrl);
+        vnp_Params.put("vnp_ReturnUrl", VnPayHelper.vnp_ReturnUrl);
+        System.out.println(VnPayHelper.vnp_ReturnUrl);
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 
         Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
@@ -116,9 +115,9 @@ public class PaymentController {
             }
         }
         String queryUrl = query.toString();
-        String vnp_SecureHash = VnPayUtils.hmacSHA512(VnPayUtils.secretKey, hashData.toString());
+        String vnp_SecureHash = VnPayHelper.hmacSHA512(VnPayHelper.secretKey, hashData.toString());
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
-        String paymentUrl = VnPayUtils.vnp_PayUrl + "?" + queryUrl;
+        String paymentUrl = VnPayHelper.vnp_PayUrl + "?" + queryUrl;
         Map<String, String> response = new HashMap<>();
         response.put("paymentUrl", paymentUrl);
 
@@ -165,7 +164,7 @@ public class PaymentController {
             hashData.deleteCharAt(hashData.length() - 1);
         }
 
-        String calculatedHash = VnPayUtils.hmacSHA512(secretKey, hashData.toString());
+        String calculatedHash = VnPayHelper.hmacSHA512(secretKey, hashData.toString());
 
         if (calculatedHash.equalsIgnoreCase(vnp_SecureHash)) {
             return "Mã bảo mật khớp!";

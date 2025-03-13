@@ -1,38 +1,46 @@
-import React, { useState, useEffect, useCallback, useContext } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation, UNSAFE_NavigationContext as NavigationContext, Outlet } from "react-router-dom";
 import { Table, InputNumber, Button, Card, Checkbox, Row, Col, Select, Input, Modal } from "antd";
 import './Cart.scss'
 import { ArrowLeftOutlined, CheckCircleOutlined, DeleteOutlined, DownCircleFilled, EditOutlined } from "@ant-design/icons";
 import { fetchCartItemByCartId, updateCartItem, deleteCartItem } from "../../../services/cartItemService";
-import { useAuthToken } from "../../../hooks/useAuthToken";
+import { useSelector } from "react-redux";
 const Cart = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const prevPath = useRef(location.pathname);
   const isCheckout = location.pathname.includes("/cart/checkout");
   const [cartItems, setCartItems] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(3);
   const [totalItems, setTotalItems] = useState(0);
   const [isChanged, setIsChanged] = useState(false);
-  const user  = useAuthToken();
-  console.log(user)
+  const user = useSelector((state) => state.account.user);
+  useEffect(() => {
+    if (user?.userID) {
+      loadCartItemByUser(user.userID);
+    } else {
+      setCartItems([]);
+    }
+  }, [user, location.pathname]);
+
   const loadCartItemByUser = async (id, page = 1, size = 3) => {
     const data = await fetchCartItemByCartId(id, page, size);
     if (data && Array.isArray(data.items)) {
       const enrichedCartItems = data.items.map((cartItem) => {
-        const productDetail = cartItem.productDetailDTO;  
-        const productName = cartItem.productName;        
+        const productDetail = cartItem.productDetailDTO;
+        const productName = cartItem.productName;
         return {
-          key: cartItem.cartItemDTO.productDetailId,
-          name: productName,                              
-          size: productDetail.size,                        
-          colors: productDetail.color,                    
-          quantity: cartItem.cartItemDTO.quantity,        
-          initialQuantity: cartItem.cartItemDTO.quantity,  
+          key: cartItem.cartItemDTO.cartItemID,
+          name: productName,
+          size: productDetail.size,
+          colors: productDetail.color,
+          quantity: cartItem.cartItemDTO.quantity,
+          initialQuantity: cartItem.cartItemDTO.quantity,
           price: cartItem.productPrice,
-          image: productDetail.imageURL,                    
-          stockQuantity: productDetail.stockQuantity,       
-          isChecked: false,                              
+          image: productDetail.imageURL,
+          stockQuantity: productDetail.stockQuantity,
+          isChecked: false,
         };
       });
 
@@ -41,33 +49,72 @@ const Cart = () => {
     } else {
       console.log('No products received or invalid data format');
     }
-};
+  };
+  const handleQuantityChange = (value, product) => {
+    if (value > product.stockQuantity) {
+      Modal.error({ content: `Cannot exceed stock of ${product.stockQuantity}.` });
+      value = product.stockQuantity;
+    }
+
+    setCartItems(prevItems => prevItems.map(item =>
+      item.key === product.key ? { ...item, quantity: value } : item
+    ));
+
+    setIsChanged(true);
+  };
+
+
+  useEffect(() => {
+    const previousPath = prevPath.current;
+    prevPath.current = location.pathname;
+
+    if (isChanged && previousPath.includes("/cart") && !location.pathname.includes("/cart")) {
+      console.log("🚀 Gọi API khi rời khỏi trang giỏ hàng...");
+      updateCartAPI(cartItems);
+    }
+  }, [location.pathname]);
 
 
 
 
-  // useEffect(() => {
-  //   if (user?.id) {
-  //     loadCartItemByUser(user.id);
-  //   } else {
-  //     setCartItems([]); 
-  //   }
-  // }, [user]);
+
+  const updateCartAPI = async (cartItems) => {
+    try {
+      const updatedItems = cartItems
+        .filter(item => item.quantity !== item.initialQuantity)
+        .map(item => ({
+          cartItemID: item.key,
+          quantity: item.quantity,
+        }));
+
+      if (updatedItems.length > 0) {
+        await Promise.all(updatedItems.map(item =>
+          updateCartItem(item.cartItemID, item.quantity)
+        ));
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+
   //To checkout form
   const handleCheckout = () => {
-
     const selectedItems = cartItems.filter(item => item.isChecked);
-
     if (selectedItems.length === 0) {
-      Modal.warning({
-        title: "No items selected",
-        content: "Please select at least one item before proceeding to checkout.",
-      });
+      Modal.warning({ title: "No items selected", content: "Please select at least one item before proceeding to checkout." });
       return;
     }
-    console.log(selectedItems)
-    navigate("/cart/checkout", { state: { selectedItems } });
+
+    if (isChanged) {
+      updateCartAPI(cartItems).then(() => {
+        navigate("/checkout", { state: { selectedItems } });
+      });
+    } else {
+      navigate("/checkout", { state: { selectedItems } });
+    }
   };
+
   //Check item
   const handleCheckboxChange = (checked, productKey) => {
     const updatedItems = cartItems.map((item) =>
@@ -83,74 +130,12 @@ const Cart = () => {
     }));
     setCartItems(updatedItems);
   };
-
-  //Update quantity cartItem
-  const handleUpdateButtonClick = (product) => {
-    const updatedQuantity = product.quantity;
-    const updatedData = {
-      id: {
-        cartId: user.id,
-        productDetailId: product.key,
-      },
-      quantity: updatedQuantity,
-      subTotal: updatedQuantity * product.price,
-    };
-
-    updateCartItem(updatedData.id.cartId, updatedData.id.productDetailId, updatedData)
-      .then((result) => {
-        const updatedItems = cartItems.map((item) => {
-          if (item.key === product.key) {
-            return {
-              ...item,
-              initialQuantity: updatedQuantity,
-              isChanged: false,
-            };
-          }
-          return item;
-        });
-
-        setCartItems(updatedItems);
-        setIsChanged(false);
-
-        Modal.success({
-          content: 'Item updated successfully!',
-        });
-      })
-      .catch((error) => {
-        console.error('Error updating cart item:', error);
-      });
-  };
-
-  const handleQuantityChange = (value, product) => {
-    if (value > product.stockQuantity) {
-      Modal.error({
-        content: `The quantity cannot exceed the available stock of ${product.stockQuantity}.`,
-      });
-      value = product.stockQuantity;
-    }
-
-    const updatedItems = cartItems.map((item) => {
-      if (item.key === product.key) {
-        return {
-          ...item,
-          quantity: value,
-          isChanged: value !== item.initialQuantity,
-        };
-      }
-      return item;
-    });
-
-    setCartItems(updatedItems);
-    setIsChanged(updatedItems.some(item => item.isChanged));
-  };
-
   //Delete cartItem
-  const handleRemove = (key) => {
-    const cartId = user.id;
-    const productDetailId = key;
-    deleteCartItem(cartId, productDetailId)
+  const handleRemove = (id) => {
+    const cartId = user.userID;
+    deleteCartItem(id)
       .then((response) => {
-        if (response === "Cart item deleted successfully") {
+        if (response.statusCode === 200) {
           loadCartItemByUser(cartId, currentPage, pageSize);
           Modal.success({
             content: 'Item removed successfully!',
@@ -167,17 +152,7 @@ const Cart = () => {
           content: 'Error removing item!',
         });
       });
-};
-
-  const handleLeavePage = (e) => {
-    if (isChanged && !isCheckout) {
-      e.preventDefault();
-      e.returnValue = "";
-    }
   };
-
-
-
   const subtotal = cartItems
     .filter(item => item.isChecked)
     .reduce((total, item) => total + item.price * item.quantity, 0);
@@ -267,22 +242,6 @@ const Cart = () => {
       dataIndex: "actions",
       render: (_, product) => (
         <Row gutter={8} align="middle">
-          {/* Nút Update */}
-          <Col>
-            <Button
-              type="text"
-              onClick={() => handleUpdateButtonClick(product)}
-              style={{
-                color: product.isChanged ? "#1890ff" : "#999",
-                fontWeight: product.isChanged ? "bold" : "normal",
-              }}
-              disabled={!product.isChanged}
-            >
-              <CheckCircleOutlined /> Update
-            </Button>
-          </Col>
-
-          {/* Nút Remove */}
           <Col>
             <Button
               type="text"
@@ -324,26 +283,7 @@ const Cart = () => {
 
           {/* Tổng tiền */}
           <Col xs={24} lg={8}>
-            {/* {isChanged && (
-              <div style={{ color: "red", marginBottom: "16px" }}>
-                You have unsaved changes.
-              </div>
-            )} */}
             <Card>
-              {/* <Row justify="space-between" style={{ marginBottom: 16 }}>
-                <Col>Subtotal</Col>
-                <Col>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(subtotal)}</Col>
-              </Row> */}
-              {/* <Row justify="space-between" className='cart-summary__promo'>
-                <Input placeholder="Promocode" className='cart-summary__promo-input' />
-                <Button className='cart-summary__promo-apply' type="primary">
-                  Apply
-                </Button>
-              </Row>
-              <Row justify="space-between" style={{ marginBottom: 16 }}>
-                <Col>Discount</Col>
-                <Col>$0.00</Col>
-              </Row> */}
               <Row justify="space-between" className="cart-item__total-price" style={{ marginBottom: 24, fontWeight: 700 }}>
                 <Col>Total</Col>
                 <Col>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(subtotal)}</Col>

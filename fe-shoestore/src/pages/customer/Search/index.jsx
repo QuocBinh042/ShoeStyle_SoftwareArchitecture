@@ -26,23 +26,26 @@ const Search = () => {
   const [totalProducts, setTotalProducts] = useState(0);
 
   const loadAllProducts = async (page) => {
-    const data = await fetchAllProducts({ page });
-    if (data && Array.isArray(data.products)) {
+    const response = await fetchAllProducts({ page });
+    if (response?.data?.items) {
       const updatedProducts = await Promise.all(
-        data.products.map(async (product) => {
+        response.data.items.map(async (product) => {
           const discountPrice = await getDiscountByProduct(product.productID);
           return {
             ...product,
-            discountPrice: discountPrice && discountPrice < product.price ? discountPrice : null
+            discountPrice: discountPrice && discountPrice < product.price ? discountPrice : null,
           };
         })
       );
       setProducts(updatedProducts);
-      setTotalProducts(data.total || 0);
+      setTotalProducts(response.data.totalElements || 0);
     } else {
       console.log('No products received');
+      setProducts([]);
+      setTotalProducts(0);
     }
   };
+
 
   const handlePageChange = async (page) => {
     setCurrentPage(page);
@@ -74,28 +77,29 @@ const Search = () => {
   };
 
   const handleFilterChange = useCallback(async (newFilters, page = currentPage) => {
-    const updatedFilters = {
-      ...filters,
-      ...newFilters,
-      sortBy: newFilters.sortBy !== undefined ? newFilters.sortBy : filters.sortBy,
-      keyword: newFilters.keyword !== undefined ? newFilters.keyword : filters.keyword,
+    const updatedFilters = { 
+      ...filters, 
+      ...newFilters, 
+      sortBy: newFilters.sortBy ?? filters.sortBy, 
+      keyword: newFilters.keyword ?? filters.keyword 
     };
-
+  
     setFilters(updatedFilters);
-
-    if (
-      !updatedFilters.categories.length &&
-      !updatedFilters.brands.length &&
-      !updatedFilters.colors.length &&
-      !updatedFilters.sizes.length &&
-      !updatedFilters.priceRange &&
-      !updatedFilters.sortBy &&
-      !updatedFilters.keyword
-    ) {
+  
+    // Nếu không có filter nào, gọi API lấy tất cả sản phẩm
+    const isFilterEmpty = !updatedFilters.categories.length &&
+                          !updatedFilters.brands.length &&
+                          !updatedFilters.colors.length &&
+                          !updatedFilters.sizes.length &&
+                          !updatedFilters.priceRange &&
+                          !updatedFilters.sortBy &&
+                          !updatedFilters.keyword;
+  
+    if (isFilterEmpty) {
       loadAllProducts(page);
       return;
     }
-
+  
     const params = {
       categoryIds: updatedFilters.categories,
       brandIds: updatedFilters.brands,
@@ -106,11 +110,12 @@ const Search = () => {
       sortBy: updatedFilters.sortBy || null,
       keyword: updatedFilters.keyword || null,
     };
-
+  
     try {
       const { products, total } = await fetchFilteredProducts(params, page);
-      console.log(params)
-      if (Array.isArray(products) && products.length > 0) {
+      console.log("Filters:", params);
+  
+      if (Array.isArray(products)) {
         const updatedProducts = await Promise.all(
           products.map(async (product) => {
             const discountPrice = await getDiscountByProduct(product.productID);
@@ -120,7 +125,7 @@ const Search = () => {
             };
           })
         );
-
+  
         setProducts(updatedProducts);
         setTotalProducts(total);
       } else {
@@ -132,6 +137,7 @@ const Search = () => {
       console.error("Error fetching filtered products:", error);
     }
   }, [filters]);
+  
 
   return (
     <Layout>

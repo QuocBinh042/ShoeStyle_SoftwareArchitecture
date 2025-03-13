@@ -17,9 +17,9 @@ const Filters = ({ onFilterChange }) => {
   useEffect(() => {
     const loadFilters = async () => {
       const data = await fetchFilters();
-      if (data) {
-        setCategories(data.categories || []);
-        setBrands(data.brands || []);
+      if (data.data) {
+        setCategories(data.data.categories || []);
+        setBrands(data.data.brands || []);
       }
     };
 
@@ -154,6 +154,7 @@ const Filters = ({ onFilterChange }) => {
       expandIconPosition="end"
       expandIcon={<DownOutlined />}
       items={items}
+      
     />
   );
 };
