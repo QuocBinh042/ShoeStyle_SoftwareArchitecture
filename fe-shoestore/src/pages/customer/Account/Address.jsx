@@ -1,22 +1,22 @@
 import React, { useEffect, useState } from "react";
 import { Card, Button, Modal, List, Tag, Typography, message } from "antd";
 import AddressAddForm from "./AddressAddForm ";
-import AddressEditForm from "./AddressEditForm"; // Import AddressEditForm
+import AddressEditForm from "./AddressEditForm";
 import { fetchAddressByUser, deleteAddress } from "../../../services/addressService";
-import { useAuth } from "../../../context/AuthContext";
+import { useSelector } from "react-redux";
 const { Text } = Typography;
 const { confirm } = Modal;
 
 const AddressManagement = () => {
   const [addresses, setAddresses] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editAddress, setEditAddress] = useState(null); // Địa chỉ đang chỉnh sửa
-  const { user } = useAuth();
+  const [editAddress, setEditAddress] = useState(null); 
+  const user = useSelector((state) => state.account.user);
   useEffect(() => {
-    if (user?.id) {
-      loadAddressUser(user.id);
+    if (user?.userID) {
+      loadAddressUser(user.userID);
     } else {
-      setAddresses([]); 
+      setAddresses([]);
     }
   }, [user]);
 
@@ -52,14 +52,14 @@ const AddressManagement = () => {
   };
 
   const handleAddAddress = (newAddress) => {
-    loadAddressUser(useAuth.id)
+    loadAddressUser(user.userID)
     setAddresses([...addresses, { addressID: addresses.length + 1, ...newAddress }]);
 
     setIsModalVisible(false);
   };
 
   const handleEditAddress = (updatedAddress) => {
-    loadAddressUser(useAuth.id)
+    loadAddressUser(user.userID)
     setAddresses(
       addresses.map((addr) =>
         addr.addressID === updatedAddress.addressID ? updatedAddress : addr

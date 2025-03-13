@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Input, Select, Button, Checkbox, message } from "antd";
-
+import { useSelector } from "react-redux";
 import { fetchAddressByUser,updateAddress } from "../../../services/addressService";
 const AddressEditForm = ({ initialData, onSubmit }) => {
   const [tinhList, setTinhList] = useState([]);
   const [quanList, setQuanList] = useState([]);
   const [phuongList, setPhuongList] = useState([]);
-
   const [selectedTinh, setSelectedTinh] = useState(null);
   const [selectedQuan, setSelectedQuan] = useState(null);
   const [selectedPhuong, setSelectedPhuong] = useState(null);
@@ -15,7 +14,7 @@ const AddressEditForm = ({ initialData, onSubmit }) => {
   const [phone, setPhone] = useState("");
   const [type, setType] = useState("Home");
   const [isDefault, setIsDefault] = useState(false);
-
+  const user = useSelector((state) => state.account.user);
   useEffect(() => {
     fetch("https://esgoo.net/api-tinhthanh/1/0.htm")
       .then((response) => response.json())
@@ -117,7 +116,7 @@ const AddressEditForm = ({ initialData, onSubmit }) => {
       phone,
       type,
       default: isDefault,
-      user: { userID: 1 },
+      user: { userID: user.userID },
     };
   
     try {
@@ -135,7 +134,7 @@ const AddressEditForm = ({ initialData, onSubmit }) => {
   };
   const updateAddressToRemoveDefault = async () => {
     try {
-      const addresses = await fetchAddressByUser(1); 
+      const addresses = await fetchAddressByUser(user.userID); 
       const defaultAddress = addresses.find(address => address.default);
 
       if (defaultAddress) {

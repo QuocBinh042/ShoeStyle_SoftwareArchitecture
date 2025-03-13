@@ -1,5 +1,6 @@
 package com.shoestore.Server.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -15,7 +16,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @Table(name ="Orders")
-public class Order {
+public class Order extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "orderID")
@@ -27,7 +28,6 @@ public class Order {
     private String code;
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "voucherID",nullable = true)
-//    @JsonIgnore
     private Voucher voucher;
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     @Column(nullable = true)
@@ -43,10 +43,8 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "userID")
     private User user;
-
-    public Order(int orderID){
-        this.orderID = orderID;
-    }
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Review review;
 
 
 }

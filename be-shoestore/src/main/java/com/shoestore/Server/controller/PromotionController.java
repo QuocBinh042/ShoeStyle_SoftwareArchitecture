@@ -1,43 +1,46 @@
 package com.shoestore.Server.controller;
 
-import com.shoestore.Server.entities.Address;
-import com.shoestore.Server.entities.Order;
-import com.shoestore.Server.entities.Product;
-import com.shoestore.Server.entities.Promotion;
-import com.shoestore.Server.repositories.ProductRepository;
+import com.shoestore.Server.dto.request.ProductDTO;
+import com.shoestore.Server.dto.request.PromotionDTO;
+import com.shoestore.Server.dto.response.RestResponse;
 import com.shoestore.Server.service.ProductService;
 import com.shoestore.Server.service.PromotionService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/promotion")
 public class PromotionController {
+    private final PromotionService promotionService;
+    private final ProductService productService;
 
-    @Autowired
-    private PromotionService promotionService;
-    @Autowired
-    private ProductService productService;
+    public PromotionController(PromotionService promotionService, ProductService productService) {
+        this.promotionService = promotionService;
+        this.productService = productService;
+    }
+    @GetMapping("/{id}")
+    public ResponseEntity<PromotionDTO> getPromotionByID(@PathVariable int id) {
+        PromotionDTO promotion = promotionService.getPromotionById(id);
+        return promotion != null ? ResponseEntity.ok(promotion) : ResponseEntity.notFound().build();
+    }
     @GetMapping("/discount-price/by-product-id/{id}")
-    public double getDiscountPriceByProduct(@PathVariable("id") int id) {
-        Product product=productService.getProductById(id);
-        return promotionService.getDiscountedPrice(product);
+    public ResponseEntity<Double> getDiscountPriceByProduct(@PathVariable int id) {
+        ProductDTO product = productService.getProductById(id);
+        if (product == null) {
+            return ResponseEntity.notFound().build();
+        }
+        double discountedPrice = promotionService.getDiscountedPrice(product);
+        return ResponseEntity.ok(discountedPrice);
     }
+
     @GetMapping("/by-product-id/{id}")
-    public ResponseEntity<Promotion> getPromotionByProduct(@PathVariable("id") int id) {
-        Product product=productService.getProductById(id);
-        Promotion promotion=promotionService.getPromotionByProductID(product.getProductID());
-        return ResponseEntity.ok(promotion);
+    public ResponseEntity<PromotionDTO> getPromotionByProduct(@PathVariable int id) {
+        ProductDTO product = productService.getProductById(id);
+        if (product == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(promotionService.getPromotionByProductID(product.getProductID()));
     }
-    @GetMapping("/by-id/{id}")
-    public ResponseEntity<Promotion> getPromotionByID(@PathVariable("id") int id) {
-        Promotion promotion=promotionService.getById(id);
-        return ResponseEntity.ok(promotion);
-    }
+
+
 }

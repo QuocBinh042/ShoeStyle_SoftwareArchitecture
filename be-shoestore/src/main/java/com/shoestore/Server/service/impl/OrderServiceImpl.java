@@ -1,167 +1,139 @@
 package com.shoestore.Server.service.impl;
 
+import com.shoestore.Server.dto.request.OrderDTO;
 import com.shoestore.Server.entities.Order;
+import com.shoestore.Server.entities.User;
+import com.shoestore.Server.entities.Voucher;
+import com.shoestore.Server.mapper.OrderMapper;
 import com.shoestore.Server.repositories.OrderRepository;
+import com.shoestore.Server.repositories.UserRepository;
+import com.shoestore.Server.repositories.VoucherRepository;
 import com.shoestore.Server.service.OrderService;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
-import java.text.DecimalFormat;
+
+@Slf4j
 @Service
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
-    @PersistenceContext
-    private EntityManager entityManager;
+    private final OrderMapper orderMapper;
+    private final VoucherRepository voucherRepository;
+    private final UserRepository userRepository;
 
-    public OrderServiceImpl(OrderRepository orderRepository) {
+    public OrderServiceImpl(OrderRepository orderRepository, OrderMapper orderMapper,
+                            VoucherRepository voucherRepository, UserRepository userRepository) {
         this.orderRepository = orderRepository;
+        this.orderMapper = orderMapper;
+        this.voucherRepository = voucherRepository;
+        this.userRepository = userRepository;
     }
 
-    public void updateOrderStatus(int orderId, String status) {
-        // Tìm đơn hàng theo ID
+    @Override
+    public List<OrderDTO> getAll() {
+        log.info("Fetching all orders...");
+        List<OrderDTO> orders = orderRepository.findAll()
+                .stream()
+                .map(orderMapper::toDto)
+                .collect(Collectors.toList());
+        log.info("Found {} orders", orders.size());
+        return orders;
+    }
+
+    @Override
+    public OrderDTO updateOrderStatus(int orderId, String status) {
+        log.info("Updating status for Order ID: {} to {}", orderId, status);
         Optional<Order> optionalOrder = orderRepository.findById(orderId);
         if (optionalOrder.isEmpty()) {
+            log.warn("Order with ID {} not found", orderId);
             throw new IllegalArgumentException("Không tìm thấy đơn hàng với ID: " + orderId);
         }
         Order order = optionalOrder.get();
         order.setStatus(status);
         orderRepository.save(order);
+        log.info("Updated Order ID {} status to {}", orderId, status);
+        return orderMapper.toDto(order);
     }
 
     @Override
-    public Order findById(int orderID) {
-        return orderRepository.findById(orderID).orElse(null);
+    public OrderDTO getOrderById(int orderId) {
+        log.info("Fetching order by ID: {}", orderId);
+        return orderRepository.findById(orderId)
+                .map(orderMapper::toDto)
+                .orElseGet(() -> {
+                    log.warn("Order with ID {} not found", orderId);
+                    return null;
+                });
     }
 
     @Override
-    public Order addOrder(Order order) {
-        return orderRepository.save(order);
-    }
+    public OrderDTO addOrder(OrderDTO orderDTO) {
+        log.info("Adding new order for User ID: {}", orderDTO.getUser().getUserID());
+        Order order = orderMapper.toEntity(orderDTO);
 
-    @Override
-    public List<Order> findAll() {
-        String jpql = """
-        SELECT o 
-        FROM Order o
-        JOIN FETCH o.user u
-        JOIN FETCH o.orderDetails od
-        JOIN FETCH od.productDetail pd
-        JOIN FETCH pd.product p
-        ORDER BY o.orderID DESC
-    """;
-
-        return entityManager.createQuery(jpql, Order.class).getResultList();
-    }
-
-
-    public Map<String, Object> getRevenueStatistics(LocalDate startDate, LocalDate endDate) {
-        // Thực hiện truy vấn để lấy tổng số đơn hàng, tổng doanh thu và doanh thu đã giảm
-        List<Object[]> result = orderRepository.findRevenueAndDiscountedRevenueBetweenDates(startDate, endDate);
-
-        Map<String, Object> data = new HashMap<>();
-
-        if (result != null && !result.isEmpty()) {
-            Object[] row = result.get(0);
-
-            data.put("totalOrders", row[0] != null ? row[0] : 0);
-            data.put("totalRevenue", row[1] != null ? row[1] : 0);
-//            data.put("totalRevenueNotComplete", row[2] != null ? row[2] : 0);
-//            data.put("totalRevenue", row[3] != null ? row[3] : 0);
-        } else {
-            // Nếu không có dữ liệu, gán tất cả giá trị là 0
-            data.put("totalOrders", 0);
-            data.put("totalRevenue", 0);
-//            data.put("totalRevenue", 0);
-//            data.put("totalDiscountedRevenue", 0);
+        if (orderDTO.getVoucher() != null) {
+            log.info("Applying Voucher ID: {}", orderDTO.getVoucher().getVoucherID());
+            Voucher voucher = voucherRepository.findById(orderDTO.getVoucher().getVoucherID())
+                    .orElseThrow(() -> {
+                        log.error("Voucher not found with ID: {}", orderDTO.getVoucher().getVoucherID());
+                        return new IllegalArgumentException("Voucher not found");
+                    });
+            order.setVoucher(voucher);
         }
 
-        return data;
+        User user = userRepository.findById(orderDTO.getUser().getUserID())
+                .orElseThrow(() -> {
+                    log.error("User not found with ID: {}", orderDTO.getUser().getUserID());
+                    return new IllegalArgumentException("User not found");
+                });
+
+        order.setUser(user);
+        Order savedOrder = orderRepository.save(order);
+        log.info("Order added successfully with ID: {}", savedOrder.getOrderID());
+
+        return orderMapper.toDto(savedOrder);
     }
 
-
-
+    @Override
+    public List<OrderDTO> getOrderByByUser(int userId) {
+        log.info("Fetching orders for User ID: {}", userId);
+        List<OrderDTO> orders = orderRepository.findByUser_UserID(userId)
+                .stream()
+                .map(orderMapper::toDto)
+                .collect(Collectors.toList());
+        log.info("Found {} orders for User ID: {}", orders.size(), userId);
+        return orders;
+    }
 
     @Override
-    public Map<String, Object> getRevenueAndQuantityForCurrentYear() {
-        int currentYear = LocalDate.now().getYear();
-        System.out.println("Current Year: " + currentYear); // In ra năm hiện tại
-
-        List<Object[]> result = orderRepository.findTotalRevenueAndQuantityByYear(currentYear);
-
-        // In ra kết quả từ truy vấn database (các dòng dữ liệu)
-        System.out.println("Result from database: " + result);
-
-        Map<String, Object> data = new HashMap<>();
-        DecimalFormat df = new DecimalFormat("#,###.##");  // Định dạng số với dấu phân cách hàng nghìn
-
-        if (result != null && !result.isEmpty()) {
-            Object[] row = result.get(0);
-
-            // In ra các giá trị lấy từ row
-            System.out.println("Total Quantity: " + (row[0] != null ? row[0] : 0));
-            System.out.println("Total Revenue: " + (row[1] != null ? df.format(row[1]) : 0));
-
-            data.put("totalQuantity", row[0] != null ? row[0] : 0);
-            data.put("totalRevenue", row[1] != null ? row[1] : 0);
+    public OrderDTO getOrderByCode(String code) {
+        log.info("Fetching order by code: {}", code);
+        Order order = orderRepository.findByCode(code);
+        if (order != null) {
+            log.info("Order found with code: {}", code);
         } else {
-            System.out.println("No data found.");
-
-            data.put("totalQuantity", 0);
-            data.put("totalRevenue", 0);
+            log.warn("No order found with code: {}", code);
         }
-
-        // In ra Map kết quả
-        System.out.println("Data Map: " + data);
-
-        return data;
-    }
-
-
-
-    @Override
-    public List<Object[]> getTop10LoyalCustomers(int minOrders) {
-        List<Object[]> loyalCustomers = orderRepository.findLoyalCustomers(minOrders);
-        return loyalCustomers.stream().limit(10).collect(Collectors.toList());
+        return order != null ? orderMapper.toDto(order) : null;
     }
 
     @Override
-    public Map<String, Long> getOrderStatistics() {
-        Map<String, Long> statistics = new HashMap<>();
-        statistics.put("Processing", orderRepository.countByStatus("Processing"));
-        statistics.put("Shipped", orderRepository.countByStatus("Shipped"));
-        statistics.put("Delivered", orderRepository.countByStatus("Delivered"));
-        statistics.put("Return", orderRepository.countByStatus("Return"));
-        return statistics;
-    }
-
-
-    @Override
-    public List<Order> findByUserId(int userId) {
-        return orderRepository.findByUser_UserID(userId);
-    }
-
-
-
-    @Override
-    public Order findByCode(String code) {
-        return orderRepository.findByCode(code);
+    public int getOrderQuantityByUserId(int id) {
+        log.info("Counting orders for User ID: {}", id);
+        int count = orderRepository.countOrdersByUserId(id);
+        log.info("User ID {} has {} orders", id, count);
+        return count;
     }
 
     @Override
-    public int getOrderCountByUserId(int id) {
-        return orderRepository.countOrdersByUserId(id);
-    }
-
-    @Override
-    public Double sumTotalAmountByUserId(int id) {
+    public Double getTotalAmountByUserId(int id) {
+        log.info("Calculating total order amount for User ID: {}", id);
         Double total = orderRepository.sumTotalAmountByUserId(id);
+        log.info("Total order amount for User ID {}: {}", id, total != null ? total : 0.0);
         return total != null ? total : 0.0;
     }
-
 }

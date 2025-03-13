@@ -14,7 +14,7 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 @Table
-public class Payment {
+public class Payment extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "paymentID")
@@ -27,12 +27,4 @@ public class Payment {
     @OneToOne(mappedBy = "payment",cascade = CascadeType.ALL)
     @JsonIgnore
     private Receipt receipt;
-
-    @Override
-    public String toString() {
-        return "Payment{" +
-                "paymentID=" + paymentID +
-                ", status='" + status + '\'' +
-                '}';
-    }
 }

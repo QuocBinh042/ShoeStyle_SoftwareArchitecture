@@ -3,20 +3,22 @@ package com.shoestore.Server.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Cascade;
+import org.springframework.data.domain.Auditable;
 
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table
-@Data
-public class OrderDetail {
-
+@Getter
+@Setter
+public class OrderDetail extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-//@JsonIgnore
-    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    private int orderDetailID;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumn(name = "orderID")
     private Order order;
 
@@ -27,14 +29,5 @@ public class OrderDetail {
     private int quantity;
     private double price;
 
-    @Override
-    public String toString() {
-        return "OrderDetail{" +
-                "id=" + id +
-                ", order=" + order +
-                ", productDetail=" + productDetail +
-                ", quantity=" + quantity +
-                ", price=" + price +
-                '}';
-    }
+
 }

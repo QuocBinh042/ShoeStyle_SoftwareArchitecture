@@ -4,9 +4,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -14,35 +12,23 @@ import java.io.Serializable;
 
 @Entity
 @Table
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
-@ToString
-public class CartItem {
-    @EmbeddedId
-    private CartItemKey id;
-
+public class CartItem extends BaseEntity{
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int cartItemID;
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("cartId")
-    @JoinColumn(name = "cartID")
-    @JsonProperty("cart")
+    @JoinColumn(name = "cartID", nullable = false)
     @JsonIgnore
     private Cart cart;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @MapsId("productDetailId")
-    @JoinColumn(name = "productDetailID")
-    @JsonProperty("productDetail")
+    @JoinColumn(name = "productDetailID", nullable = false)
     @JsonIgnore
     private ProductDetail productDetail;
 
     private int quantity;
-    private double subTotal;
 
-    public CartItem(CartItemKey id, Cart cart, ProductDetail productDetail, int quantity, double subTotal) {
-        this.id = id;
-        this.cart = cart;
-        this.productDetail = productDetail;
-        this.quantity = quantity;
-        this.subTotal = subTotal;
-    }
 }

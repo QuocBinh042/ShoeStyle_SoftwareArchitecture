@@ -8,13 +8,13 @@ export const addOrder = async (order) => {
 };
 export const fetchOrderByUser = async (id) => {
     const data = await fetchData(`order/by-user-id/${id}`);
-    return data;
+    return data.data;
 };
 export const countOrderByUser = async (id) => {
-    const data = await fetchData(`order/count/${id}`);
-    return data;
+    const data = await fetchData(`order/count-total-order/${id}`);
+    return data.data;
 };
 export const sumAmount = async (id) => {
-    const data = await fetchData(`order/total-spent/${id}`);
-    return data;
+    const data = await fetchData(`order/total-cost-order/${id}`);
+    return data.data;
 };

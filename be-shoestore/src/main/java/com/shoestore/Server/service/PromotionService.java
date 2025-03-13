@@ -1,12 +1,10 @@
 package com.shoestore.Server.service;
 
-import com.shoestore.Server.entities.Product;
-import com.shoestore.Server.entities.Promotion;
-
-import java.util.List;
+import com.shoestore.Server.dto.request.ProductDTO;
+import com.shoestore.Server.dto.request.PromotionDTO;
 
 public interface PromotionService {
-    double getDiscountedPrice(Product product);
-    Promotion getPromotionByProductID(int id);
-    Promotion getById(int id);
+    double getDiscountedPrice(ProductDTO product);
+    PromotionDTO getPromotionByProductID(int id);
+    PromotionDTO getPromotionById(int id);
 }

@@ -1,17 +1,12 @@
 package com.shoestore.Server.controller;
 
-import com.shoestore.Server.entities.Address;
-import com.shoestore.Server.entities.Cart;
-import com.shoestore.Server.entities.CartItem;
-import com.shoestore.Server.entities.CartItemKey;
+import com.shoestore.Server.dto.request.AddressDTO;
 import com.shoestore.Server.service.AddressService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/address")
@@ -21,38 +16,32 @@ public class AddressController {
     public AddressController(AddressService addressService) {
         this.addressService = addressService;
     }
+
     @GetMapping("/by-user-id/{id}")
-    public ResponseEntity<List<Address>> getAddressByUserId(@PathVariable int id) {
-        List<Address> addresses=addressService.getAddressByUserId(id);
-        return ResponseEntity.ok(addresses);
+    public ResponseEntity<List<AddressDTO>> getAddressByUserId(@PathVariable int id) {
+        return ResponseEntity.ok(addressService.getAddressByUserId(id));
     }
+
     @GetMapping("/{id}")
-    public ResponseEntity<Address> getAddressById(@PathVariable int id) {
-        Address address=addressService.getById(id);
-        return ResponseEntity.ok(address);
+    public ResponseEntity<AddressDTO> getAddressById(@PathVariable int id) {
+        AddressDTO address = addressService.getById(id);
+        return address != null ? ResponseEntity.ok(address) : ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
+
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteAddress(@PathVariable("id") int id) {
+    public ResponseEntity<Void> deleteAddress(@PathVariable int id) {
         addressService.deleteById(id);
-        return ResponseEntity.ok("Address deleted");
+        return ResponseEntity.ok().build();
     }
+
     @PutMapping("/update/{id}")
-    public ResponseEntity<Address> updateCartItem(@PathVariable("id") int id,
-                                                   @RequestBody Address address) {
-        Address addressUpdate= addressService.update(id,address);
-        if (addressUpdate != null) {
-            return ResponseEntity.ok(addressUpdate);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+    public ResponseEntity<AddressDTO> updateAddress(@PathVariable int id, @RequestBody AddressDTO addressDTO) {
+        AddressDTO updatedAddress = addressService.updateAddress(id, addressDTO);
+        return updatedAddress != null ? ResponseEntity.ok(updatedAddress) : ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
+
     @PostMapping("/add")
-    public ResponseEntity<?> addAddress(@RequestBody Address address) {
-        try {
-           Address savedAddress=addressService.add(address);
-            return ResponseEntity.ok(savedAddress);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
-        }
+    public ResponseEntity<AddressDTO> addAddress(@RequestBody AddressDTO addressDTO) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(addressService.addAddress(addressDTO));
     }
 }

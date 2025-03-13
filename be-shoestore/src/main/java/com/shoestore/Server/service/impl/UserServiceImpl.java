@@ -1,11 +1,13 @@
 package com.shoestore.Server.service.impl;
 
-import com.shoestore.Server.dto.UserDTO;
+import com.shoestore.Server.dto.request.UserDTO;
 import com.shoestore.Server.entities.Role;
 import com.shoestore.Server.entities.User;
+import com.shoestore.Server.mapper.UserMapper;
 import com.shoestore.Server.repositories.RoleRepository;
 import com.shoestore.Server.repositories.UserRepository;
 import com.shoestore.Server.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -13,7 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-
+import java.util.stream.Collectors;
+@Slf4j
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -25,93 +28,77 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-
+    @Autowired
+    private UserMapper userMapper;
     @Override
-    public User findByEmail(String email) {
-        return userRepository.findByEmail(email);
+    public UserDTO findByEmail(String email) {
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            return null;
+        }
+        return userMapper.toDto(user);
     }
-
     @Override
-    public List<User> getUserByName(String username) {
-        return List.of();
-    }
-
-
-
-    @Override
-    public User addUserByRegister(User user) {
-        if (userRepository.existsByEmail(user.getEmail())) {
+    public UserDTO addUserByRegister(UserDTO userDTO) {
+        if (userRepository.existsByEmail(userDTO.getEmail())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email already exists.");
         }
 
         Role role = roleRepository.findByName("Customer")
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Cannot find role 'Customer'."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Cannot find role 'Customer'"));
 
+        User user = userMapper.toEntity(userDTO);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(role);
         user.setStatus("Active");
 
-        return userRepository.save(user);
-    }
-
-
-
-    @Override
-    public void deleteUser(int userID) {
-        // Kiểm tra xem người dùng có tồn tại không
-        if (!userRepository.existsById(userID)) {
-            throw new IllegalArgumentException("User with ID " + userID + " does not exist.");
-        }
-        userRepository.deleteById(userID);
-    }
-    @Override
-    public List<User> searchUsers(String name, String roleName, String status) {
-        name = (name != null && !name.isEmpty()) ? name : null;
-        roleName = (roleName != null && !roleName.isEmpty()) ? roleName : null;
-        status = (status != null && !status.isEmpty()) ? status : null;
-
-        return userRepository.searchUsers(name, roleName, status);
+        user = userRepository.save(user);
+        return userMapper.toDto(user);
     }
 
     @Override
-    public User updateUser(int id, User updatedUser) {
+    public UserDTO updateUserInformationByUser(int id, UserDTO updatedUserDTO) {
         User existingUser = userRepository.findById(id).orElse(null);
-
         if (existingUser == null) {
             return null;
         }
-        existingUser.setName(existingUser.getName());
-        existingUser.setUserName(updatedUser.getUserName());
-        existingUser.setPassword(existingUser.getPassword());
-        existingUser.setPhoneNumber(updatedUser.getPhoneNumber());
-        existingUser.setEmail(existingUser.getEmail());
-        existingUser.setStatus(existingUser.getStatus());
-        existingUser.setCI(updatedUser.getCI());
+        existingUser.setName(updatedUserDTO.getName());
+        existingUser.setUserName(updatedUserDTO.getUserName());
+        existingUser.setPhoneNumber(updatedUserDTO.getPhoneNumber());
+        existingUser.setEmail(updatedUserDTO.getEmail());
+        existingUser.setCI(updatedUserDTO.getCI());
+        existingUser = userRepository.save(existingUser);
+        return userMapper.toDto(existingUser);
+    }
 
-        if (updatedUser.getRole() != null) {
-            Role role = roleRepository.findById(updatedUser.getRole().getRoleID()).orElse(null);
-            if (role != null) {
-                existingUser.setRole(role);
-            }
+    @Override
+    public UserDTO getUserById(int id) {
+        User user = userRepository.findById(id).orElse(null);
+        if (user == null) {
+            return null;
         }
-        return userRepository.save(existingUser);
-    }
-    @Override
-    public User findById(int id) {
-        return userRepository.findById(id).orElse(null);
+        return userMapper.toDto(user);
     }
 
     @Override
-    public User getUserById(int id) {
-        return userRepository.findById(id).orElse(null);
+    public void updateRefreshToken(String email, String refreshToken) {
+        User user=userRepository.findByEmail(email);
+        System.out.println(user.getUserID());
+        if(user==null){
+            log.info("User not found");
+        }
+        user.setRefreshToken(refreshToken);
+        log.info("User updated successfully");
+        userRepository.save(user);
+
+
     }
 
     @Override
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserDTO> getAllUsers() {
+        List<User> users= userRepository.findAll();
+        return users.stream().map(userMapper::toDto).collect(Collectors.toList());
     }
 
-    public User findUserById(int id) {
-        return userRepository.findById(id).orElse(null);
-    }
+
 }

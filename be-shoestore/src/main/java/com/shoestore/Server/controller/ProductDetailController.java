@@ -1,109 +1,62 @@
 package com.shoestore.Server.controller;
 
-
-import com.shoestore.Server.entities.Product;
-import com.shoestore.Server.entities.ProductDetail;
+import com.shoestore.Server.dto.request.ProductDTO;
+import com.shoestore.Server.dto.request.ProductDetailDTO;
+import com.shoestore.Server.dto.response.ProductDetailResponse;
+import com.shoestore.Server.service.BrandService;
+import com.shoestore.Server.service.CategoryService;
 import com.shoestore.Server.service.ProductDetailService;
-import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
+import com.shoestore.Server.service.ProductService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/product-details")
 public class ProductDetailController {
     private final ProductDetailService productDetailService;
+    private final ProductService productService;
+    private final BrandService brandService;
+    private final CategoryService categoryService;
 
-    public ProductDetailController(ProductDetailService productDetailService) {
+    public ProductDetailController(ProductDetailService productDetailService, ProductService productService,
+                                   BrandService brandService, CategoryService categoryService) {
         this.productDetailService = productDetailService;
-    }
-
-
-    @PostMapping("/add")
-    public ResponseEntity<?> addProductDetail(@Valid @RequestBody ProductDetail productDetail,
-                                              BindingResult bindingResult      ) {
-
-        System.out.println(productDetail.getColor());
-        System.out.println(productDetail.getSize());
-        System.out.println(productDetail.getProduct().getProductID());
-
-        // kiểm tra tồn tại
-        ProductDetail productDetail1 = productDetailService.getProductDetailByProductIdAndColorAndSize(productDetail.getProduct().getProductID(), productDetail.getColor(), productDetail.getSize());
-        System.out.println(productDetail1);
-        if (productDetail1 != null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(" Đã tồn tại cặp màu sắc và size cho sản phẩm này");
-        }
-
-
-        if (bindingResult.hasErrors()) {
-            // Trả về lỗi validation
-            String errorMessage = bindingResult.getAllErrors().stream()
-                    .map(ObjectError::getDefaultMessage)
-                    .collect(Collectors.joining(", "));
-            System.out.println(errorMessage);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
-        }
-
-
-        try {
-            // Lưu sản phẩm vào cơ sở dữ liệu
-            ProductDetail savedProductDetail = productDetailService.addProductDetail(productDetail);
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedProductDetail);
-        } catch (Exception e) {
-            // Xử lý lỗi nếu có
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+        this.productService = productService;
+        this.brandService = brandService;
+        this.categoryService = categoryService;
     }
 
     @GetMapping("/by-product-id/{id}")
-    public ResponseEntity<Map<String,Object>> getProductDetailsByProductId(@PathVariable("id") int id) {
-        List<ProductDetail> productDetails=productDetailService.getByProductId(id);
-        Map<String,Object> response= new HashMap<>();
-        response.put("productDetails",productDetails);
+    public ResponseEntity<ProductDetailResponse> getProductDetailsByProductId(@PathVariable int id) {
+        ProductDTO productDTO = productService.getProductById(id);
+        if (productDTO == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        List<ProductDetailDTO> productDetails = productDetailService.getByProductId(id);
+        ProductDetailResponse response = new ProductDetailResponse(
+                productDetails,
+                productDTO.getProductName(),
+                categoryService.getCategory(productDTO.getCategoryID()).getName(),
+                brandService.getBrandById(productDTO.getBrandID()).getName(),
+                productDTO.getDescription(),
+                productDTO.getPrice(),
+                productDTO.getImageURL()
+        );
+
         return ResponseEntity.ok(response);
     }
+
     @GetMapping("/by-order-detail-id/{id}")
-    public ResponseEntity<Map<String,Object>> getProductDetailsByOrderDetailId(@PathVariable("id") int id) {
-        List<ProductDetail> productDetails=productDetailService.getByProductId(id);
-        Map<String,Object> response= new HashMap<>();
-        response.put("productDetails",productDetails);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<List<ProductDetailDTO>> getProductDetailsByOrderDetailId(@PathVariable int id) {
+        return ResponseEntity.ok(productDetailService.getByProductId(id));
     }
+
     @GetMapping("/{id}")
-    public ResponseEntity<ProductDetail> getProductDetailsById(@PathVariable int id) {
-        ProductDetail productDetail=productDetailService.getProductDetailById(id);
-        if (productDetail != null) {
-            return ResponseEntity.ok(productDetail);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+    public ResponseEntity<ProductDetailDTO> getProductDetailsById(@PathVariable int id) {
+        ProductDetailDTO productDetail = productDetailService.getProductDetailById(id);
+        return productDetail != null ? ResponseEntity.ok(productDetail) : ResponseEntity.notFound().build();
     }
-
-    @PutMapping("/update/{id}")
-    // chỉ cập nhật soluong
-    public ResponseEntity<?> updateProductDetail(@PathVariable int id, @Valid @RequestBody ProductDetail productDetail, BindingResult bindingResult) {
-        ProductDetail productDetail1 = productDetailService.getProductDetailById(id);
-        if (productDetail1 == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy sản phẩm có id = " + id);
-        }
-        if (bindingResult.hasErrors()) {
-            // Trả về lỗi validation
-            String errorMessage = bindingResult.getAllErrors().stream()
-                    .map(ObjectError::getDefaultMessage)
-                    .collect(Collectors.joining(", "));
-            System.out.println(errorMessage);
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
-        }
-        productDetail1.setStockQuantity(productDetail.getStockQuantity());
-        productDetailService.save(productDetail1);
-        return ResponseEntity.ok(productDetail1);
-    }
-
 }

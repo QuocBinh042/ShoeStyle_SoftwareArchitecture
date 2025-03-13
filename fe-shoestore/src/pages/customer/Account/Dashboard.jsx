@@ -4,7 +4,7 @@ import { ShoppingCartOutlined, DollarOutlined, UserOutlined, EditOutlined } from
 import { countOrderByUser, sumAmount, fetchOrderByUser } from "../../../services/orderService";
 import { fetchUserInfoById, updateUserInfo } from "../../../services/userService";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
-import { useAuth } from "../../../context/AuthContext";
+import { useSelector } from "react-redux";
 const { Title, Text } = Typography;
 
 const UserDashboard = () => {
@@ -13,18 +13,16 @@ const UserDashboard = () => {
     const [orderData, setOrderData] = useState([]);
     const [filteredOrders, setFilteredOrders] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [user, setUser] = useState({});
+    const [loading, setLoading] = useState(true);
+    const [userInfo, setUseruserInfo] = useState({});
     const [form] = Form.useForm();
-    const { user: authUser } = useAuth();
-
+    const user = useSelector((state) => state.account.user);
     useEffect(() => {
-        if (authUser) {
-            fetchUserInfo(authUser.id);
-            fetchQuantityOrder(authUser.id);
-            fetchtotalAmount(authUser.id);
-            fetchOrders(authUser.id);
+        if (user?.userID) {
+            fetchData(user.userID);
         }
-    }, [authUser]);
+    }, [user]);
+
     const fetchQuantityOrder = async (userId) => {
         const count = await countOrderByUser(userId);
         setQuantityOrder(count);
@@ -43,9 +41,23 @@ const UserDashboard = () => {
 
     const fetchUserInfo = async (userId) => {
         const userInfo = await fetchUserInfoById(userId);
-        setUser(userInfo);
+        setUseruserInfo(userInfo.data);
     };
 
+    const fetchData = async (userId) => {
+
+        try {
+            await fetchUserInfo(userId);
+            await fetchQuantityOrder(userId);
+            await fetchtotalAmount(userId);
+            await fetchOrders(userId);
+        } catch (error) {
+            console.error("Error fetching data: ", error);
+        } finally {
+            setLoading(false);
+        }
+
+    };
     const processMonthlyData = (orders) => {
         const monthlyData = Array.from({ length: 12 }, (_, index) => ({
             month: `${index + 1}`,
@@ -63,19 +75,20 @@ const UserDashboard = () => {
     };
 
     const showModal = () => {
-        form.setFieldsValue(user);
+        form.setFieldsValue(userInfo);
         setIsModalOpen(true);
     };
 
     const handleOk = () => {
         form.validateFields().then(async (values) => {
-            const updatedUser = await updateUserInfo(user.userID, values);
-            setUser(updatedUser);
+            await updateUserInfo(userInfo.userID, values);
             setIsModalOpen(false);
+            fetchUserInfo(userInfo.userID); // GỌI LẠI API ĐỂ LẤY DỮ LIỆU MỚI NHẤT
         }).catch(() => {
             notification.error({ message: 'Form has errors!', description: 'Please fix the errors before submitting.' });
         });
     };
+
     const handleCancel = () => {
         setIsModalOpen(false);
     };
@@ -85,18 +98,20 @@ const UserDashboard = () => {
         { title: "Total", dataIndex: "total", key: "total", render: (text) => `${text} đ` },
         { title: "Status", dataIndex: "status", key: "status" },
     ];
-
+    if (loading) {
+        return <div>Loading...</div>;
+    }
     return (
         <div style={{ padding: 20 }}>
             {/* User Info */}
             <Card style={{ textAlign: "center" }}>
                 <Avatar size={100} icon={<UserOutlined />} />
-                <Title level={3}>{user.name}</Title>
+                <Title level={3}>{userInfo.name}</Title>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", padding: "10px" }}>
-                    <Text><b>Email: </b> {user.email}</Text>
-                    <Text><b>User name: </b> {user.userName}</Text>
-                    <Text><b>CI: </b> {user.ci}</Text>
-                    <Text><b>Phone: </b> {user.phoneNumber}</Text>
+                    <Text><b>Email: </b> {userInfo.email}</Text>
+                    <Text><b>User name: </b> {userInfo.userName}</Text>
+                    <Text><b>CI: </b> {userInfo.ci}</Text>
+                    <Text><b>Phone: </b> {userInfo.phoneNumber}</Text>
                 </div>
                 <Button type="primary" icon={<EditOutlined />} onClick={showModal} style={{ marginTop: 10 }}>Edit</Button>
             </Card>
@@ -141,16 +156,32 @@ const UserDashboard = () => {
                     <Form.Item
                         name="email"
                         label="Email"
-
+                        rules={[
+                            { required: true, message: "Please enter your email!" },
+                            { type: "email", message: "Please enter a valid email!" }
+                        ]}
                     >
                         <Input disabled />
                     </Form.Item>
+
+                    <Form.Item
+                        name="name"
+                        label="Full name"
+                        rules={[
+                            { required: true, message: "Please enter your full name!" },
+                            { pattern: /^[A-Za-z\s]+$/, message: "Full name must not contain numbers or special characters!" },
+                            { pattern: /^[A-Z]/, message: "Each word in the full name must start with a capital letter!" }
+                        ]}
+                    >
+                        <Input />
+                    </Form.Item>
+
                     <Form.Item
                         name="userName"
                         label="User name"
                         rules={[
                             { required: true, message: "Please enter your user name!" },
-                            { pattern: /^[A-Za-z].*/, message: "User name must start with a letter!" }
+                            { pattern: /^[A-Za-z][A-Za-z0-9]*$/, message: "User name must start with a letter and can contain numbers!" }
                         ]}
                     >
                         <Input />
@@ -177,6 +208,7 @@ const UserDashboard = () => {
                         <Input />
                     </Form.Item>
                 </Form>
+
             </Modal>
         </div>
     );

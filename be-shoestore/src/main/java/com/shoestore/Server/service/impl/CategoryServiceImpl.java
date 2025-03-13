@@ -1,39 +1,46 @@
 package com.shoestore.Server.service.impl;
 
-
-/*
-    @author: Đào Thanh Phú
-    Date: 11/20/2024
-    Time: 9:29 PM
-    ProjectName: Server
-*/
-
-
+import com.shoestore.Server.dto.request.CategoryDTO;
 import com.shoestore.Server.entities.Category;
+import com.shoestore.Server.mapper.CategoryMapper;
 import com.shoestore.Server.repositories.CategoryRepository;
 import com.shoestore.Server.service.CategoryService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
+    private final CategoryMapper categoryMapper;
 
-    public CategoryServiceImpl(CategoryRepository categoryRepository) {
+    public CategoryServiceImpl(CategoryRepository categoryRepository, CategoryMapper categoryMapper) {
         this.categoryRepository = categoryRepository;
-    }
-    @Override
-    public Category getCategory(int id) {
-        return categoryRepository.findByCategoryID(id);
-    }
-    @Override
-    public List<Category> getAllCategory() {
-        return categoryRepository.findAll();
+        this.categoryMapper = categoryMapper;
     }
 
     @Override
-    public List<Object[]> getCategoryWithCount() {
-        return categoryRepository.getAllCategoriesWithProductCount();
+    public CategoryDTO getCategory(int id) {
+        log.info("Fetching category with ID: {}", id);
+        Category category = categoryRepository.findByCategoryID(id);
+        if (category == null) {
+            log.warn("Category not found with ID: {}", id);
+            return null;
+        }
+        return categoryMapper.toDto(category);
+    }
+
+    @Override
+    public List<CategoryDTO> getAllCategory() {
+        log.info("Fetching all categories from database.");
+        List<CategoryDTO> categories = categoryRepository.findAll()
+                .stream()
+                .map(categoryMapper::toDto)
+                .collect(Collectors.toList());
+        log.info("Found {} categories.", categories.size());
+        return categories;
     }
 }

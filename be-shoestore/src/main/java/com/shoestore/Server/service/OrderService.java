@@ -1,5 +1,6 @@
 package com.shoestore.Server.service;
 
+import com.shoestore.Server.dto.request.OrderDTO;
 import com.shoestore.Server.entities.Order;
 import com.shoestore.Server.entities.OrderDetail;
 import com.shoestore.Server.entities.Product;
@@ -9,16 +10,19 @@ import java.util.List;
 import java.util.Map;
 
 public interface OrderService {
-    public List<Order> findAll();
-    public Map<String, Object> getRevenueStatistics(LocalDate startDate, LocalDate endDate);
-    public Map<String, Object> getRevenueAndQuantityForCurrentYear();
-    public List<Object[]> getTop10LoyalCustomers(int minOrders);
-    public Map<String, Long> getOrderStatistics();
-    public void updateOrderStatus(int orderId, String status) ;
-    Order findById(int orderID);
-    Order addOrder(Order order);
-    List<Order> findByUserId(int userId);
-    Order findByCode(String orderCode);
-    int getOrderCountByUserId(int id);
-    Double sumTotalAmountByUserId(int id);
+    List<OrderDTO> getAll();
+
+    OrderDTO updateOrderStatus(int orderId, String status);
+
+    OrderDTO getOrderById(int orderID);
+
+    OrderDTO addOrder(OrderDTO order);
+
+    List<OrderDTO> getOrderByByUser(int userId);
+
+    OrderDTO getOrderByCode(String orderCode);
+
+    int getOrderQuantityByUserId(int id);
+
+    Double getTotalAmountByUserId(int id);
 }

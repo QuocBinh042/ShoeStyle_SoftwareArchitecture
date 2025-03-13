@@ -16,24 +16,24 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/receipt")
 public class ReceiptController {
 
-    private final ReceiptService receiptService;
-    private final PaymentService paymentService;
-
-    public ReceiptController(ReceiptService receiptService, PaymentService paymentService) {
-        this.receiptService = receiptService;
-        this.paymentService = paymentService;
-    }
-    @PostMapping("/add")
-    public ResponseEntity<?> addReceipt(@RequestBody Receipt receipt) {
-        Payment payment=paymentService.getPaymentById(receipt.getPayment().getPaymentID());
-        System.out.println(payment);
-        receipt.setPayment(payment);
-        System.out.println(receipt);
-        try {
-            Receipt receiptAdd=receiptService.addReceipt(receipt);
-            return ResponseEntity.ok(receiptAdd);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
-        }
-    }
+//    private final ReceiptService receiptService;
+//    private final PaymentService paymentService;
+//
+//    public ReceiptController(ReceiptService receiptService, PaymentService paymentService) {
+//        this.receiptService = receiptService;
+//        this.paymentService = paymentService;
+//    }
+//    @PostMapping("/add")
+//    public ResponseEntity<?> addReceipt(@RequestBody Receipt receipt) {
+//        Payment payment=paymentService.getPaymentById(receipt.getPayment().getPaymentID());
+//        System.out.println(payment);
+//        receipt.setPayment(payment);
+//        System.out.println(receipt);
+//        try {
+//            Receipt receiptAdd=receiptService.addReceipt(receipt);
+//            return ResponseEntity.ok(receiptAdd);
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+//        }
+//    }
 }

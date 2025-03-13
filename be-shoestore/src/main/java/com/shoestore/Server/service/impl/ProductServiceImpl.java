@@ -1,65 +1,59 @@
 package com.shoestore.Server.service.impl;
 
-import com.shoestore.Server.dto.ProductDTO;
+import com.shoestore.Server.dto.request.ProductDTO;
+import com.shoestore.Server.dto.response.PaginationResponse;
 import com.shoestore.Server.entities.Product;
-import com.shoestore.Server.repositories.OrderDetailRepository;
+import com.shoestore.Server.mapper.ProductMapper;
 import com.shoestore.Server.repositories.ProductRepository;
+import com.shoestore.Server.service.PaginationService;
 import com.shoestore.Server.service.ProductService;
 import com.shoestore.Server.specifications.ProductSpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
+
 @Service
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
-
-    // này của hiếu
     @Autowired
-    private OrderDetailRepository orderDetailRepository;
-
-
-    public ProductServiceImpl(ProductRepository productRepository) {
+    private final ProductMapper productMapper;
+    private final PaginationService paginationService;
+    @Autowired
+    public ProductServiceImpl(ProductRepository productRepository, ProductMapper productMapper, PaginationService paginationService) {
         this.productRepository = productRepository;
+        this.productMapper = productMapper;
+        this.paginationService = paginationService;
     }
     @Override
-    public List<Product> getAllProduct() {
-        return productRepository.findAll();
+    public PaginationResponse<ProductDTO> getAllProduct(int page, int pageSize) {
+        List<Product> products = productRepository.findAll();
+
+        PaginationResponse<Product> paginatedProducts = paginationService.paginate(products, page, pageSize);
+        List<ProductDTO> productDTOs = productMapper.toDto(paginatedProducts.getItems());
+
+        return new PaginationResponse<>(productDTOs, paginatedProducts.getTotalElements(), paginatedProducts.getTotalPages(), paginatedProducts.getCurrentPage(), paginatedProducts.getPageSize());
     }
-
     @Override
-    public Product getProductByProductDetailsId(int id) {
-        return productRepository.findProductByProductDetailId(id);
-    }
-
-    @Override
-
-    public Product saveProduct(Product product) {
-        return productRepository.save(product);
-    }
-
-    @Override
-    public boolean deleteProduct(int id) {
-        productRepository.deleteById(id);
-        return true;
+    public ProductDTO getProductByProductDetailsId(int id) {
+        Product product = productRepository.findProductByProductDetailId(id);
+        return product != null ? productMapper.toDto(product) : null;
     }
 
     @Override
-    public Product getProductById(int id) {
-        return productRepository.findById(id).orElse(null);
-
+    public ProductDTO getProductById(int id) {
+        Product product = productRepository.findById(id).orElse(null);
+        return product != null ? productMapper.toDto(product) : null;
     }
 
-
     @Override
-    public List<Product> getFilteredProducts(List<Integer> categoryIds, List<Integer> brandIds, List<String> colors, List<String> sizes,String keyword, Double minPrice, Double maxPrice, String sortBy) {
+    public PaginationResponse<ProductDTO> getFilteredProducts(List<Integer> categoryIds, List<Integer> brandIds, List<String> colors, List<String> sizes,
+                                                              String keyword, Double minPrice, Double maxPrice, String sortBy, int page, int pageSize) {
         Specification<Product> spec = Specification.where(null);
 
         if (categoryIds != null && !categoryIds.isEmpty()) {
@@ -85,104 +79,43 @@ public class ProductServiceImpl implements ProductService {
         if (maxPrice != null) {
             spec = spec.and(ProductSpecification.hasMaxPrice(maxPrice));
         }
+
         if (keyword != null && !keyword.trim().isEmpty()) {
             spec = spec.and(ProductSpecification.hasName(keyword));
         }
+
+        Sort sort = Sort.unsorted();
+
         if (sortBy != null) {
             switch (sortBy) {
                 case "Price: High-Low":
-                    return productRepository.findAll(spec, Sort.by(Sort.Order.desc("price")));
+                    sort = Sort.by(Sort.Order.desc("price"));
+                    break;
                 case "Price: Low-High":
-                    return productRepository.findAll(spec, Sort.by(Sort.Order.asc("price")));
+                    sort = Sort.by(Sort.Order.asc("price"));
+                    break;
                 case "Newest":
-                    return productRepository.findAll(spec, Sort.by(Sort.Order.desc("createDate")));
-                default:
-                    return productRepository.findAll(spec);
+                    sort = Sort.by(Sort.Order.desc("createDate"));
+                    break;
             }
+            System.out.println("Sắp xếp: " + sortBy);
         }
 
-        return productRepository.findAll(spec);
+        Pageable pageable = PageRequest.of(page - 1, pageSize, sort);
+
+        Page<Product> pagedProducts = productRepository.findAll(spec, pageable);
+
+        List<ProductDTO> productDTOs = productMapper.toDto(pagedProducts.getContent());
+
+
+        return new PaginationResponse<>(
+                productDTOs,
+                pagedProducts.getTotalElements(),
+                pagedProducts.getTotalPages(),
+                pagedProducts.getNumber() + 1,
+                pagedProducts.getSize()
+        );
     }
-
-    @Override
-    public Page<Product> findProducts(String keyword, String sortBy, String order, Pageable pageable) {
-        Pageable sortedPageable;
-
-        // Kiểm tra nếu `sortBy` và `order` đều không null
-        if (sortBy != null && order != null) {
-            // Xác định hướng sắp xếp
-            Sort.Direction direction = "desc".equalsIgnoreCase(order) ? Sort.Direction.DESC : Sort.Direction.ASC;
-
-            // Xác định trường cần sắp xếp
-            String sortField;
-            if ("price".equalsIgnoreCase(sortBy)) {
-                sortField = "price";
-            } else {
-                sortField = "createDate"; // Mặc định là sắp xếp theo createDate
-            }
-
-            // Tạo Pageable với thông tin sắp xếp
-            sortedPageable = PageRequest.of(
-                    pageable.getPageNumber(),
-                    pageable.getPageSize(),
-                    Sort.by(direction, sortField)
-            );
-        } else {
-            // Nếu không có thông tin sắp xếp, dùng Pageable mặc định
-            sortedPageable = pageable;
-        }
-
-        // Gọi repository với Pageable được điều chỉnh
-        return productRepository.findProducts(keyword, sortedPageable);
-    }
-
-    @Override
-    public List<Product> getProductsByPage(List<Product> products, int page, int pageSize) {
-        int total = products.size();
-        int fromIndex = Math.min((page - 1) * pageSize, total);
-        int toIndex = Math.min(page * pageSize, total);
-        return products.subList(fromIndex, toIndex);
-    }
-
-
-
-    // nay cua hieu
-    public List<Product> getProductsNotInOrderDetail(int orderID) {
-        List<Integer> productIDsInOrderDetail = orderDetailRepository.findProductIDsByOrderID(orderID);
-        if (productIDsInOrderDetail.isEmpty()) {
-            return productRepository.findAll();
-        } else {
-
-            return productRepository.findByProductIDNotIn(productIDsInOrderDetail);
-        }
-    }
-    private List<ProductDTO> setImageURLs(List<ProductDTO> productDTOList) {
-        productDTOList.forEach(productDTO -> {
-            List<String> imageUrls = getImageUrlsByProductID(productDTO.getProductID());
-            productDTO.setImageURL(imageUrls);
-        });
-        return productDTOList;
-    }
-    @Override
-    public List<String> getImageUrlsByProductID(int id) {
-        return productRepository.findImageUrlsByProductID(id);
-    }
-
-    @Override
-    public List<ProductDTO> getTop10BestSellers() {
-        return setImageURLs(productRepository.findTop10BestSellers(PageRequest.of(0, 10)));
-    }
-
-    @Override
-    public List<ProductDTO> getTop10NewArrivals() {
-        return setImageURLs(productRepository.findTop10NewArrivals(PageRequest.of(0, 10)));
-    }
-
-    @Override
-    public List<ProductDTO> getTop10Trending() {
-        return setImageURLs(productRepository.findTop10Trending(PageRequest.of(0, 10)));
-    }
-
 
 
 }

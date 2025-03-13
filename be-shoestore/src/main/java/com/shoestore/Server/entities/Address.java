@@ -3,6 +3,8 @@ package com.shoestore.Server.entities;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -10,28 +12,29 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "Address")
 @ToString
-public class Address {
+public class Address extends BaseEntity{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "addressID")
     private int addressID;
 
-    @Column(name = "street", nullable = false, columnDefinition = "NVARCHAR(50)")
+    @Column(name = "street", nullable = false, columnDefinition = "NVARCHAR(100)")
     private String street;
 
-    @Column(name = "city", nullable = false, columnDefinition = "NVARCHAR(20)")
+    @Column(name = "city", nullable = false, columnDefinition = "NVARCHAR(50)")
     private String city;
 
-    @Column(name = "ward", nullable = false, columnDefinition = "NVARCHAR(20)")
+    @Column(name = "ward", nullable = false, columnDefinition = "NVARCHAR(50)")
     private String ward;
 
-    @Column(name = "district", nullable = false, columnDefinition = "NVARCHAR(20)")
+    @Column(name = "district", nullable = false, columnDefinition = "NVARCHAR(250)")
     private String district;
 
-    @Column(name = "fullName", nullable = false, columnDefinition = "NVARCHAR(20)")
+    @Column(name = "fullName", nullable = false, columnDefinition = "NVARCHAR(100)")
     private String fullName;
 
     @Column(name = "phone", nullable = false, columnDefinition = "NVARCHAR(10)")
@@ -47,12 +50,4 @@ public class Address {
     @JoinColumn(name = "userID")
     @JsonBackReference
     private User user;
-
-    @CreationTimestamp
-    @Column(name = "createdAt", updatable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updatedAt")
-    private LocalDateTime updatedAt;
 }

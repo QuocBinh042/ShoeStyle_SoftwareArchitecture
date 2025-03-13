@@ -15,7 +15,7 @@ const ProductGrid = ({ products, totalProducts, currentPage, onPageChange }) => 
       {products.length === 0 ? (
         <Empty />
       ) : (
-        <Row gutter={[16, 16]}>
+        <Row gutter={[16, 16]} style={{ minHeight: "800px" }}>
           {products.map((product) => {
             const formattedPrice = product.price.toLocaleString('vi-VN') + "₫";
             const formattedDiscountPrice = product.discountPrice
@@ -83,7 +83,7 @@ const ProductGrid = ({ products, totalProducts, currentPage, onPageChange }) => 
         total={totalProducts}
         pageSize={12}
         onChange={onPageChange}
-        style={{ marginTop: 20, textAlign: "center" }}
+        align='end'
       />
     </>
   );
