@@ -9,13 +9,13 @@ const PrivateRoute = ({ children }) => {
     const navigate = useNavigate();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [checkingAuth, setCheckingAuth] = useState(true);
-
+    const isAppLoading = useSelector((state) => state.account.isAppLoading);
     useEffect(() => {
-        if (!isAuthenticated) {
+        if (!isAuthenticated && !isAppLoading) {
             setIsModalOpen(true);
         }
         setCheckingAuth(false);
-    }, [isAuthenticated]);
+    }, [isAuthenticated,isAppLoading]);
 
     const handleOk = () => {
         setIsModalOpen(false);

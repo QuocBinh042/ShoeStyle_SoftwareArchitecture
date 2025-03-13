@@ -45,52 +45,53 @@ export const { doLoginAction, doLogoutAction, setAppLoading, setUser } = account
 export default accountSlice.reducer;
 
 export const fetchUser = () => async (dispatch, getState) => {
+  dispatch(setAppLoading(true)); // Bắt đầu loading
   try {
-    let accessToken = localStorage.getItem("accessToken");
+      let accessToken = localStorage.getItem("accessToken");
 
-    const fetchProfile = async (token) => {
-      return apiClient.get("auth/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    };
+      const fetchProfile = async (token) => {
+          return apiClient.get("auth/me", {
+              headers: { Authorization: `Bearer ${token}` },
+          });
+      };
 
-    let response;
-    try {
-      // Thử gọi API với access token hiện tại
-      response = await fetchProfile(accessToken);
-    } catch (error) {
-      if (error.response?.status === 401) {
-        console.log("Access token hết hạn, thử refresh...");
-        try {
-          const refreshResponse = await authService.refreshAccessToken();
-          if (refreshResponse.data.statusCode === 200) {
-            accessToken = refreshResponse.data.data.access_token;
-            localStorage.setItem("accessToken", accessToken);
-
-            // Gọi lại API với token mới
-            response = await fetchProfile(accessToken);
+      let response;
+      try {
+          response = await fetchProfile(accessToken);
+      } catch (error) {
+          if (error.response?.status === 401) {
+              console.log("Access token hết hạn, thử refresh...");
+              try {
+                  const refreshResponse = await authService.refreshAccessToken();
+                  if (refreshResponse.data.statusCode === 200) {
+                      accessToken = refreshResponse.data.data.access_token;
+                      localStorage.setItem("accessToken", accessToken);
+                      response = await fetchProfile(accessToken);
+                  } else {
+                      throw new Error("Refresh token không hợp lệ");
+                  }
+              } catch (refreshError) {
+                  await authService.logout();
+                  dispatch(doLogoutAction());
+                  dispatch(setAppLoading(false)); // Kết thúc loading
+                  return;
+              }
           } else {
-            throw new Error("Refresh token không hợp lệ");
+              throw error;
           }
-        } catch (refreshError) {
-          await authService.logout();
-          dispatch(doLogoutAction());
-          return;
-        }
-      } else {
-        throw error;
       }
-    }
 
-    if (response?.data?.statusCode === 200) {
-      dispatch(doLoginAction(response.data.data));
-    } else {
-      throw new Error("Unauthorized");
-    }
+      if (response?.data?.statusCode === 200) {
+          dispatch(doLoginAction(response.data.data));
+      } else {
+          throw new Error("Unauthorized");
+      }
   } catch (error) {
-    console.error("Không thể xác thực lại", error);
-    await authService.logout();
-    dispatch(doLogoutAction());
+      console.error("Không thể xác thực lại", error);
+      await authService.logout();
+      dispatch(doLogoutAction());
+  } finally {
+      dispatch(setAppLoading(false)); // Kết thúc loading
   }
 };
 
